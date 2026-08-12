@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { CSSProperties, FocusEvent, PointerEvent, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, FocusEvent, PointerEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const labels = {
   en: [["Destinations", "/destinations"], ["Design your journey", "/design-your-journey"], ["Saudi Abroad", "/saudi-abroad"], ["About us", "/about"], ["Corporate", "/corporate"]],
@@ -43,13 +43,31 @@ export function Header() {
     return () => window.removeEventListener("resize", handleResize);
   }, [activeHref]);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
   const pillStyle = { "--pill-x": `${pill.x}px`, "--pill-width": `${pill.width}px` } as CSSProperties;
-  return <header dir={isArabic ? "rtl" : "ltr"} className={`siteHeader ${pathname === "/" || pathname === "/ar" ? "overHero" : "solidHeader"}`}>
+  return <header dir={isArabic ? "rtl" : "ltr"} className={`siteHeader ${pathname === "/" || pathname === "/ar" ? "overHero" : "solidHeader"} ${open ? "menuOpen" : ""}`}>
     <div className="container headerInner">
       <Link href={isArabic ? "/ar" : "/"} className="brand" aria-label={isArabic ? "العودة إلى الرئيسية" : "Memories home"}><Image className="brandLogo" src="/images/memories-logo-full.webp" width={703} height={720} alt={isArabic ? "شعار ميموريز للسفر" : "MEMORIES travel logo"} preload /></Link>
-      <button className="menuButton" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={isArabic ? "فتح قائمة التنقل" : "Toggle navigation"}>{open ? <X /> : <Menu />}</button>
-      <nav ref={navRef} className={open ? "nav open" : "nav"} aria-label={isArabic ? "التنقل الرئيسي" : "Main navigation"} onPointerLeave={settlePill} onBlur={(event: FocusEvent<HTMLElement>) => { if (!event.currentTarget.contains(event.relatedTarget)) settlePill(); }} style={pillStyle}>
+      <button className="menuButton" onClick={() => setOpen((value) => !value)} aria-controls="main-navigation" aria-expanded={open} aria-label={isArabic ? (open ? "إغلاق قائمة التنقل" : "فتح قائمة التنقل") : (open ? "Close navigation" : "Open navigation")}>{open ? <X /> : <Menu />}</button>
+      <button type="button" className={open ? "menuBackdrop visible" : "menuBackdrop"} onClick={() => setOpen(false)} aria-label={isArabic ? "إغلاق القائمة" : "Close menu"} tabIndex={open ? 0 : -1} />
+      <nav id="main-navigation" ref={navRef} className={open ? "nav open" : "nav"} aria-label={isArabic ? "التنقل الرئيسي" : "Main navigation"} onPointerLeave={settlePill} onBlur={(event: FocusEvent<HTMLElement>) => { if (!event.currentTarget.contains(event.relatedTarget)) settlePill(); }} style={pillStyle}>
         <span className={pill.visible ? "navPill visible" : "navPill"} aria-hidden="true" />
+        <span className="mobileNavTitle">{isArabic ? "القائمة" : "Menu"}</span>
         {links.map(([label, href]) => <Link data-href={href} className={activeHref === href ? "active" : ""} href={href} key={href} onPointerEnter={(event: PointerEvent<HTMLAnchorElement>) => movePill(event.currentTarget)} onFocus={(event) => movePill(event.currentTarget)} onClick={() => setOpen(false)}>{label}</Link>)}
         <Link className="languageSwitch" href={languageHref} hrefLang={isArabic ? "en" : "ar"} onClick={() => setOpen(false)}>{isArabic ? "EN" : "العربية"}</Link>
         <Link className="headerCta" href={`${prefix}/design-your-journey`} onClick={() => setOpen(false)}>{isArabic ? "تواصل معنا" : "Get in touch"}</Link>
