@@ -75,6 +75,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [planIncludes, setPlanIncludes] = useState<string[]>(["attractions", "restaurants"]);
   const [delivery, setDelivery] = useState<string[]>(["email"]);
   const [currency, setCurrency] = useState("SAR");
+  const [budget, setBudget] = useState("");
   const [phoneCode, setPhoneCode] = useState("+966");
   const [formError, setFormError] = useState("");
   const [missingSections, setMissingSections] = useState<number[]>([]);
@@ -159,7 +160,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
     <section className={sectionClass(4)} data-step="4"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small>{requiredWarning(4)}</div></div><div className="budgetComposer">
       <ElasticSelect label={text(ar, "Currency", "العملة")} name="currency" options={["SAR","USD","EUR","GBP","AED","KWD","QAR","BHD"].map((item)=>({value:item,label:item}))} value={currency} onChange={setCurrency} placeholder="SAR" />
-      <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input name="budget" type="number" inputMode="numeric" min="0" step="500" required placeholder={text(ar, "Enter your full journey budget", "أدخل ميزانية الرحلة الكاملة")} /></label>
+      <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input type="hidden" name="budget" value={budget} /><input type="text" inputMode="numeric" aria-required="true" value={budget.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChange={(event) => setBudget(event.target.value.replace(/\D/g, ""))} placeholder={text(ar, "Enter your full journey budget", "أدخل ميزانية الرحلة الكاملة")} /></label>
     </div></section>
 
     <section className={sectionClass(5)} data-step="5"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose email, WhatsApp, or both.", "اختر البريد الإلكتروني أو واتساب أو كليهما.")}</small>{requiredWarning(5)}</div></div>
