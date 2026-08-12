@@ -85,3 +85,48 @@ html[dir="rtl"] input[type="email"],html[dir="rtl"] input[type="tel"]{direction:
   .hero{min-height:760px;height:auto;padding-top:120px}.hero h1{font-size:clamp(3rem,13vw,4.4rem)}
 }
 @media(prefers-reduced-motion:reduce){.nav,.menuBackdrop,.nav>a:not(.headerCta),.carouselProgress span{transition:none!important}}
+
+/* Editorial hero and the three-path smart journey planner. */
+.hero .editorialHeroTitle{max-width:610px;font-size:clamp(3.25rem,5.65vw,5.65rem);font-weight:500;line-height:.91;letter-spacing:-.045em}
+.smartPlanner{align-content:start}
+.smartPlanner .full{grid-column:1/-1}
+.plannerIntro h3{margin:0;font-size:1.8rem;line-height:1.08}
+.plannerIntro>p:last-child{margin:8px 0 0;color:var(--muted);font-size:.72rem;line-height:1.55}
+.pathSelector{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.pathOption{display:flex;align-items:flex-start;gap:10px;min-height:92px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);text-align:left;cursor:pointer;transition:transform .32s cubic-bezier(.22,1,.36,1),border-color .25s ease,background .25s ease,box-shadow .3s ease}
+.pathOption:hover{transform:translateY(-3px);border-color:rgba(200,149,63,.55)}
+.pathOption.selected{border-color:var(--gold);background:#fff8eb;box-shadow:0 8px 22px rgba(200,149,63,.13)}
+.pathOption svg{flex:none;width:19px;color:var(--gold)}
+.pathOption strong,.pathOption small{display:block}.pathOption strong{font-size:.72rem;line-height:1.35}.pathOption small{margin-top:5px;color:var(--muted);font-size:.57rem;line-height:1.45}
+.conditionalFields,.contactFields{display:grid;grid-template-columns:1fr 1fr;gap:17px;animation:planner-fields-in .45s cubic-bezier(.22,1,.36,1) both}
+.conditionalFields label,.contactFields label{display:grid;align-content:start;gap:7px}
+.conditionalFields label>span,.contactFields label>span{font-size:.65rem;font-weight:800;letter-spacing:.04em}
+.conditionalFields input,.conditionalFields select,.contactFields input,.contactFields textarea{width:100%;min-width:0;padding:13px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.conditionalFields input,.conditionalFields select{height:47px}
+.conditionalFields select:disabled{cursor:not-allowed;background:#f2efe9;color:#929993}
+.budgetField>div{display:grid;grid-template-columns:86px 1fr}.budgetField>div select{border-radius:6px 0 0 6px;border-right:0}.budgetField>div input{border-radius:0 6px 6px 0}.budgetField small,.formNote{color:var(--muted);font-size:.58rem;line-height:1.5}.formNote{margin:0;text-align:center}
+.quickPlanner.smartPlanner{grid-template-columns:1fr;align-items:stretch;padding:34px}
+.quickPlanner .plannerIntro>p:last-child{color:rgba(255,255,255,.65)}
+.quickPlanner .pathOption{border-color:rgba(255,255,255,.15);background:#173d37;color:#fff}.quickPlanner .pathOption.selected{border-color:var(--gold-light);background:#244d45}.quickPlanner .pathOption small{color:rgba(255,255,255,.58)}
+.quickPlanner .conditionalFields{grid-template-columns:repeat(4,1fr)}
+.quickPlanner .conditionalFields label>span{color:rgba(255,255,255,.8)}
+.quickPlanner .conditionalFields input,.quickPlanner .conditionalFields select{border-color:rgba(255,255,255,.18);background:#24453f;color:#fff;color-scheme:dark}
+.quickPlanner .conditionalFields select:disabled{background:#183631;color:#8ca09b}
+.quickPlanner .budgetField>div{grid-template-columns:78px 1fr}.quickPlanner .budgetField small,.quickPlanner .formNote{color:rgba(255,255,255,.58)}
+.aboutStatement{margin-bottom:100px;padding:70px;border-radius:16px;background:radial-gradient(circle at 80% 20%,#24564d,transparent 35%),var(--ink);color:#fff}
+.aboutStatement h2{max-width:780px;margin:0;font-size:clamp(2.4rem,5vw,4.7rem);line-height:1.02}.aboutStatement>p:not(.kicker){max-width:760px;margin:24px 0;color:rgba(255,255,255,.72);line-height:1.8}
+.saudiPlannerHero{background:radial-gradient(circle at 10% 30%,#4b6c58,transparent 32%),linear-gradient(135deg,#112f2a,#6a4a26)}
+.studyPlannerHero{background:radial-gradient(circle at 85% 15%,#395f70,transparent 32%),linear-gradient(135deg,#0b2c30,#1b3346)}
+.routeStage{animation-duration:.72s}
+@keyframes planner-fields-in{from{opacity:0;transform:translateY(10px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+@media(max-width:1000px){.quickPlanner .conditionalFields{grid-template-columns:1fr 1fr}.nav{gap:9px}.nav>a:not(.headerCta){padding-inline:8px}}
+@media(max-width:780px){
+  .hero .editorialHeroTitle{font-size:clamp(3rem,12.5vw,4.55rem);line-height:.96}
+  .pathSelector{grid-template-columns:1fr}.pathOption{min-height:0}.pathOption small{font-size:.62rem}
+  .conditionalFields,.contactFields,.quickPlanner .conditionalFields{grid-template-columns:1fr}
+  .quickPlanner.smartPlanner{padding:24px 18px;border-radius:12px}
+  .plannerIntro h3{font-size:1.55rem}
+  .aboutStatement{padding:45px 25px}
+}
+@media(max-width:500px){.journeyForm.smartPlanner{margin-inline:-8px;padding:20px 16px}.hero .editorialHeroTitle{font-size:clamp(2.9rem,12vw,4rem)}}
+html[dir="rtl"] .pathOption{text-align:right}html[dir="rtl"] .budgetField>div select{border-right:1px solid var(--line);border-left:0;border-radius:0 6px 6px 0}html[dir="rtl"] .budgetField>div input{border-radius:6px 0 0 6px}

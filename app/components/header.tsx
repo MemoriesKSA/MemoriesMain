@@ -7,8 +7,8 @@ import { Menu, X } from "lucide-react";
 import { CSSProperties, FocusEvent, PointerEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const labels = {
-  en: [["Destinations", "/destinations"], ["Design your journey", "/design-your-journey"], ["Saudi Abroad", "/saudi-abroad"], ["About us", "/about"], ["Corporate", "/corporate"]],
-  ar: [["الوجهات", "/destinations"], ["صمّم رحلتك", "/design-your-journey"], ["سعوديون في الخارج", "/saudi-abroad"], ["من نحن", "/about"], ["الشركات", "/corporate"]],
+  en: [["Design your dream journey", "/design-your-journey"], ["Discover Saudi Arabia", "/discover-saudi-arabia"], ["Study Abroad", "/study-abroad"], ["About us", "/about"], ["Corporate", "/corporate"]],
+  ar: [["صمّم رحلة أحلامك", "/design-your-journey"], ["اكتشف السعودية", "/discover-saudi-arabia"], ["الدراسة في الخارج", "/study-abroad"], ["من نحن", "/about"], ["الشركات", "/corporate"]],
 } as const;
 
 export function Header() {

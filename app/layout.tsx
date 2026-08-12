@@ -12,7 +12,7 @@ const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   metadataBase: new URL("https://memories-main-delta.vercel.app"),
   title: { default: "MEMORIES Travel — Journeys made personal", template: "%s | MEMORIES Travel" },
-  description: "Tailor-made journeys and trusted support for Saudi travellers, at home and around the world.",
+  description: "Dream journeys, Saudi Arabia experiences and study-abroad planning for travellers around the world.",
   alternates: { canonical: "/", languages: { en: "/", ar: "/ar" } },
   openGraph: { title: "MEMORIES Travel", description: "Every journey begins with a dream. We turn it into a memory.", images: ["/images/hero-family.webp"] },
 };

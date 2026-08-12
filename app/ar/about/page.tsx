@@ -2,28 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "من نحن",
-  description: "تعرّف على رؤية ميموريز لرحلات أكثر خصوصية واهتمامًا بالمسافر السعودي.",
-};
+export const metadata: Metadata = { title: "عن ميموريز", description: "ميموريز منصة سفر انطلقت من السعودية لرحلات الأحلام وزيارة المملكة والتخطيط للدراسة في الخارج." };
 
 export default function AboutPage() {
-  return (
-    <main className="innerPage">
-      <section className="pageHero container">
-        <p className="kicker">غايتنا</p>
-        <h1>نؤمن أن السفر<br /><em>يجب أن يكون شخصيًا.</em></h1>
-        <p>وُلدت ميموريز في المملكة العربية السعودية للمسافرين الذين يريدون حرية الاستكشاف دون التخلي عن الألفة والعناية وراحة البال.</p>
-      </section>
-      <section className="container storyGrid">
-        <article><span>٠١</span><h2>نستمع أولًا</h2><p>إيقاعك وأولوياتك ومن يسافر معك أهم لدينا من أي باقة جاهزة.</p></article>
-        <article><span>٠٢</span><h2>نختار بعناية</h2><p>نختار كل شريك وإقامة وتجربة على أساس الجودة والثقة والقيمة الحقيقية.</p></article>
-        <article><span>٠٣</span><h2>نبقى قريبين</h2><p>تستمر عنايتنا بعد المغادرة، مع استجابة بشرية كلما احتاجتنا رحلتك.</p></article>
-      </section>
-      <section className="container manifesto">
-        <p>«لا نبيع رحلات؛ بل نصنع المساحة التي تتيح للعائلات والأصدقاء والمسافرين أن يصنعوا ذكريات تبقى.»</p>
-        <Link className="button gold" href="/ar/design-your-journey">ابدأ رحلتك <ArrowRight className="directionArrow" size={16} /></Link>
-      </section>
-    </main>
-  );
+  return <main className="innerPage"><section className="pageHero container"><p className="kicker">ما هي ميموريز؟</p><h1>حلم واحد.<br /><em>ورحلة متكاملة.</em></h1><p>ميموريز منصة سفر انطلقت من السعودية لتحول الفكرة إلى رحلة منسقة. نجمع الوجهات والتواريخ والطيران والإقامة والسائقين الخاصين والتجارب والمساعدة العملية في خطة واحدة مدروسة.</p></section><section className="container storyGrid"><article><span>٠١</span><h2>رحلات الأحلام</h2><p>إجازات شخصية للعائلات والأزواج والأصدقاء والمستكشفين، نبنيها حول الدولة والمدن والتواريخ والوتيرة والميزانية الكاملة المناسبة لهم.</p></article><article><span>٠٢</span><h2>اكتشف السعودية</h2><p>رحلات ترحب بزوار المملكة لاكتشاف مدنها وتراثها وطبيعتها وثقافتها ووجهاتها المقدسة.</p></article><article><span>٠٣</span><h2>الدراسة في الخارج</h2><p>مسار أوضح للدارسين، يشمل إرشاد الوجهة والمساعدة في السفر والسكن وطلبات التأشيرة الدراسية.</p></article></section><section className="container aboutStatement"><p className="kicker light">جذور سعودية. ونظرة عالمية.</p><h2>نبدأ بفهم الإنسان، لا ببيع باقة جاهزة.</h2><p>يمنحنا كل طلب التفاصيل اللازمة لتصميم الخطوة التالية: إلى أين تريد السفر، ولماذا، ومن سيرافقك، ومتى ستسافر، وما الميزانية الكاملة للرحلة. بعدها تعد ميموريز خطة شخصية وعملية وقابلة للتنفيذ.</p><Link className="button gold" href="/ar/design-your-journey">صمّم رحلة أحلامك <ArrowRight className="directionArrow" size={16} /></Link></section></main>;
 }

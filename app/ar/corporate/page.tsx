@@ -22,7 +22,7 @@ export default function CorporatePage() {
           <p className="kicker light">ميموريز للأعمال</p>
           <h1>سفر الأعمال،<br /><em>بعناية استثنائية.</em></h1>
           <p>خدمة بشرية وتنسيق واضح وتفاصيل مدروسة للشركات التي تقدر موظفيها وضيوفها.</p>
-          <a className="button gold" href="mailto:corporate@memories.travel">ابدأ المحادثة <ArrowRight className="directionArrow" size={16} /></a>
+          <a className="button gold" href="mailto:memoriesksasupport@gmail.com">ابدأ المحادثة <ArrowRight className="directionArrow" size={16} /></a>
         </div>
       </section>
       <section className="section container">
