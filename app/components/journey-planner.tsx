@@ -44,8 +44,8 @@ const planChoices: LocalChoice[] = [
   { value: "free-time", en: "Planned free time", ar: "وقت حر منظم" },
 ];
 const deliveryChoices: LocalChoice[] = [
-  { value: "screen", en: "On-screen plan", ar: "عرض الخطة على الشاشة" }, { value: "email", en: "Email", ar: "البريد الإلكتروني" },
-  { value: "whatsapp", en: "WhatsApp", ar: "واتساب" }, { value: "call", en: "Phone call", ar: "مكالمة هاتفية" },
+  { value: "email", en: "Email", ar: "البريد الإلكتروني", detailEn: "Receive the complete journey brief in your inbox", detailAr: "استلم تصور الرحلة الكامل في بريدك" },
+  { value: "whatsapp", en: "WhatsApp", ar: "واتساب", detailEn: "Receive the plan and continue the conversation", detailAr: "استلم الخطة وتابع المحادثة معنا" },
 ];
 const phoneCodes: SelectChoice[] = [
   { value: "+966", label: "🇸🇦  +966", detail: "Saudi Arabia" }, { value: "+971", label: "🇦🇪  +971", detail: "UAE" },
@@ -73,10 +73,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [transport, setTransport] = useState<string[]>([]);
   const [stays, setStays] = useState<string[]>([]);
   const [planIncludes, setPlanIncludes] = useState<string[]>(["attractions", "restaurants"]);
-  const [delivery, setDelivery] = useState<string[]>(["screen"]);
+  const [delivery, setDelivery] = useState<string[]>(["email"]);
   const [currency, setCurrency] = useState("SAR");
   const [phoneCode, setPhoneCode] = useState("+966");
   const [formError, setFormError] = useState("");
+  const [missingSections, setMissingSections] = useState<number[]>([]);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : travelCountries;
@@ -90,11 +91,24 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!country || !city || !purpose || !travellers || !travellerCount || !transport.length || !stays.length || !delivery.length) {
-      setFormError(text(ar, "Please complete each numbered section before sending your journey.", "يرجى إكمال كل قسم مرقّم قبل إرسال رحلتك."));
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const value = (name: string) => String(formData.get(name) ?? "").trim();
+    const emailField = form.elements.namedItem("email") as HTMLInputElement | null;
+    const missing = [
+      !country || !city || !purpose ? 1 : 0,
+      !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
+      !transport.length || !stays.length ? 3 : 0,
+      !value("budget") ? 4 : 0,
+      !delivery.length || !value("name") || (delivery.includes("email") && (!value("email") || !emailField?.validity.valid)) || (delivery.includes("whatsapp") && !value("phone")) ? 5 : 0,
+    ].filter(Boolean) as number[];
+    if (missing.length) {
+      setMissingSections(missing);
+      setFormError(text(ar, "A few details still need your attention. We highlighted each incomplete step below.", "بقيت بعض التفاصيل. أبرزنا لك كل خطوة تحتاج إلى إكمال."));
+      requestAnimationFrame(() => form.querySelector<HTMLElement>(`[data-step="${missing[0]}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
-    setFormError(""); setStatus("reviewing");
+    setMissingSections([]); setFormError(""); setStatus("reviewing");
   }
 
   useEffect(() => {
@@ -113,10 +127,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
   if (status === "sent") return <div ref={resultRef} className={`plannerSuccess plannerCelebration ${compact ? "compactSuccess" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Journey brief ready", "تصور الرحلة جاهز")}</span><strong>{text(ar, "Your dream journey is ready for review.", "رحلة أحلامك جاهزة للمراجعة.")}</strong><p>{text(ar, `We’ll shape ${selectedCity?.en ?? "your destination"} around your transport, stay, budget and experience preferences. Your plan can include the best places, restaurants, local experiences and practical booking notes.`, `سنصمم رحلة ${selectedCity?.ar ?? "وجهتك"} وفق تفضيلات النقل والإقامة والميزانية والتجارب، ويمكن أن تشمل أفضل الأماكن والمطاعم والتجارب المحلية وملاحظات الحجز.`)}</p><button className="successReset" type="button" onClick={() => setStatus("idle")}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
 
-  return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit}>
+  const sectionClass = (step: number) => `plannerSection full${missingSections.includes(step) ? " hasError" : ""}`;
+  const requiredWarning = (step: number) => missingSections.includes(step) ? <span className="requiredWarning" role="status">* {text(ar, "Complete this step", "أكمل هذه الخطوة")}</span> : null;
+
+  return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} noValidate>
     <div className="plannerIntro full"><p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Your journey, step by step", "رحلتك، خطوة بخطوة")}</p><h3>{text(ar, "Tell us what your dream looks like.", "شاركنا شكل رحلة أحلامك.")}</h3><p>{text(ar, "Start with the place. We’ll guide you through the people, dates, complete package and how you want to receive it.", "ابدأ بالوجهة، وسنرشدك خلال المسافرين والتواريخ والباقة الكاملة وطريقة استلامها.")}</p></div>
 
-    <section className="plannerSection full"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small></div></div>
+    <section className={sectionClass(1)} data-step="1"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small>{requiredWarning(1)}</div></div>
       <div className="pathSelector" role="radiogroup" aria-label={text(ar, "Journey type", "نوع الرحلة")}>{pathOptions.map((option) => { const Icon = pathIcons[option.path]; return <button className={path === option.path ? "pathOption selected" : "pathOption"} type="button" role="radio" aria-checked={path === option.path} onClick={() => choosePath(option.path)} key={option.path}><Icon aria-hidden="true" /><span><strong>{ar ? option.ar : option.en}</strong><small>{ar ? option.descriptionAr : option.descriptionEn}</small></span></button>; })}<input type="hidden" name="journeyType" value={path} /></div>
       <div className="plannerFieldGrid destinationFields" key={path}>
         <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); }} />
@@ -126,28 +143,28 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       </div>
     </section>
 
-    <section className="plannerSection full"><div className="plannerStep"><span>02</span><div><strong>{text(ar, "Who and when", "من ومتى")}</strong><small>{text(ar, "The people and dates shape every recommendation.", "المسافرون والتواريخ يصنعون فرقًا في كل توصية.")}</small></div></div><div className="plannerFieldGrid">
+    <section className={sectionClass(2)} data-step="2"><div className="plannerStep"><span>02</span><div><strong>{text(ar, "Who and when", "من ومتى")}</strong><small>{text(ar, "The people and dates shape every recommendation.", "المسافرون والتواريخ يصنعون فرقًا في كل توصية.")}</small>{requiredWarning(2)}</div></div><div className="plannerFieldGrid">
       <ElasticSelect label={text(ar, "Travellers", "المسافرون")} name="travellers" required placeholder={text(ar, "Who is travelling?", "من سيسافر؟")} options={localize(ar, travellerTypes)} value={travellers} onChange={setTravellers} />
       <ElasticSelect label={text(ar, "Number of travellers", "عدد المسافرين")} name="travellerCount" required placeholder={text(ar, "Choose a number", "اختر العدد")} options={Array.from({length:12},(_,index)=>({value:String(index+1),label:ar?`${index+1} مسافر`:`${index+1} traveller${index ? "s" : ""}`})).concat([{value:"13+",label:ar?"١٣ مسافرًا أو أكثر":"13+ travellers"}])} value={travellerCount} onChange={setTravellerCount} />
       <label><span>{text(ar, "From", "من تاريخ")} *</span><input name="fromDate" type="date" required value={fromDate} onInput={(event) => setFromDate(event.currentTarget.value)} onChange={(event) => setFromDate(event.target.value)} /></label>
       <label><span>{text(ar, "To", "إلى تاريخ")} *</span><input name="toDate" type="date" required min={fromDate || undefined} /></label>
     </div></section>
 
-    <section className="plannerSection full"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small></div></div>
+    <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
       <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
       <MultiChoice legend={text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
       <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
     </section>
 
-    <section className="plannerSection full"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small></div></div><div className="budgetComposer">
+    <section className={sectionClass(4)} data-step="4"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small>{requiredWarning(4)}</div></div><div className="budgetComposer">
       <ElasticSelect label={text(ar, "Currency", "العملة")} name="currency" options={["SAR","USD","EUR","GBP","AED","KWD","QAR","BHD"].map((item)=>({value:item,label:item}))} value={currency} onChange={setCurrency} placeholder="SAR" />
       <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input name="budget" type="number" inputMode="numeric" min="0" step="500" required placeholder={text(ar, "Enter your full journey budget", "أدخل ميزانية الرحلة الكاملة")} /></label>
     </div></section>
 
-    <section className="plannerSection full"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose one or more ways to receive your organized journey.", "اختر طريقة أو أكثر لاستلام رحلتك المنظمة.")}</small></div></div>
+    <section className={sectionClass(5)} data-step="5"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose email, WhatsApp, or both.", "اختر البريد الإلكتروني أو واتساب أو كليهما.")}</small>{requiredWarning(5)}</div></div>
       <MultiChoice legend={text(ar, "Delivery preferences", "طرق الاستلام المفضلة")} name="delivery" options={localize(ar, deliveryChoices)} selected={delivery} onChange={setDelivery} />
-      <div className="contactFields"><label><span>{text(ar, "Full name", "الاسم الكامل")} *</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")} *</span><input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label><div className="phoneField"><ElasticSelect label={text(ar, "Country code", "رمز الدولة")} name="phoneCode" searchable options={phoneCodes} value={phoneCode} onChange={setPhoneCode} placeholder="🇸🇦 +966" searchPlaceholder={text(ar, "Search code…", "ابحث عن الرمز…")} /><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")} *</span><input name="phone" type="tel" autoComplete="tel-national" inputMode="tel" required placeholder={text(ar, "5X XXX XXXX", "5X XXX XXXX")} /></label></div><label className="full"><span>{text(ar, "Anything else that will make this journey yours?", "ما الذي سيجعل هذه الرحلة خاصة بك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your interests, preferred rhythm, repeated activities, accessibility needs or any final details…", "شاركنا اهتماماتك والتكرار المفضل للأنشطة واحتياجات سهولة الوصول أو أي تفاصيل أخيرة…")} /></label></div>
+      <div className="contactFields"><label><span>{text(ar, "Full name", "الاسم الكامل")} *</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")}{delivery.includes("email") ? " *" : ""}</span><input name="email" type="email" autoComplete="email" required={delivery.includes("email")} placeholder="you@example.com" /></label><div className="phoneField"><ElasticSelect label={text(ar, "Country code", "رمز الدولة")} name="phoneCode" searchable options={phoneCodes} value={phoneCode} onChange={setPhoneCode} placeholder="🇸🇦 +966" searchPlaceholder={text(ar, "Search code…", "ابحث عن الرمز…")} /><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")}{delivery.includes("whatsapp") ? " *" : ""}</span><input name="phone" type="tel" autoComplete="tel-national" inputMode="tel" required={delivery.includes("whatsapp")} placeholder={text(ar, "5X XXX XXXX", "5X XXX XXXX")} /></label></div><label className="full"><span>{text(ar, "Anything else that will make this journey yours?", "ما الذي سيجعل هذه الرحلة خاصة بك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your interests, preferred rhythm, repeated activities, accessibility needs or any final details…", "شاركنا اهتماماتك والتكرار المفضل للأنشطة واحتياجات سهولة الوصول أو أي تفاصيل أخيرة…")} /></label></div>
     </section>
 
     {formError ? <p className="plannerError full" role="alert">{formError}</p> : null}
