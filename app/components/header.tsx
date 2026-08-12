@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { CSSProperties, FocusEvent, PointerEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ThemeToggle } from "./theme-toggle";
 
 const labels = {
   en: [["Design your dream journey", "/design-your-journey"], ["Discover Saudi Arabia", "/discover-saudi-arabia"], ["Study Abroad", "/study-abroad"], ["About us", "/about"], ["Corporate", "/corporate"]],
@@ -70,6 +71,7 @@ export function Header() {
         <span className="mobileNavTitle">{isArabic ? "القائمة" : "Menu"}</span>
         {links.map(([label, href]) => <Link data-href={href} className={activeHref === href ? "active" : ""} href={href} key={href} onPointerEnter={(event: PointerEvent<HTMLAnchorElement>) => movePill(event.currentTarget)} onFocus={(event) => movePill(event.currentTarget)} onClick={() => setOpen(false)}>{label}</Link>)}
         <Link className="languageSwitch" href={languageHref} hrefLang={isArabic ? "en" : "ar"} onClick={() => setOpen(false)}>{isArabic ? "EN" : "العربية"}</Link>
+        <ThemeToggle ar={isArabic} />
         <Link className="headerCta" href={`${prefix}/design-your-journey`} onClick={() => setOpen(false)}>{isArabic ? "تواصل معنا" : "Get in touch"}</Link>
       </nav>
     </div>

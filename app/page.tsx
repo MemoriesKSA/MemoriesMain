@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, Globe2, Handshake, Medal } from "lucide-react";
-import { DestinationGrid } from "./components/destination-grid";
+import { FeaturedJourneys } from "./components/featured-journeys";
 import { JourneyPlanner } from "./components/journey-planner";
 import { NewsletterForm } from "./components/newsletter-form";
-import { featuredDestinations } from "./data";
 
 const promises = [
   { icon: Medal, title: "Tailor-made journeys", text: "Built around your dream" },
@@ -38,13 +37,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section container" id="destinations">
-        <div className="sectionHeading">
-          <div><p className="kicker">Explore</p><h2>Popular destinations</h2></div>
-          <Link className="textLink" href="/destinations">View all destinations <ArrowRight size={15} /></Link>
-        </div>
-        <DestinationGrid destinations={featuredDestinations} />
-      </section>
+      <FeaturedJourneys />
 
       <section className="section container splitFeature">
         <article className="plannerTeaser">
@@ -63,10 +56,10 @@ export default function Home() {
 
       <section className="statsBand">
         <div className="container stats">
-          <div><strong>01</strong><span>dream journeys worldwide</span></div>
-          <div><strong>02</strong><span>discover Saudi Arabia</span></div>
-          <div><strong>03</strong><span>study abroad guidance</span></div>
-          <div><strong>04</strong><span>visa-application assistance</span></div>
+          <div><strong>01</strong><span>Dream Journeys Worldwide</span></div>
+          <div><strong>02</strong><span>Discover Saudi Arabia</span></div>
+          <div><strong>03</strong><span>Study Abroad Guidance</span></div>
+          <div><strong>04</strong><span>Visa-Application Assistance</span></div>
         </div>
       </section>
     </main>

@@ -1,78 +1,157 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowRight, CheckCircle2, GraduationCap, Map, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, GraduationCap, Luggage, Map, MapPin, Plane, Sparkles } from "lucide-react";
+import { ElasticSelect, MultiChoice } from "./form-controls";
+import type { SelectChoice } from "./form-controls";
 import { pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
-import type { CountryOption, PlannerPath } from "./planner-data";
+import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
 
 const pathIcons = { journey: Sparkles, saudi: Map, study: GraduationCap } as const;
+type LocalChoice = { value: string; en: string; ar: string; detailEn?: string; detailAr?: string };
 
-function text(ar: boolean, en: string, arabic: string) {
-  return ar ? arabic : en;
-}
+const journeyStyles: LocalChoice[] = [
+  { value: "leisure", en: "Leisure escape", ar: "إجازة سياحية" }, { value: "family", en: "Family holiday", ar: "إجازة عائلية" },
+  { value: "honeymoon", en: "Honeymoon", ar: "شهر عسل" }, { value: "adventure", en: "Adventure", ar: "مغامرة" },
+  { value: "wellness", en: "Wellness", ar: "استجمام وعافية" }, { value: "celebration", en: "Celebration", ar: "مناسبة خاصة" },
+  { value: "business-leisure", en: "Business & leisure", ar: "أعمال وسياحة" }, { value: "other-style", en: "Something else", ar: "شيء آخر" },
+];
+const saudiPurposes: LocalChoice[] = [
+  { value: "leisure", en: "Leisure & culture", ar: "السياحة والثقافة" }, { value: "umrah", en: "Umrah", ar: "العمرة" },
+  { value: "hajj", en: "Hajj", ar: "الحج" }, { value: "family", en: "Visiting family or friends", ar: "زيارة العائلة أو الأصدقاء" },
+  { value: "business", en: "Business", ar: "الأعمال" }, { value: "events", en: "Events & entertainment", ar: "الفعاليات والترفيه" },
+];
+const travellerTypes: LocalChoice[] = [
+  { value: "solo", en: "Solo traveller", ar: "فرد" }, { value: "couple", en: "Couple", ar: "زوجان" }, { value: "family", en: "Family", ar: "عائلة" },
+  { value: "friends", en: "Friends", ar: "أصدقاء" }, { value: "group", en: "Group", ar: "مجموعة" }, { value: "students", en: "Students", ar: "طلاب" },
+];
+const transportChoices: LocalChoice[] = [
+  { value: "flights", en: "Plane tickets", ar: "تذاكر الطيران", detailEn: "Compare suitable routes and fares", detailAr: "مقارنة المسارات والأسعار المناسبة" },
+  { value: "airport", en: "Airport transfers", ar: "توصيل المطار", detailEn: "A smooth welcome and departure", detailAr: "استقبال ومغادرة مريحة" },
+  { value: "driver", en: "Private driver", ar: "سائق خاص", detailEn: "Flexible door-to-door travel", detailAr: "تنقل مرن من الباب إلى الباب" },
+  { value: "public", en: "Public transport plan", ar: "خطة النقل العام", detailEn: "Routes, passes and practical guidance", detailAr: "المسارات والتذاكر والإرشادات" },
+  { value: "rental", en: "Rental car", ar: "سيارة مستأجرة", detailEn: "Vehicle and pickup planning", detailAr: "اختيار السيارة وترتيب الاستلام" },
+  { value: "none-transport", en: "No transport needed", ar: "لا أحتاج خدمات نقل" },
+];
+const stayChoices: LocalChoice[] = [
+  { value: "hotel", en: "Hotel", ar: "فندق" }, { value: "resort", en: "Resort", ar: "منتجع" }, { value: "apartment", en: "Serviced apartment", ar: "شقة فندقية" },
+  { value: "villa", en: "Private villa", ar: "فيلا خاصة" }, { value: "student-stay", en: "Student accommodation", ar: "سكن طلابي" }, { value: "none-stay", en: "No stay needed", ar: "لا أحتاج إقامة" },
+];
+const planChoices: LocalChoice[] = [
+  { value: "attractions", en: "Must-see places", ar: "أهم الأماكن السياحية" }, { value: "restaurants", en: "Restaurants & cafés", ar: "المطاعم والمقاهي" },
+  { value: "experiences", en: "Local experiences", ar: "التجارب المحلية" }, { value: "family", en: "Family activities", ar: "أنشطة عائلية" },
+  { value: "tickets", en: "Tickets & reservations", ar: "التذاكر والحجوزات" }, { value: "hidden-gems", en: "Hidden gems", ar: "أماكن مميزة غير معروفة" },
+  { value: "free-time", en: "Planned free time", ar: "وقت حر منظم" },
+];
+const deliveryChoices: LocalChoice[] = [
+  { value: "screen", en: "On-screen plan", ar: "عرض الخطة على الشاشة" }, { value: "email", en: "Email", ar: "البريد الإلكتروني" },
+  { value: "whatsapp", en: "WhatsApp", ar: "واتساب" }, { value: "call", en: "Phone call", ar: "مكالمة هاتفية" },
+];
+const phoneCodes: SelectChoice[] = [
+  { value: "+966", label: "🇸🇦  +966", detail: "Saudi Arabia" }, { value: "+971", label: "🇦🇪  +971", detail: "UAE" },
+  { value: "+973", label: "🇧🇭  +973", detail: "Bahrain" }, { value: "+965", label: "🇰🇼  +965", detail: "Kuwait" },
+  { value: "+974", label: "🇶🇦  +974", detail: "Qatar" }, { value: "+968", label: "🇴🇲  +968", detail: "Oman" },
+  { value: "+44", label: "🇬🇧  +44", detail: "United Kingdom" }, { value: "+1", label: "🇺🇸  +1", detail: "United States / Canada" },
+  { value: "+61", label: "🇦🇺  +61", detail: "Australia" }, { value: "+33", label: "🇫🇷  +33", detail: "France" },
+];
+
+function text(ar: boolean, en: string, arabic: string) { return ar ? arabic : en; }
+function localize(ar: boolean, options: LocalChoice[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en, detail: ar ? option.detailAr : option.detailEn })); }
+function localizedOptions(ar: boolean, options: LocalizedOption[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en })); }
 
 export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey" }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath }) {
   const ar = locale === "ar";
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "reviewing" | "sent">("idle");
   const [path, setPath] = useState<PlannerPath>(initialPath);
   const [country, setCountry] = useState(initialPath === "saudi" ? saudiArabia.value : "");
   const [city, setCity] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [studySupport, setStudySupport] = useState("");
+  const [travellers, setTravellers] = useState("");
+  const [travellerCount, setTravellerCount] = useState("");
   const [fromDate, setFromDate] = useState("");
-  const successRef = useRef<HTMLDivElement>(null);
+  const [transport, setTransport] = useState<string[]>([]);
+  const [stays, setStays] = useState<string[]>([]);
+  const [planIncludes, setPlanIncludes] = useState<string[]>(["attractions", "restaurants"]);
+  const [delivery, setDelivery] = useState<string[]>(["screen"]);
+  const [currency, setCurrency] = useState("SAR");
+  const [phoneCode, setPhoneCode] = useState("+966");
+  const [formError, setFormError] = useState("");
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : travelCountries;
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
+  const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
+  const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
 
   function choosePath(next: PlannerPath) {
-    setPath(next);
-    setCountry(next === "saudi" ? saudiArabia.value : "");
-    setCity("");
+    setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSent(true);
+    if (!country || !city || !purpose || !travellers || !travellerCount || !transport.length || !stays.length || !delivery.length) {
+      setFormError(text(ar, "Please complete each numbered section before sending your journey.", "يرجى إكمال كل قسم مرقّم قبل إرسال رحلتك."));
+      return;
+    }
+    setFormError(""); setStatus("reviewing");
   }
 
   useEffect(() => {
-    if (!sent) return;
-    const frame = requestAnimationFrame(() => successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
-    return () => cancelAnimationFrame(frame);
-  }, [sent]);
+    if (status === "idle") return;
+    const frame = requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    if (status !== "reviewing") return () => cancelAnimationFrame(frame);
+    const timer = window.setTimeout(() => setStatus("sent"), 2700);
+    return () => { cancelAnimationFrame(frame); window.clearTimeout(timer); };
+  }, [status]);
 
-  if (sent) return <div ref={successRef} className={`plannerSuccess ${compact ? "plannerCelebration" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Request received", "تم استلام طلبك")}</span><strong>{text(ar, "Your dream journey has begun.", "بدأت رحلة أحلامك.")}</strong><p>{text(ar, "Thank you. A MEMORIES travel designer will contact you within one business day.", "شكرًا لك. سيتواصل معك أحد مصممي الرحلات في ميموريز خلال يوم عمل واحد.")}</p><button className="successReset" type="button" onClick={() => setSent(false)}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
+  if (status === "reviewing") return <div ref={resultRef} className="journeyReviewAnimation" role="status" aria-live="polite">
+    <div className="reviewRoute" aria-hidden="true"><span><Luggage /></span><i /><span><Plane /></span><i /><span><MapPin /></span></div>
+    <p className="kicker">{text(ar, "Preparing your request", "نجهّز طلبك")}</p><strong>{text(ar, "Turning your ideas into a clear journey brief…", "نحوّل أفكارك إلى تصور واضح لرحلة أحلامك…")}</strong>
+    <div className="reviewSteps"><span>{text(ar, "Understanding you", "نفهم أفكارك")}</span><span>{text(ar, "Organizing the details", "ننظم التفاصيل")}</span><span>{text(ar, "Ready for review", "جاهزة للمراجعة")}</span></div>
+  </div>;
 
-  return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner`} onSubmit={submit}>
-    <div className="plannerIntro full">
-      <p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Choose your path", "اختر مسارك")}</p>
-      <h3>{text(ar, "Where will your next dream take shape?", "أين سيبدأ حلمك القادم؟")}</h3>
-      <p>{text(ar, "Pick a starting point and we’ll show only the details that matter.", "اختر نقطة البداية وسنعرض لك التفاصيل المناسبة فقط.")}</p>
-    </div>
+  if (status === "sent") return <div ref={resultRef} className={`plannerSuccess plannerCelebration ${compact ? "compactSuccess" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Journey brief ready", "تصور الرحلة جاهز")}</span><strong>{text(ar, "Your dream journey is ready for review.", "رحلة أحلامك جاهزة للمراجعة.")}</strong><p>{text(ar, `We’ll shape ${selectedCity?.en ?? "your destination"} around your transport, stay, budget and experience preferences. Your plan can include the best places, restaurants, local experiences and practical booking notes.`, `سنصمم رحلة ${selectedCity?.ar ?? "وجهتك"} وفق تفضيلات النقل والإقامة والميزانية والتجارب، ويمكن أن تشمل أفضل الأماكن والمطاعم والتجارب المحلية وملاحظات الحجز.`)}</p><button className="successReset" type="button" onClick={() => setStatus("idle")}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
 
-    <div className="pathSelector full" role="radiogroup" aria-label={text(ar, "Journey type", "نوع الرحلة")}>
-      {pathOptions.map((option) => {
-        const Icon = pathIcons[option.path];
-        return <button className={path === option.path ? "pathOption selected" : "pathOption"} type="button" role="radio" aria-checked={path === option.path} onClick={() => choosePath(option.path)} key={option.path}><Icon aria-hidden="true" /><span><strong>{ar ? option.ar : option.en}</strong>{!compact ? <small>{ar ? option.descriptionAr : option.descriptionEn}</small> : null}</span></button>;
-      })}
-      <input type="hidden" name="journeyType" value={path} />
-    </div>
+  return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit}>
+    <div className="plannerIntro full"><p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Your journey, step by step", "رحلتك، خطوة بخطوة")}</p><h3>{text(ar, "Tell us what your dream looks like.", "شاركنا شكل رحلة أحلامك.")}</h3><p>{text(ar, "Start with the place. We’ll guide you through the people, dates, complete package and how you want to receive it.", "ابدأ بالوجهة، وسنرشدك خلال المسافرين والتواريخ والباقة الكاملة وطريقة استلامها.")}</p></div>
 
-    <div className="conditionalFields full" key={path}>
-      <label><span>{text(ar, "Country", "الدولة")}</span><select name="country" required value={country} onChange={(event) => { setCountry(event.target.value); setCity(""); }}><option value="" disabled>{text(ar, path === "study" ? "Where would you like to study?" : "Choose a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر الدولة")}</option>{countries.map((item) => <option value={item.value} key={item.value}>{ar ? item.ar : item.en}</option>)}</select></label>
-      <label><span>{text(ar, path === "study" ? "Study city" : "City or destination", path === "study" ? "مدينة الدراسة" : "المدينة أو الوجهة")}</span><select name="city" required value={city} disabled={!selectedCountry} onChange={(event) => setCity(event.target.value)}><option value="" disabled>{text(ar, selectedCountry ? "Choose a city" : "Choose a country first", selectedCountry ? "اختر المدينة" : "اختر الدولة أولًا")}</option>{selectedCountry?.cities.map((item) => <option value={item.value} key={item.value}>{ar ? item.ar : item.en}</option>)}</select></label>
+    <section className="plannerSection full"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small></div></div>
+      <div className="pathSelector" role="radiogroup" aria-label={text(ar, "Journey type", "نوع الرحلة")}>{pathOptions.map((option) => { const Icon = pathIcons[option.path]; return <button className={path === option.path ? "pathOption selected" : "pathOption"} type="button" role="radio" aria-checked={path === option.path} onClick={() => choosePath(option.path)} key={option.path}><Icon aria-hidden="true" /><span><strong>{ar ? option.ar : option.en}</strong><small>{ar ? option.descriptionAr : option.descriptionEn}</small></span></button>; })}<input type="hidden" name="journeyType" value={path} /></div>
+      <div className="plannerFieldGrid destinationFields" key={path}>
+        <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); }} />
+        <ElasticSelect label={text(ar, path === "study" ? "Study city" : "City or destination", path === "study" ? "مدينة الدراسة" : "المدينة أو الوجهة")} name="city" required searchable disabled={!selectedCountry} searchPlaceholder={text(ar, "Search cities…", "ابحث عن مدينة…")} emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")} placeholder={text(ar, selectedCountry ? "Choose or search a city" : "Choose a country first", selectedCountry ? "اختر أو ابحث عن مدينة" : "اختر الدولة أولًا")} options={localizedOptions(ar, selectedCountry?.cities ?? [])} value={city} onChange={setCity} />
+        <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
+        {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
+      </div>
+    </section>
 
-      {path === "journey" ? <label><span>{text(ar, "Journey style", "طابع الرحلة")}</span><select name="purpose" required defaultValue=""><option value="" disabled>{text(ar, "What are you imagining?", "ما نوع الرحلة التي تتخيلها؟")}</option><option>{text(ar, "Leisure escape", "إجازة سياحية")}</option><option>{text(ar, "Family holiday", "إجازة عائلية")}</option><option>{text(ar, "Honeymoon", "شهر عسل")}</option><option>{text(ar, "Adventure", "مغامرة")}</option><option>{text(ar, "Wellness", "استجمام وعافية")}</option><option>{text(ar, "Celebration", "مناسبة خاصة")}</option></select></label> : null}
-      {path === "saudi" ? <label><span>{text(ar, "Purpose of visit", "هدف الزيارة")}</span><select name="purpose" required defaultValue=""><option value="" disabled>{text(ar, "What brings you to Saudi Arabia?", "ما هدف زيارتك للسعودية؟")}</option><option>{text(ar, "Leisure & culture", "السياحة والثقافة")}</option><option>{text(ar, "Umrah", "العمرة")}</option><option>{text(ar, "Hajj enquiry", "استفسار عن الحج")}</option><option>{text(ar, "Visiting family or friends", "زيارة العائلة أو الأصدقاء")}</option><option>{text(ar, "Business", "الأعمال")}</option></select></label> : null}
-      {path === "study" ? <><label><span>{text(ar, "Study level", "المرحلة الدراسية")}</span><select name="studyLevel" required defaultValue=""><option value="" disabled>{text(ar, "Choose a study level", "اختر المرحلة الدراسية")}</option><option>{text(ar, "Language programme", "برنامج لغة")}</option><option>{text(ar, "Foundation", "سنة تحضيرية")}</option><option>{text(ar, "Bachelor’s degree", "بكالوريوس")}</option><option>{text(ar, "Master’s degree", "ماجستير")}</option><option>{text(ar, "Doctorate", "دكتوراه")}</option><option>{text(ar, "Short course", "دورة قصيرة")}</option></select></label><label><span>{text(ar, "Support needed", "الخدمة المطلوبة")}</span><select name="studySupport" required defaultValue=""><option value="" disabled>{text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")}</option><option>{text(ar, "Study destination guidance", "اختيار وجهة الدراسة")}</option><option>{text(ar, "Visa-application assistance", "المساعدة في طلب التأشيرة")}</option><option>{text(ar, "Accommodation", "السكن")}</option><option>{text(ar, "Flights & airport arrival", "الطيران والاستقبال")}</option><option>{text(ar, "Complete study-abroad support", "دعم متكامل للدراسة في الخارج")}</option></select></label></> : null}
+    <section className="plannerSection full"><div className="plannerStep"><span>02</span><div><strong>{text(ar, "Who and when", "من ومتى")}</strong><small>{text(ar, "The people and dates shape every recommendation.", "المسافرون والتواريخ يصنعون فرقًا في كل توصية.")}</small></div></div><div className="plannerFieldGrid">
+      <ElasticSelect label={text(ar, "Travellers", "المسافرون")} name="travellers" required placeholder={text(ar, "Who is travelling?", "من سيسافر؟")} options={localize(ar, travellerTypes)} value={travellers} onChange={setTravellers} />
+      <ElasticSelect label={text(ar, "Number of travellers", "عدد المسافرين")} name="travellerCount" required placeholder={text(ar, "Choose a number", "اختر العدد")} options={Array.from({length:12},(_,index)=>({value:String(index+1),label:ar?`${index+1} مسافر`:`${index+1} traveller${index ? "s" : ""}`})).concat([{value:"13+",label:ar?"١٣ مسافرًا أو أكثر":"13+ travellers"}])} value={travellerCount} onChange={setTravellerCount} />
+      <label><span>{text(ar, "From", "من تاريخ")} *</span><input name="fromDate" type="date" required value={fromDate} onInput={(event) => setFromDate(event.currentTarget.value)} onChange={(event) => setFromDate(event.target.value)} /></label>
+      <label><span>{text(ar, "To", "إلى تاريخ")} *</span><input name="toDate" type="date" required min={fromDate || undefined} /></label>
+    </div></section>
 
-      <label><span>{text(ar, "Travellers", "المسافرون")}</span><select name="travellers" required defaultValue=""><option value="" disabled>{text(ar, "Who is travelling?", "من سيسافر؟")}</option><option>{text(ar, "Solo", "فرد")}</option><option>{text(ar, "Couple", "زوجان")}</option><option>{text(ar, "Family", "عائلة")}</option><option>{text(ar, "Friends", "أصدقاء")}</option><option>{text(ar, "Group", "مجموعة")}</option></select></label>
-      <label><span>{text(ar, "From", "من تاريخ")}</span><input name="fromDate" type="date" required value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label>
-      <label><span>{text(ar, "To", "إلى تاريخ")}</span><input name="toDate" type="date" required min={fromDate || undefined} /></label>
-      <label className="budgetField"><span>{text(ar, "Total journey budget", "ميزانية الرحلة الكاملة")}</span><div><select name="currency" aria-label={text(ar, "Currency", "العملة")} defaultValue="SAR"><option>SAR</option><option>USD</option><option>EUR</option><option>GBP</option></select><input name="budget" type="number" inputMode="numeric" min="0" step="500" required placeholder={text(ar, "Enter total amount", "أدخل المبلغ الكامل")} /></div><small>{text(ar, "Include flights, hotels, drivers, transfers and experiences.", "تشمل الطيران والفنادق والسائقين والتنقلات والتجارب.")}</small></label>
-    </div>
+    <section className="plannerSection full"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small></div></div>
+      <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
+      <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
+      <MultiChoice legend={text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
+      <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
+    </section>
 
-    {!compact ? <div className="contactFields full"><label><span>{text(ar, "Full name", "الاسم الكامل")}</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")}</span><input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")}</span><input name="phone" type="tel" autoComplete="tel" required placeholder="+966" /></label><label className="full"><span>{text(ar, "What would make this experience feel perfect?", "ما الذي سيجعل هذه التجربة مثالية لك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your pace, interests, accessibility needs or anything else we should know…", "شاركنا وتيرة الرحلة واهتماماتك واحتياجات سهولة الوصول أو أي تفاصيل أخرى…")} /></label></div> : null}
-    <button className="button gold full" type="submit">{text(ar, compact ? "Start planning your dream" : "Send my dream journey request", compact ? "ابدأ تخطيط حلمك" : "أرسل طلب رحلة أحلامي")} <ArrowRight className="directionArrow" size={16} /></button>
+    <section className="plannerSection full"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small></div></div><div className="budgetComposer">
+      <ElasticSelect label={text(ar, "Currency", "العملة")} name="currency" options={["SAR","USD","EUR","GBP","AED","KWD","QAR","BHD"].map((item)=>({value:item,label:item}))} value={currency} onChange={setCurrency} placeholder="SAR" />
+      <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input name="budget" type="number" inputMode="numeric" min="0" step="500" required placeholder={text(ar, "Enter your full journey budget", "أدخل ميزانية الرحلة الكاملة")} /></label>
+    </div></section>
+
+    <section className="plannerSection full"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose one or more ways to receive your organized journey.", "اختر طريقة أو أكثر لاستلام رحلتك المنظمة.")}</small></div></div>
+      <MultiChoice legend={text(ar, "Delivery preferences", "طرق الاستلام المفضلة")} name="delivery" options={localize(ar, deliveryChoices)} selected={delivery} onChange={setDelivery} />
+      <div className="contactFields"><label><span>{text(ar, "Full name", "الاسم الكامل")} *</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")} *</span><input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></label><div className="phoneField"><ElasticSelect label={text(ar, "Country code", "رمز الدولة")} name="phoneCode" searchable options={phoneCodes} value={phoneCode} onChange={setPhoneCode} placeholder="🇸🇦 +966" searchPlaceholder={text(ar, "Search code…", "ابحث عن الرمز…")} /><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")} *</span><input name="phone" type="tel" autoComplete="tel-national" inputMode="tel" required placeholder={text(ar, "5X XXX XXXX", "5X XXX XXXX")} /></label></div><label className="full"><span>{text(ar, "Anything else that will make this journey yours?", "ما الذي سيجعل هذه الرحلة خاصة بك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your interests, preferred rhythm, repeated activities, accessibility needs or any final details…", "شاركنا اهتماماتك والتكرار المفضل للأنشطة واحتياجات سهولة الوصول أو أي تفاصيل أخيرة…")} /></label></div>
+    </section>
+
+    {formError ? <p className="plannerError full" role="alert">{formError}</p> : null}
+    <button className="button gold full plannerSubmit" type="submit">{text(ar, "Send my journey for review", "أرسل رحلتي للمراجعة")} <ArrowRight className="directionArrow" size={17} /></button>
     {path === "study" ? <p className="formNote full">{text(ar, "Visa decisions are made solely by the relevant authorities; MEMORIES provides application assistance, not guaranteed approval.", "تتخذ الجهات المختصة قرارات التأشيرات؛ تقدم ميموريز المساعدة في الطلب ولا تضمن الموافقة.")}</p> : null}
   </form>;
 }

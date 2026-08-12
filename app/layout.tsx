@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
@@ -20,8 +21,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /><SupportChat /></body>
+    <html lang="en" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
+      <body><Script id="memories-theme" strategy="beforeInteractive">{`try{var t=localStorage.getItem('memories-theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}`}</Script><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /><SupportChat /></body>
     </html>
   );
 }
