@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { MotionEnhancer } from "./components/motion-enhancer";
+import { LocaleDocument } from "./components/locale-document";
 import "./globals.css";
 
 const display = Cormorant_Garamond({ subsets: ["latin"], variable: "--font-display", weight: ["500", "600", "700"] });
@@ -12,13 +13,14 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://memories-main-delta.vercel.app"),
   title: { default: "MEMORIES Travel — Journeys made personal", template: "%s | MEMORIES Travel" },
   description: "Tailor-made journeys and trusted support for Saudi travellers, at home and around the world.",
+  alternates: { canonical: "/", languages: { en: "/", ar: "/ar" } },
   openGraph: { title: "MEMORIES Travel", description: "Every journey begins with a dream. We turn it into a memory.", images: ["/images/hero-family.webp"] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body><Header /><MotionEnhancer />{children}<Footer /></body>
+      <body><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /></body>
     </html>
   );
 }

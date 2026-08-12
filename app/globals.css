@@ -15,3 +15,30 @@
 @keyframes route-arrive{from{opacity:0;transform:translate3d(0,12px,0);filter:blur(3px)}to{opacity:1;transform:none;filter:blur(0)}}@keyframes hero-rise{from{opacity:0;transform:translate3d(0,24px,0)}to{opacity:1;transform:none}}@keyframes hero-breathe{from{transform:scale(1.045)}to{transform:scale(1)}}@keyframes success-pop{0%{opacity:0;transform:scale(.96) translateY(8px)}100%{opacity:1;transform:none}}
 @media(max-width:780px){.navPill{display:none}.nav>a:not(.headerCta){transition:transform .25s ease,background .25s ease}.nav>a:not(.headerCta):hover,.nav>a:not(.headerCta):focus-visible{transform:translateX(7px);background:rgba(230,185,93,.1)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.routeStage,.heroContent>*,.heroImage,.plannerSuccess{animation:none!important}.destinationCard img,.listingImage img,.button,.brand,.menuButton,.navPill,.revealItem,.serviceGrid article,.storyGrid article{transition:none!important}.revealItem{opacity:1;transform:none;filter:none}::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}}
+
+/* Arabic localization: true RTL flow with typography tuned for Arabic reading. */
+html[dir="rtl"] body,.arabicSite{font-family:Tahoma,Arial,sans-serif;text-align:right}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3,html[dir="rtl"] .promise strong,html[dir="rtl"] .destinationCopy strong,html[dir="rtl"] .footerGrid strong,html[dir="rtl"] .manifesto p,html[dir="rtl"] .plannerSuccess strong,html[dir="rtl"] .detailGrid aside strong{font-family:Tahoma,Arial,sans-serif;letter-spacing:0}
+html[dir="rtl"] .kicker,html[dir="rtl"] .listingCard>div>span,html[dir="rtl"] .launchNote>span{letter-spacing:0;text-transform:none}
+html[dir="rtl"] .heroShade{background:linear-gradient(270deg,rgba(4,16,14,.92) 0%,rgba(4,16,14,.6) 34%,rgba(4,16,14,.08) 69%),linear-gradient(0deg,rgba(4,16,14,.34),transparent 45%)}
+html[dir="rtl"] .hero h1,html[dir="rtl"] .pageHero h1{letter-spacing:0;line-height:1.18}
+html[dir="rtl"] .formHero h1,html[dir="rtl"] .abroadHero h1,html[dir="rtl"] .corporateHero h1{line-height:1.2}
+html[dir="rtl"] .destinationHero h1{line-height:1.05}
+html[dir="rtl"] .promise{border-right:0;border-left:1px solid var(--line)}
+html[dir="rtl"] .promise:last-child{border-left:0}
+html[dir="rtl"] .destinationCopy{left:15px;right:17px}
+html[dir="rtl"] .cardArrow{left:12px;right:auto}
+html[dir="rtl"] .plannerTeaser{background:radial-gradient(circle at 20% 10%,#235f53 0,transparent 35%),linear-gradient(225deg,#062e29,#031c19)}
+html[dir="rtl"] .passport{left:7%;right:auto;transform:rotate(-7deg)}
+html[dir="rtl"] .abroadCard li:before{margin-left:10px;margin-right:0}
+html[dir="rtl"] .newsletter input{border-radius:0 6px 6px 0}
+html[dir="rtl"] .newsletter button{border-radius:6px 0 0 6px}
+html[dir="rtl"] .stats>div{border-left:1px solid rgba(255,255,255,.13);border-right:0}
+html[dir="rtl"] .stats>div:last-child{border-left:0}
+html[dir="rtl"] .checkList svg{flex:none}
+html[dir="rtl"] .directionArrow{transform:rotate(180deg)}
+html[dir="rtl"] input[type="email"],html[dir="rtl"] input[type="tel"]{direction:ltr;text-align:left}
+.languageSwitch{font-weight:800!important;color:var(--gold-light)!important;opacity:1!important}
+@media(max-width:1000px){html[dir="rtl"] .promise:nth-child(2){border-left:0}html[dir="rtl"] .promise:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+@media(max-width:780px){html[dir="rtl"] .heroShade{background:linear-gradient(0deg,rgba(4,16,14,.94),rgba(4,16,14,.12) 76%),linear-gradient(270deg,rgba(4,16,14,.42),transparent)}html[dir="rtl"] .passport{left:1%;right:auto}html[dir="rtl"] .stats>div{border:0}html[dir="rtl"] .nav>a:not(.headerCta):hover,html[dir="rtl"] .nav>a:not(.headerCta):focus-visible{transform:translateX(-7px)}}
+@media(max-width:500px){html[dir="rtl"] .passport{left:-30px;right:auto}}

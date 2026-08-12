@@ -1,0 +1,7 @@
+export const destinationsAr = [
+  { slug: "alula", name: "العلا", country: "المملكة العربية السعودية", image: "/images/alula.webp", blurb: "حكايات عريقة نحتها الزمن في الصخر.", description: "تجوّل بين التاريخ الحي والأودية المهيبة ومخيمات الصحراء تحت النجوم.", bestFor: "الثقافة والدهشة", duration: "٤–٦ أيام" },
+  { slug: "maldives", name: "المالديف", country: "المالديف", image: "/images/maldives.webp", blurb: "مياه صافية وخصوصية وهدوء بلا حدود.", description: "هدوء الجزر الخاصة وبحيرات فيروزية ووقت عائلي بعيد عن كل استعجال.", bestFor: "الشاطئ والخصوصية", duration: "٥–٨ أيام" },
+  { slug: "paris", name: "باريس", country: "فرنسا", image: "/images/paris.webp", blurb: "جمال خالد وثقافة وفن ورومانسية.", description: "الفن والأناقة والمذاق الفرنسي في رحلة مدينة مصممة بسلاسة حولك.", bestFor: "الثقافة والمطاعم", duration: "٤–٧ أيام" },
+  { slug: "switzerland", name: "سويسرا", country: "سويسرا", image: "/images/switzerland.webp", blurb: "هواء الألب وبحيرات ومشاهد لا تُنسى.", description: "قمم الألب وقطارات بانورامية وإقامات هادئة على البحيرات تناسب جميع الأجيال.", bestFor: "الطبيعة والعائلات", duration: "٧–١٠ أيام" },
+  { slug: "istanbul", name: "إسطنبول", country: "تركيا", image: "/images/istanbul.webp", blurb: "حيث تلتقي القارات والنكهات والحكايات.", description: "مدينة نابضة تصل بين قارتين، نكشف لك أجمل قصصها ونكهاتها بتجارب خاصة.", bestFor: "المذاق والتراث", duration: "٤–٦ أيام" },
+] as const;
