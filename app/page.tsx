@@ -6,11 +6,11 @@ import { JourneyPlanner } from "./components/journey-planner";
 import { NewsletterForm } from "./components/newsletter-form";
 
 const destinations = [
-  { slug: "alula", name: "AlUla", image: "/images/alula.png", blurb: "Ancient stories carved into sandstone." },
-  { slug: "maldives", name: "Maldives", image: "/images/maldives.png", blurb: "Crystal water, private calm, endless blue." },
-  { slug: "paris", name: "Paris", image: "/images/paris.png", blurb: "Timeless beauty, culture and romance." },
-  { slug: "switzerland", name: "Switzerland", image: "/images/switzerland.png", blurb: "Alpine air, lakes and unforgettable views." },
-  { slug: "istanbul", name: "Istanbul", image: "/images/istanbul.png", blurb: "Where continents, flavours and stories meet." },
+  { slug: "alula", name: "AlUla", image: "/images/alula.webp", blurb: "Ancient stories carved into sandstone." },
+  { slug: "maldives", name: "Maldives", image: "/images/maldives.webp", blurb: "Crystal water, private calm, endless blue." },
+  { slug: "paris", name: "Paris", image: "/images/paris.webp", blurb: "Timeless beauty, culture and romance." },
+  { slug: "switzerland", name: "Switzerland", image: "/images/switzerland.webp", blurb: "Alpine air, lakes and unforgettable views." },
+  { slug: "istanbul", name: "Istanbul", image: "/images/istanbul.webp", blurb: "Where continents, flavours and stories meet." },
 ];
 
 const promises = [
@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <main>
       <section className="hero" aria-labelledby="hero-title">
-        <Image className="heroImage" src="/images/hero-family.png" alt="A Saudi family watching balloons rise over a desert valley" fill priority sizes="100vw" />
+        <Image className="heroImage" src="/images/hero-family.webp" alt="A Saudi family watching balloons rise over a desert valley" fill priority sizes="100vw" />
         <div className="heroShade" />
         <div className="container heroContent">
           <p className="kicker light">Tailor-made travel, thoughtfully Saudi</p>

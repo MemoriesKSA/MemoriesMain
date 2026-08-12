@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://memories-main-delta.vercel.app"),
   title: { default: "MEMORIES Travel — Journeys made personal", template: "%s | MEMORIES Travel" },
   description: "Tailor-made journeys and trusted support for Saudi travellers, at home and around the world.",
-  openGraph: { title: "MEMORIES Travel", description: "Every journey begins with a dream. We turn it into a memory.", images: ["/images/hero-family.png"] },
+  openGraph: { title: "MEMORIES Travel", description: "Every journey begins with a dream. We turn it into a memory.", images: ["/images/hero-family.webp"] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
