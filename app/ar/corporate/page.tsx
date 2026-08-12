@@ -16,7 +16,7 @@ const items = [
 
 export default function CorporatePage() {
   return (
-    <main className="innerPage">
+    <main className="innerPage arabicCopyScaled">
       <section className="corporateHero">
         <div className="container">
           <p className="kicker light">ميموريز للأعمال</p>

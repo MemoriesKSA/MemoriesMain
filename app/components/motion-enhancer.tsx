@@ -16,6 +16,8 @@ const revealSelector = [
   ".detailGrid > *",
   ".serviceGrid > article",
   ".storyGrid > article",
+  ".saudiStoryChapter",
+  ".plannerStoryChapter",
   ".launchNote",
   ".manifesto",
   ".corporateCta",
