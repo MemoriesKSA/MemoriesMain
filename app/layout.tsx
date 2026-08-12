@@ -4,6 +4,7 @@ import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { MotionEnhancer } from "./components/motion-enhancer";
 import { LocaleDocument } from "./components/locale-document";
+import { SupportChat } from "./components/support-chat";
 import "./globals.css";
 
 const display = Cormorant_Garamond({ subsets: ["latin"], variable: "--font-display", weight: ["500", "600", "700"] });
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /></body>
+      <body><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /><SupportChat /></body>
     </html>
   );
 }
