@@ -205,4 +205,7 @@ html[data-theme="dark"] .editorialPlannerHero{background:radial-gradient(circle 
 
 @media(max-width:1050px){.editorialPlannerHero .formHeroGrid{grid-template-columns:minmax(0,.72fr) minmax(500px,1.28fr);gap:38px}.plannerStoryChapter{padding:36px 28px}.plannerStoryChapter h2{font-size:2.25rem}}
 @media(max-width:780px){.editorialPlannerHero{padding-top:42px}.editorialPlannerHero .formHeroGrid{grid-template-columns:1fr;gap:48px}.plannerStory{gap:45px}.plannerStoryChapters{gap:16px;padding-bottom:0}.plannerStoryChapter{min-height:0;padding:32px 24px}.plannerStoryChapter h2{font-size:2rem}.plannerStoryChapter>div{font-size:.73rem}.arabicCopyScaled .pageHero h1{font-size:2.7rem}.arabicCopyScaled .corporateHero h1{font-size:2.25rem}}
+
+/* Keep an expanded select above following controls and the submit action. */
+.plannerSection{z-index:1}.plannerSection:has(.elasticSelect.open){z-index:80}.plannerSection:has(.elasticSelect.open) .elasticSelect.open{z-index:120}.plannerSubmit{z-index:2}
 .featuredJourney{content-visibility:auto;contain-intrinsic-size:650px}
