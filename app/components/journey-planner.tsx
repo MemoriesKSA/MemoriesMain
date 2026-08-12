@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, GraduationCap, Map, Sparkles } from "lucide-react";
 import { pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
 import type { CountryOption, PlannerPath } from "./planner-data";
@@ -18,6 +18,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [country, setCountry] = useState(initialPath === "saudi" ? saudiArabia.value : "");
   const [city, setCity] = useState("");
   const [fromDate, setFromDate] = useState("");
+  const successRef = useRef<HTMLDivElement>(null);
 
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : travelCountries;
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
@@ -33,7 +34,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     setSent(true);
   }
 
-  if (sent) return <div className="plannerSuccess" role="status"><CheckCircle2 /><div><strong>{text(ar, "Your dream journey has begun.", "بدأت رحلة أحلامك.")}</strong><p>{text(ar, "Thank you. A MEMORIES travel designer will contact you within one business day.", "شكرًا لك. سيتواصل معك أحد مصممي الرحلات في ميموريز خلال يوم عمل واحد.")}</p></div></div>;
+  useEffect(() => {
+    if (!sent) return;
+    const frame = requestAnimationFrame(() => successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    return () => cancelAnimationFrame(frame);
+  }, [sent]);
+
+  if (sent) return <div ref={successRef} className={`plannerSuccess ${compact ? "plannerCelebration" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Request received", "تم استلام طلبك")}</span><strong>{text(ar, "Your dream journey has begun.", "بدأت رحلة أحلامك.")}</strong><p>{text(ar, "Thank you. A MEMORIES travel designer will contact you within one business day.", "شكرًا لك. سيتواصل معك أحد مصممي الرحلات في ميموريز خلال يوم عمل واحد.")}</p><button className="successReset" type="button" onClick={() => setSent(false)}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
 
   return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner`} onSubmit={submit}>
     <div className="plannerIntro full">

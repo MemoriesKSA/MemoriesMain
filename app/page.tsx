@@ -4,14 +4,7 @@ import { ArrowRight, Compass, Globe2, Handshake, Medal } from "lucide-react";
 import { DestinationGrid } from "./components/destination-grid";
 import { JourneyPlanner } from "./components/journey-planner";
 import { NewsletterForm } from "./components/newsletter-form";
-
-const destinations = [
-  { slug: "alula", name: "AlUla", image: "/images/alula.webp", blurb: "Ancient stories carved into sandstone." },
-  { slug: "maldives", name: "Maldives", image: "/images/maldives.webp", blurb: "Crystal water, private calm, endless blue." },
-  { slug: "paris", name: "Paris", image: "/images/paris.webp", blurb: "Timeless beauty, culture and romance." },
-  { slug: "switzerland", name: "Switzerland", image: "/images/switzerland.webp", blurb: "Alpine air, lakes and unforgettable views." },
-  { slug: "istanbul", name: "Türkiye", image: "/images/istanbul.webp", blurb: "Coasts, cities and stories across two continents." },
-];
+import { featuredDestinations } from "./data";
 
 const promises = [
   { icon: Medal, title: "Tailor-made journeys", text: "Built around your dream" },
@@ -50,7 +43,7 @@ export default function Home() {
           <div><p className="kicker">Explore</p><h2>Popular destinations</h2></div>
           <Link className="textLink" href="/destinations">View all destinations <ArrowRight size={15} /></Link>
         </div>
-        <DestinationGrid destinations={destinations} />
+        <DestinationGrid destinations={featuredDestinations} />
       </section>
 
       <section className="section container splitFeature">

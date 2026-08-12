@@ -1,7 +1,39 @@
-export const destinations = [
-  { slug: "alula", name: "AlUla", country: "Saudi Arabia", image: "/images/alula.webp", description: "Walk through living history, dramatic canyons and starlit desert camps.", bestFor: "Culture & wonder", duration: "4–6 days" },
-  { slug: "maldives", name: "Maldives", country: "Maldives", image: "/images/maldives.webp", description: "Private-island calm, crystalline lagoons and unhurried family time.", bestFor: "Beach & privacy", duration: "5–8 days" },
-  { slug: "paris", name: "Paris", country: "France", image: "/images/paris.webp", description: "Art, style and gastronomy—shaped into a city break that feels effortless.", bestFor: "Culture & dining", duration: "4–7 days" },
-  { slug: "switzerland", name: "Switzerland", country: "Switzerland", image: "/images/switzerland.webp", description: "Alpine views, scenic rail and restorative lakeside stays for every generation.", bestFor: "Nature & families", duration: "7–10 days" },
-  { slug: "istanbul", name: "Türkiye", country: "Türkiye", image: "/images/istanbul.webp", description: "From Istanbul’s storied shores to Cappadocia, the Riviera and beyond, Türkiye offers culture, flavour and extraordinary variety.", bestFor: "Food, coasts & heritage", duration: "7–12 days" },
-] as const;
+export type DestinationRegion = "saudi" | "middle-east" | "europe" | "asia" | "islands" | "north-america" | "oceania";
+
+export type Destination = {
+  slug: string;
+  name: string;
+  country: string;
+  region: DestinationRegion;
+  image: string;
+  blurb: string;
+  description: string;
+  bestFor: string;
+  duration: string;
+  featured?: boolean;
+};
+
+export const destinations: Destination[] = [
+  { slug: "alula", name: "AlUla", country: "Saudi Arabia", region: "saudi", image: "/images/alula.webp", blurb: "Ancient stories carved into sandstone.", description: "Walk through living history, dramatic canyons and starlit desert camps.", bestFor: "Culture & wonder", duration: "4–6 days", featured: true },
+  { slug: "riyadh", name: "Riyadh", country: "Saudi Arabia", region: "saudi", image: "/images/destinations/riyadh.png", blurb: "Bold culture, dining and desert horizons.", description: "Discover a capital where contemporary Saudi energy meets Diriyah heritage, creative dining and dramatic desert escapes.", bestFor: "Culture & city life", duration: "3–5 days", featured: true },
+  { slug: "jeddah-red-sea", name: "Jeddah & the Red Sea", country: "Saudi Arabia", region: "saudi", image: "/images/destinations/jeddah-red-sea.png", blurb: "Historic streets meet a brilliant blue coast.", description: "Pair Al-Balad’s coral-stone lanes with waterfront dining, island days and the natural beauty of the Red Sea.", bestFor: "Coast & heritage", duration: "4–7 days", featured: true },
+  { slug: "abha-aseer", name: "Abha & Aseer", country: "Saudi Arabia", region: "saudi", image: "/images/destinations/abha-aseer.png", blurb: "Cool mountains, green valleys and living heritage.", description: "Explore misty peaks, painted villages, local flavours and the welcoming highland culture of southern Saudi Arabia.", bestFor: "Nature & culture", duration: "4–6 days" },
+  { slug: "uae", name: "United Arab Emirates", country: "United Arab Emirates", region: "middle-east", image: "/images/destinations/uae.png", blurb: "Future-facing cities, desert calm and warm seas.", description: "Combine Dubai’s energy, Abu Dhabi’s culture and restorative desert or coastal stays in one seamless escape.", bestFor: "Luxury & families", duration: "4–7 days", featured: true },
+  { slug: "istanbul", name: "Türkiye", country: "Türkiye", region: "middle-east", image: "/images/istanbul.webp", blurb: "Coasts, cities and stories across two continents.", description: "From Istanbul’s storied shores to Cappadocia, the Riviera and beyond, Türkiye offers culture, flavour and extraordinary variety.", bestFor: "Food, coasts & heritage", duration: "7–12 days", featured: true },
+  { slug: "paris", name: "Paris", country: "France", region: "europe", image: "/images/paris.webp", blurb: "Timeless beauty, culture and romance.", description: "Art, style and gastronomy—shaped into a city break that feels effortless.", bestFor: "Culture & dining", duration: "4–7 days", featured: true },
+  { slug: "switzerland", name: "Switzerland", country: "Switzerland", region: "europe", image: "/images/switzerland.webp", blurb: "Alpine air, lakes and unforgettable views.", description: "Alpine views, scenic rail and restorative lakeside stays for every generation.", bestFor: "Nature & families", duration: "7–10 days", featured: true },
+  { slug: "london", name: "London", country: "United Kingdom", region: "europe", image: "/images/destinations/london.png", blurb: "Icons, theatre and neighbourhood discoveries.", description: "A polished city stay shaped around museums, shopping, football, theatre and the neighbourhoods that make London feel personal.", bestFor: "Families & culture", duration: "5–8 days", featured: true },
+  { slug: "italy", name: "Italy", country: "Italy", region: "europe", image: "/images/destinations/italy.png", blurb: "Artful cities, beautiful coasts and unforgettable tables.", description: "Move at your own pace through Rome, Florence, Venice, the lakes or the coast, with every transfer and stay thoughtfully connected.", bestFor: "Food, art & romance", duration: "8–14 days", featured: true },
+  { slug: "spain", name: "Spain", country: "Spain", region: "europe", image: "/images/destinations/spain.png", blurb: "Colourful cities and Mediterranean rhythm.", description: "Blend Barcelona’s design, Madrid’s energy, Andalusian history and restorative days beside the Mediterranean.", bestFor: "Culture & coast", duration: "7–12 days" },
+  { slug: "austria", name: "Austria", country: "Austria", region: "europe", image: "/images/destinations/austria.png", blurb: "Imperial elegance and storybook alpine lakes.", description: "Pair Vienna’s music and architecture with Salzburg, lakeside villages and mountain scenery made for slow travel.", bestFor: "Music & scenery", duration: "6–10 days" },
+  { slug: "greece", name: "Greece", country: "Greece", region: "europe", image: "/images/destinations/greece.png", blurb: "Sunlit islands, ancient stories and Aegean blue.", description: "Balance Athens’ heritage with private island time, coastal flavours and carefully chosen stays above the Aegean.", bestFor: "Islands & history", duration: "7–12 days" },
+  { slug: "japan", name: "Japan", country: "Japan", region: "asia", image: "/images/destinations/japan.png", blurb: "Quiet traditions and exhilarating modern cities.", description: "Travel smoothly from Tokyo’s energy to Kyoto’s temples, seasonal landscapes and deeply considered hospitality.", bestFor: "Culture & discovery", duration: "10–14 days", featured: true },
+  { slug: "thailand", name: "Thailand", country: "Thailand", region: "asia", image: "/images/destinations/thailand.png", blurb: "Vibrant cities, warm hospitality and island calm.", description: "Combine Bangkok’s flavour, northern culture and a beautifully paced beach stay in Phuket, Krabi or Koh Samui.", bestFor: "Food & beaches", duration: "8–14 days" },
+  { slug: "indonesia", name: "Indonesia", country: "Indonesia", region: "asia", image: "/images/destinations/indonesia.png", blurb: "Tropical beauty, soulful culture and restorative stays.", description: "Discover Bali’s temples, rice terraces and beaches, or go further into Indonesia with a journey built around nature and wellbeing.", bestFor: "Wellness & nature", duration: "8–13 days" },
+  { slug: "maldives", name: "Maldives", country: "Maldives", region: "islands", image: "/images/maldives.webp", blurb: "Crystal water, private calm, endless blue.", description: "Private-island calm, crystalline lagoons and unhurried family time.", bestFor: "Beach & privacy", duration: "5–8 days", featured: true },
+  { slug: "united-states", name: "United States", country: "United States", region: "north-america", image: "/images/destinations/united-states.png", blurb: "Big-city energy and spectacular open landscapes.", description: "Build a city break, family theme-park holiday, coastal road trip or national-park adventure across an endlessly varied country.", bestFor: "Cities & road trips", duration: "10–18 days" },
+  { slug: "canada", name: "Canada", country: "Canada", region: "north-america", image: "/images/destinations/canada.png", blurb: "Turquoise lakes, mountain air and welcoming cities.", description: "Pair Vancouver or Toronto with the Rockies, scenic rail or wide-open wilderness, all paced for effortless family travel.", bestFor: "Nature & families", duration: "10–16 days" },
+  { slug: "australia", name: "Australia", country: "Australia", region: "oceania", image: "/images/destinations/australia.png", blurb: "Harbour cities, remarkable wildlife and endless coast.", description: "Connect Sydney, Melbourne, the Great Barrier Reef and Australia’s extraordinary landscapes in one well-paced long-haul journey.", bestFor: "Coast & adventure", duration: "12–18 days" },
+];
+
+export const featuredDestinations = destinations.filter((destination) => destination.featured);

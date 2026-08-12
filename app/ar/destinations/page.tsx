@@ -1,3 +1,12 @@
-import type { Metadata } from "next"; import Image from "next/image"; import Link from "next/link"; import { ArrowRight } from "lucide-react"; import { destinationsAr } from "../data";
-export const metadata: Metadata={title:"الوجهات",description:"استكشف نقاط بداية ملهمة داخل السعودية وحول العالم."};
-export default function Page(){return <main className="innerPage"><section className="pageHero container"><p className="kicker">اذهب أبعد</p><h1>أماكن تستحق<br/><em>أن تبقى في الذاكرة.</em></h1><p>من الجزر الهادئة إلى المدن العريقة، هذه نقاط بداية وليست باقات ثابتة. كل تفصيل نصوغه حولك.</p></section><section className="container destinationListing">{destinationsAr.map(item=><article className="listingCard" key={item.slug}><Link href={`/ar/destinations/${item.slug}`} className="listingImage"><Image src={item.image} alt={item.name} fill sizes="(max-width: 800px) 100vw, 50vw"/></Link><div><span>{item.country}</span><h2>{item.name}</h2><p>{item.description}</p><dl><div><dt>الأنسب لـ</dt><dd>{item.bestFor}</dd></div><div><dt>المدة المقترحة</dt><dd>{item.duration}</dd></div></dl><Link className="textLink" href={`/ar/destinations/${item.slug}`}>استكشف {item.name} <ArrowRight className="directionArrow" size={15}/></Link></div></article>)}</section></main>}
+import type { Metadata } from "next";
+import { DestinationCatalogue } from "../../components/destination-catalogue";
+import { destinationsAr } from "../data";
+
+export const metadata: Metadata = { title: "الوجهات", description: "استكشف رحلات مختارة داخل السعودية وحول العالم." };
+
+export default function DestinationsPageAr() {
+  return <main className="innerPage destinationsPage">
+    <section className="pageHero container"><p className="kicker">العالم، مختار بعناية</p><h1>أماكن تستحق<br /><em>أن تبقى في الذاكرة.</em></h1><p>استكشف ٢٠ نقطة بداية ملهمة داخل السعودية وحول العالم. اختر وجهة تحبها، أو أخبرنا بأي مكان آخر تحلم بالذهاب إليه.</p></section>
+    <section className="container destinationCatalogue"><DestinationCatalogue locale="ar" destinations={destinationsAr} /></section>
+  </main>;
+}
