@@ -79,6 +79,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [phoneCode, setPhoneCode] = useState("+966");
   const [formError, setFormError] = useState("");
   const [missingSections, setMissingSections] = useState<number[]>([]);
+  const submissionId = useRef(crypto.randomUUID());
   const resultRef = useRef<HTMLDivElement>(null);
 
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : travelCountries;
@@ -90,7 +91,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -110,14 +111,29 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       return;
     }
     setMissingSections([]); setFormError(""); setStatus("reviewing");
+    const payload = Object.fromEntries(formData.entries()) as Record<string, FormDataEntryValue | FormDataEntryValue[]>;
+    for (const field of ["transport", "stays", "planIncludes", "delivery"]) payload[field] = formData.getAll(field);
+    try {
+      const response = await fetch("/api/journeys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, submissionId: submissionId.current, locale }),
+      });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Request failed");
+      window.setTimeout(() => setStatus("sent"), 2200);
+    } catch {
+      submissionId.current = crypto.randomUUID();
+      setStatus("idle");
+      setFormError(text(ar, "We couldn't send your journey yet. Please try again in a moment.", "تعذر إرسال رحلتك الآن. يرجى المحاولة مرة أخرى بعد قليل."));
+      requestAnimationFrame(() => form.querySelector<HTMLElement>(".plannerError")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    }
   }
 
   useEffect(() => {
     if (status === "idle") return;
     const frame = requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
-    if (status !== "reviewing") return () => cancelAnimationFrame(frame);
-    const timer = window.setTimeout(() => setStatus("sent"), 2700);
-    return () => { cancelAnimationFrame(frame); window.clearTimeout(timer); };
+    return () => cancelAnimationFrame(frame);
   }, [status]);
 
   if (status === "reviewing") return <div ref={resultRef} className="journeyReviewAnimation" role="status" aria-live="polite">
@@ -126,12 +142,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <div className="reviewSteps"><span>{text(ar, "Understanding you", "نفهم أفكارك")}</span><span>{text(ar, "Organizing the details", "ننظم التفاصيل")}</span><span>{text(ar, "Ready for review", "جاهزة للمراجعة")}</span></div>
   </div>;
 
-  if (status === "sent") return <div ref={resultRef} className={`plannerSuccess plannerCelebration ${compact ? "compactSuccess" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Journey brief ready", "تصور الرحلة جاهز")}</span><strong>{text(ar, "Your dream journey is ready for review.", "رحلة أحلامك جاهزة للمراجعة.")}</strong><p>{text(ar, `We’ll shape ${selectedCity?.en ?? "your destination"} around your transport, stay, budget and experience preferences. Your plan can include the best places, restaurants, local experiences and practical booking notes.`, `سنصمم رحلة ${selectedCity?.ar ?? "وجهتك"} وفق تفضيلات النقل والإقامة والميزانية والتجارب، ويمكن أن تشمل أفضل الأماكن والمطاعم والتجارب المحلية وملاحظات الحجز.`)}</p><button className="successReset" type="button" onClick={() => setStatus("idle")}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
+  if (status === "sent") return <div ref={resultRef} className={`plannerSuccess plannerCelebration ${compact ? "compactSuccess" : ""}`} role="status" aria-live="assertive"><span className="successIcon"><CheckCircle2 /></span><div><span className="successKicker">{text(ar, "Journey brief ready", "تصور الرحلة جاهز")}</span><strong>{text(ar, "Your dream journey is ready for review.", "رحلة أحلامك جاهزة للمراجعة.")}</strong><p>{text(ar, `We’ll shape ${selectedCity?.en ?? "your destination"} around your transport, stay, budget and experience preferences. Your plan can include the best places, restaurants, local experiences and practical booking notes.`, `سنصمم رحلة ${selectedCity?.ar ?? "وجهتك"} وفق تفضيلات النقل والإقامة والميزانية والتجارب، ويمكن أن تشمل أفضل الأماكن والمطاعم والتجارب المحلية وملاحظات الحجز.`)}</p><button className="successReset" type="button" onClick={() => { submissionId.current = crypto.randomUUID(); setStatus("idle"); }}>{text(ar, "Plan another journey", "خطط لرحلة أخرى")}</button></div></div>;
 
   const sectionClass = (step: number) => `plannerSection full${missingSections.includes(step) ? " hasError" : ""}`;
   const requiredWarning = (step: number) => missingSections.includes(step) ? <span className="requiredWarning" role="status">* {text(ar, "Complete this step", "أكمل هذه الخطوة")}</span> : null;
 
   return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} noValidate>
+    <label className="srOnly" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     <div className="plannerIntro full"><p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Your journey, step by step", "رحلتك، خطوة بخطوة")}</p><h3>{text(ar, "Tell us what your dream looks like.", "شاركنا شكل رحلة أحلامك.")}</h3><p>{text(ar, "Start with the place. We’ll guide you through the people, dates, complete package and how you want to receive it.", "ابدأ بالوجهة، وسنرشدك خلال المسافرين والتواريخ والباقة الكاملة وطريقة استلامها.")}</p></div>
 
     <section className={sectionClass(1)} data-step="1"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small>{requiredWarning(1)}</div></div>
