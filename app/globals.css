@@ -401,3 +401,83 @@ html[dir="rtl"] .placeBadge{left:auto;right:10px}
 
 @media(max-width:1000px){.placesGrid,.diningGrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.flagshipWeatherGrid,.placesGrid,.diningGrid,.stayGrid,.sampleDayTimeline{grid-template-columns:1fr}.flagshipHeroCopy h1{font-size:2.4rem}.flagshipSampleDay{padding:40px 26px}}
+
+/* Breadcrumb, sits above the flagship hero in the plain page background. */
+.breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding-block:16px;font-size:.76rem;color:var(--muted)}
+.breadcrumbItem{display:flex;align-items:center;gap:6px}
+.breadcrumb a{color:var(--muted);transition:.2s color}
+.breadcrumb a:hover{color:var(--gold)}
+.breadcrumb [aria-current="page"]{color:var(--ink);font-weight:700}
+.breadcrumb svg{flex-shrink:0;color:var(--line)}
+
+/* Section jump-nav: sticky pill bar below the hero, mirrors .catalogueFilters. */
+.jumpNav{position:sticky;z-index:20;top:0;background:var(--ivory);border-bottom:1px solid var(--line)}
+.jumpNavInner{display:flex;gap:6px;overflow-x:auto;padding-block:14px;scrollbar-width:none}
+.jumpNavInner::-webkit-scrollbar{display:none}
+.jumpNav a{flex:none;padding:9px 15px;border-radius:999px;background:transparent;color:var(--muted);font-size:.72rem;font-weight:800;white-space:nowrap;transition:.25s color,.25s background}
+.jumpNav a:hover{color:var(--ink)}
+.jumpNav a.active{background:var(--ink);color:var(--gold-light)}
+
+/* Thematic tag pills under the About section. */
+.tagPills{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 24px}
+.tagPill{padding:7px 14px;border-radius:999px;background:var(--ivory);border:1px solid var(--line);color:var(--ink);font-size:.68rem;font-weight:700}
+
+/* Weather / Transportation tabs. */
+.weatherTabs{display:flex;gap:8px;margin-bottom:18px}
+.weatherTabs button{padding:9px 18px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--muted);font-size:.72rem;font-weight:800;cursor:pointer;transition:.25s background,.25s color,.25s border-color}
+.weatherTabs button.active{border-color:transparent;background:var(--ink);color:var(--gold-light)}
+.transportGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.transportCard{padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
+.transportCard .weatherIcon{background:rgba(200,149,63,.14);color:var(--gold)}
+.transportCard strong{display:block;margin-top:12px;font-family:var(--font-display),Georgia,serif;font-size:1.1rem}
+.transportCard p{margin:8px 0 0;color:var(--muted);font-size:.85rem;line-height:1.6}
+
+/* FAQ accordion. */
+.faqAccordion{display:grid;gap:10px;max-width:820px}
+.faqItem{border:1px solid var(--line);border-radius:14px;background:var(--paper);overflow:hidden}
+.faqQuestion{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:18px 22px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:.92rem;font-weight:700;text-align:start;cursor:pointer}
+.faqChevron{flex:none;color:var(--gold);transition:transform .3s ease}
+.faqItem.open .faqChevron{transform:rotate(180deg)}
+.faqAnswer{padding:0 22px 20px;color:var(--muted);font-size:.85rem;line-height:1.7}
+.faqAnswer p{margin:0}
+.faqAnswerLink{color:var(--gold);font-weight:800;border-bottom:1px solid currentColor}
+
+/* Travel tips list. */
+.tipsList{display:grid;gap:14px;max-width:760px;margin:0;padding:0;list-style:none}
+.tipsList li{position:relative;padding-inline-start:26px;color:var(--muted);font-size:.88rem;line-height:1.65}
+.tipsList li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--gold);font-weight:800}
+html[dir="rtl"] .tipsList li:before{inset-inline-start:auto;inset-inline-end:0}
+html[dir="rtl"] .tipsList li{padding-inline-start:0;padding-inline-end:26px}
+
+/* Keep Exploring carousel: always horizontal, on every breakpoint. */
+.exploreCarousel{position:relative}
+.exploreGrid{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(16,45,41,.11)}
+.exploreGrid::-webkit-scrollbar{height:8px}
+.exploreGrid::-webkit-scrollbar-track{border-radius:999px;background:rgba(16,45,41,.1)}
+.exploreGrid::-webkit-scrollbar-thumb{border-radius:999px;background:linear-gradient(90deg,var(--gold-light),var(--gold))}
+.exploreCard{position:relative;flex:0 0 min(320px,78vw);aspect-ratio:.78;border-radius:13px;overflow:hidden;scroll-snap-align:start;box-shadow:0 10px 28px rgba(19,35,31,.18)}
+.exploreCard img{object-fit:cover;transition:transform .45s ease}
+.exploreCard:hover img{transform:scale(1.045)}
+.exploreCarousel .carouselControls{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 14px;margin-top:14px}
+.exploreCarousel .carouselStatus{display:flex;align-items:center;justify-content:space-between;gap:15px;color:var(--ink)}
+.exploreCarousel .carouselStatus strong{font-size:.72rem}
+.exploreCarousel .carouselStatus span{color:var(--gold);font-size:.68rem;font-weight:800}
+.exploreCarousel .carouselProgress{grid-column:1/2;height:5px;overflow:hidden;border-radius:999px;background:rgba(16,45,41,.14)}
+.exploreCarousel .carouselProgress span{display:block;width:calc(100% / var(--carousel-count));height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold-light),var(--gold));transform:translateX(calc(var(--carousel-index) * 100%));transition:transform .38s cubic-bezier(.22,1,.36,1)}
+.exploreCarousel .carouselButtons{grid-column:2;grid-row:1/3;display:flex;gap:7px}
+.exploreCarousel .carouselButtons button{display:grid;width:38px;height:38px;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);box-shadow:0 5px 15px rgba(16,45,41,.08)}
+.exploreCarousel .carouselButtons button:disabled{opacity:.3}
+html[dir="rtl"] .exploreCarousel .carouselProgress span{transform:translateX(calc(var(--carousel-index) * -100%))}
+html[dir="rtl"] .exploreCarousel .carouselButtons svg{transform:rotate(180deg)}
+
+/* Sitewide newsletter band, sits directly above the footer on every page except home + planner. */
+.siteNewsletter{padding-bottom:50px}
+
+@media(max-width:1000px){.transportGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:780px){
+  .transportGrid{grid-template-columns:1fr}
+  .exploreCarousel .carouselButtons{display:none}
+  .exploreCarousel .carouselControls{grid-template-columns:1fr}
+}
+@media(max-width:640px){.faqQuestion{padding:15px 16px;font-size:.85rem}.faqAnswer{padding:0 16px 16px}}
+@media(prefers-reduced-motion:reduce){.faqChevron,.jumpNav a,.weatherTabs button{transition:none!important}}

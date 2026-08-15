@@ -53,6 +53,25 @@ export type FlagshipDayBeat = {
   descriptionAr: string;
 };
 
+export type FlagshipFaq = {
+  questionEn: string;
+  questionAr: string;
+  answerEn: string;
+  answerAr: string;
+};
+
+export type FlagshipTip = {
+  en: string;
+  ar: string;
+};
+
+export type FlagshipTransportMode = {
+  modeEn: string;
+  modeAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+};
+
 export type FlagshipCityGuide = {
   // Omit for the default leisure/excitement framing. Use "worship" for
   // pilgrimage cities (Makkah, Madinah) to swap section headings, drop the
@@ -68,6 +87,13 @@ export type FlagshipCityGuide = {
     tipEn: string;
     tipAr: string;
   };
+  // Optional: only include when there's real, verified transport guidance
+  // for this destination (skip for resort regions etc. where it doesn't fit).
+  transportation?: FlagshipTransportMode[];
+  // Optional (being rolled out city by city): 9 real Q&As — the component
+  // appends a 10th "Having trouble planning?" itself.
+  faq?: FlagshipFaq[];
+  travelTips?: FlagshipTip[];
   attractions: FlagshipPlace[];
   dining: FlagshipDining[];
   stay: FlagshipStay[];
@@ -112,6 +138,108 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Riyadh gets almost no rain year-round, pack for sun and dry heat even in winter.",
       tipAr: "لا تشهد الرياض أمطارًا تقريبًا طوال العام، فاستعد للشمس والجو الجاف حتى في الشتاء.",
     },
+    transportation: [
+      {
+        modeEn: "Riyadh Metro",
+        modeAr: "مترو الرياض",
+        descriptionEn: "Six driverless lines connect King Khalid International Airport to the city centre, Olaya, KAFD and the universities. The airport line costs just 4 SAR.",
+        descriptionAr: "ستة خطوط بلا سائق تربط مطار الملك خالد الدولي بوسط المدينة والعليا ومركز الملك عبدالله المالي والجامعات. تكلفة خط المطار 4 ريالات فقط.",
+      },
+      {
+        modeEn: "Uber & Careem",
+        modeAr: "أوبر وكريم",
+        descriptionEn: "Both operate 24 hours a day from the airport and across the city, the easiest way for most visitors to get around.",
+        descriptionAr: "يعملان على مدار الساعة من المطار وفي أنحاء المدينة، وهما الطريقة الأسهل لمعظم الزوار للتنقل.",
+      },
+      {
+        modeEn: "Rental car",
+        modeAr: "استئجار سيارة",
+        descriptionEn: "Worth it for day trips beyond the city, Diriyah, the Edge of the World or Qiddiya. Major companies have desks at the airport.",
+        descriptionAr: "يستحق التجربة للرحلات اليومية خارج المدينة، مثل الدرعية وحافة العالم والقدية. تتوفر مكاتب الشركات الكبرى في المطار.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is Riyadh famous for?",
+        questionAr: "بم تشتهر الرياض؟",
+        answerEn: "Riyadh is known for the contrast between Diriyah, the restored mudbrick birthplace of the first Saudi state, and a fast-changing modern skyline led by the Kingdom Centre. It's also become a major entertainment hub, home to Six Flags Qiddiya City and AquaRabia, both opened within the last year.",
+        answerAr: "تشتهر الرياض بالتناقض بين الدرعية، مهد الدولة السعودية الأولى المبني بالطين والمرمم، وأفقها الحديث المتغير بسرعة بقيادة برج المملكة. كما أصبحت مركزًا ترفيهيًا رئيسيًا، موطن سيكس فلاغز القدية وأكوارابيا، وكلاهما افتُتح خلال العام الماضي.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Riyadh?",
+        questionAr: "ما أفضل وقت في السنة لزيارة الرياض؟",
+        answerEn: "November through March, when daytime temperatures sit around 22–29°C. Summer (June–August) regularly hits 45°C, so plan outdoor time for morning or evening if you're visiting then.",
+        answerAr: "من نوفمبر إلى مارس، حين تتراوح درجات الحرارة نهارًا بين 22 و29 درجة مئوية. أما الصيف (يونيو إلى أغسطس) فتصل الحرارة فيه غالبًا إلى 45 درجة، فخطط لوقتك في الخارج صباحًا أو مساءً إن كانت زيارتك حينها.",
+      },
+      {
+        questionEn: "How many days should I spend in Riyadh?",
+        questionAr: "كم يومًا يجب أن أقضي في الرياض؟",
+        answerEn: "Three to five days is enough to cover Diriyah, the National Museum, Kingdom Centre and a day at Qiddiya's Six Flags or AquaRabia, without rushing.",
+        answerAr: "تكفي ثلاثة إلى خمسة أيام لتغطية الدرعية والمتحف الوطني وبرج المملكة ويوم في سيكس فلاغز أو أكوارابيا في القدية، من دون استعجال.",
+      },
+      {
+        questionEn: "What are the best things to do in Riyadh?",
+        questionAr: "ما أفضل الأنشطة في الرياض؟",
+        answerEn: "Walking At-Turaif in Diriyah, crossing the Kingdom Centre sky bridge, the National Museum, and the newer Qiddiya attractions, Six Flags for thrill rides and AquaRabia for the region's largest water park.",
+        answerAr: "التجول في حي الطريف بالدرعية، وعبور الجسر الزجاجي لبرج المملكة، والمتحف الوطني، ومعالم القدية الأحدث، سيكس فلاغز للألعاب المثيرة وأكوارابيا أكبر منتزه مائي في المنطقة.",
+      },
+      {
+        questionEn: "Is Riyadh safe for tourists?",
+        questionAr: "هل الرياض آمنة للسياح؟",
+        answerEn: "Yes, Saudi Arabia has a low crime rate and Riyadh is generally very safe to walk around, including in the evening. Normal travel precautions still apply.",
+        answerAr: "نعم، تتمتع السعودية بمعدل جريمة منخفض والرياض آمنة عمومًا للتجول فيها، حتى في المساء. وتبقى احتياطات السفر المعتادة سارية.",
+      },
+      {
+        questionEn: "What should I wear in Riyadh?",
+        questionAr: "ماذا يجب أن أرتدي في الرياض؟",
+        answerEn: "Modest, smart-casual clothing is appreciated for both men and women; there's no mandatory dress code for visitors, but covering shoulders and knees is a good default outside hotels and malls.",
+        answerAr: "الملابس المحتشمة والأنيقة العملية مناسبة للرجال والنساء؛ لا يوجد زي إلزامي للزوار، لكن تغطية الكتفين والركبتين خيار جيد خارج الفنادق والمولات.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Riyadh?",
+        questionAr: "هل أحتاج تأشيرة لزيارة الرياض؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is Riyadh good for families?",
+        questionAr: "هل الرياض مناسبة للعائلات؟",
+        answerEn: "Yes. AquaRabia, Boulevard World in season, family-friendly museums and a growing number of parks make it an easy city to plan around children of most ages.",
+        answerAr: "نعم. أكوارابيا وبوليفارد وورلد في موسمه والمتاحف الملائمة للعائلات وعدد متزايد من الحدائق تجعلها مدينة سهلة التخطيط حول الأطفال من مختلف الأعمار.",
+      },
+      {
+        questionEn: "What's the food scene like in Riyadh?",
+        questionAr: "كيف هو مشهد الطعام في الرياض؟",
+        answerEn: "Contemporary Saudi and Najdi cooking sits alongside an increasingly international fine-dining scene, restaurants like La Petite Maison and Myazu have made Riyadh a genuine dining destination in the last few years.",
+        answerAr: "يتجاور المطبخ السعودي والنجدي المعاصر مع مشهد طعام راقٍ متنامٍ وعالمي الطابع، إذ جعلت مطاعم مثل لا بوتيت ميزون ومايازو من الرياض وجهة طعام حقيقية في السنوات الأخيرة.",
+      },
+    ],
+    travelTips: [
+      {
+        en: "The weekend in Saudi Arabia is Friday–Saturday, not Saturday–Sunday, plan opening hours accordingly.",
+        ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، وليست السبت والأحد، فخطط لمواعيد العمل تبعًا لذلك.",
+      },
+      {
+        en: "Alcohol isn't sold or served anywhere in the Kingdom.",
+        ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة.",
+      },
+      {
+        en: "Many shops pause briefly around Friday midday prayer, build a little flexibility into your plans.",
+        ar: "تتوقف كثير من المحلات لفترة قصيرة حول صلاة الجمعة، فامنح خططك بعض المرونة.",
+      },
+      {
+        en: "Tipping isn't mandatory but is appreciated, especially for drivers and in restaurants.",
+        ar: "الإكرامية ليست إلزامية لكنها محل تقدير، خصوصًا للسائقين وفي المطاعم.",
+      },
+      {
+        en: "The Riyadh Metro and buses run on a single ticket system, useful if you're combining both.",
+        ar: "يعمل مترو الرياض والحافلات بنظام تذكرة واحدة، وهو مفيد إذا جمعت بين الاثنين.",
+      },
+      {
+        en: "Ride-hailing apps (Uber, Careem) are the simplest way to get around if you'd rather not rent a car.",
+        ar: "تطبيقات طلب المشاوير مثل أوبر وكريم هي الطريقة الأبسط للتنقل إن كنت تفضل عدم استئجار سيارة.",
+      },
+    ],
     attractions: [
       {
         nameEn: "Diriyah & At-Turaif",
@@ -278,6 +406,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Jeddah's Red Sea humidity makes the heat feel heavier here than inland Riyadh, even at similar temperatures.",
       tipAr: "رطوبة البحر الأحمر في جدة تجعل الحر أثقل من الرياض حتى عند تقارب درجات الحرارة.",
     },
+    transportation: [
+      {
+        modeEn: "King Abdulaziz International Airport",
+        modeAr: "مطار الملك عبدالعزيز الدولي",
+        descriptionEn: "About 19km north of the city, 20–45 minutes by road. Official taxis run 100–150 SAR to central Jeddah; Uber and Careem operate 24/7.",
+        descriptionAr: "يقع على بعد نحو 19 كم شمال المدينة، وتستغرق الرحلة 20 إلى 45 دقيقة بالسيارة. تتراوح أجرة التاكسي الرسمي بين 100 و150 ريالًا إلى وسط جدة، ويعمل أوبر وكريم على مدار الساعة.",
+      },
+      {
+        modeEn: "Haramain High-Speed Railway",
+        modeAr: "قطار الحرمين السريع",
+        descriptionEn: "Connects the airport and Jeddah's Sulaymaniyah station directly to Makkah and Madinah, trains roughly hourly, tickets from 65 SAR.",
+        descriptionAr: "يربط المطار ومحطة السليمانية في جدة مباشرة بمكة والمدينة، برحلات كل ساعة تقريبًا، وتبدأ التذاكر من 65 ريالًا.",
+      },
+      {
+        modeEn: "Ride-hailing & rental car",
+        modeAr: "طلب المشاوير واستئجار السيارات",
+        descriptionEn: "Uber and Careem cover the city easily; a rental car is worth it for a relaxed day moving between Al-Balad, the Corniche and the Waterfront.",
+        descriptionAr: "يغطي أوبر وكريم المدينة بسهولة، وتستحق السيارة المستأجرة التجربة ليوم مريح للتنقل بين البلد والكورنيش والواجهة البحرية.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is Jeddah famous for?",
+        questionAr: "بم تشتهر جدة؟",
+        answerEn: "Historic Al-Balad, its UNESCO-listed coral-stone old town, the Red Sea Corniche and the world's tallest fountain, and, historically, its role as the sea gateway for pilgrims heading to Makkah.",
+        answerAr: "بحي البلد التاريخي المسجل في تراث اليونسكو المبني بالحجر المرجاني، وكورنيش البحر الأحمر وأطول نافورة في العالم، وتاريخيًا بدورها كبوابة بحرية للحجاج المتجهين إلى مكة.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Jeddah?",
+        questionAr: "ما أفضل وقت لزيارة جدة؟",
+        answerEn: "November through March, when temperatures sit around 28–30°C. Summer brings both heat and humidity, so plan outdoor time for evenings if visiting June–September.",
+        answerAr: "من نوفمبر إلى مارس، حين تتراوح الحرارة بين 28 و30 درجة مئوية. يجمع الصيف بين الحر والرطوبة، فخطط لوقتك في الخارج مساءً إن كانت زيارتك بين يونيو وسبتمبر.",
+      },
+      {
+        questionEn: "How many days should I spend in Jeddah?",
+        questionAr: "كم يومًا يجب أن أقضي في جدة؟",
+        answerEn: "Three to five days covers Al-Balad, the Corniche, a Red Sea boat day and enough evenings to work through the dining scene.",
+        answerAr: "تكفي ثلاثة إلى خمسة أيام لتغطية البلد والكورنيش ويوم بحري في البحر الأحمر وأمسيات كافية لتجربة مشهد الطعام.",
+      },
+      {
+        questionEn: "What are the best things to do in Jeddah?",
+        questionAr: "ما أفضل الأنشطة في جدة؟",
+        answerEn: "Wandering Al-Balad's coral-stone streets, a Corniche walk to the King Fahd Fountain, a Red Sea diving or boat trip, and dinner on the Waterfront.",
+        answerAr: "التجول في أزقة البلد المرجانية، ونزهة على الكورنيش إلى نافورة الملك فهد، ورحلة غوص أو قارب في البحر الأحمر، وعشاء على الواجهة البحرية.",
+      },
+      {
+        questionEn: "Is Jeddah safe for tourists?",
+        questionAr: "هل جدة آمنة للسياح؟",
+        answerEn: "Yes, Jeddah is generally very safe to walk around, including the Corniche and Al-Balad in the evening. Normal travel precautions still apply.",
+        answerAr: "نعم، جدة آمنة عمومًا للتجول فيها، بما في ذلك الكورنيش والبلد مساءً. وتبقى احتياطات السفر المعتادة سارية.",
+      },
+      {
+        questionEn: "What should I wear in Jeddah?",
+        questionAr: "ماذا يجب أن أرتدي في جدة؟",
+        answerEn: "Modest, breathable clothing works best given the humidity; swimwear is fine at hotel pools and private beaches, but cover up elsewhere.",
+        answerAr: "الملابس المحتشمة الخفيفة هي الأنسب نظرًا للرطوبة، والملابس البحرية مناسبة في مسابح الفنادق والشواطئ الخاصة، لكن يُفضَّل التغطي في أماكن أخرى.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Jeddah?",
+        questionAr: "هل أحتاج تأشيرة لزيارة جدة؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is Jeddah good for families?",
+        questionAr: "هل جدة مناسبة للعائلات؟",
+        answerEn: "Yes, the Corniche's parks and beaches, boat trips and the walkable old town all work well for children of most ages.",
+        answerAr: "نعم، تناسب حدائق وشواطئ الكورنيش ورحلات القارب والمدينة القديمة القابلة للمشي فيها الأطفال من مختلف الأعمار.",
+      },
+      {
+        questionEn: "What's the food scene like in Jeddah?",
+        questionAr: "كيف هو مشهد الطعام في جدة؟",
+        answerEn: "Hijazi classics sit alongside an ambitious international dining scene, San Carlo, Sura and Sultan's Steakhouse among the names that have raised the city's profile in recent years.",
+        answerAr: "تتجاور الأطباق الحجازية الكلاسيكية مع مشهد طعام عالمي طموح، ومن الأسماء التي رفعت مكانة المدينة في السنوات الأخيرة سان كارلو وسورا وسلطانز ستيك هاوس.",
+      },
+    ],
+    travelTips: [
+      { en: "The weekend in Saudi Arabia is Friday–Saturday, plan opening hours accordingly.", ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، فخطط لمواعيد العمل تبعًا لذلك." },
+      { en: "Alcohol isn't sold or served anywhere in the Kingdom.", ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة." },
+      { en: "Pack light, breathable clothing, Jeddah's coastal humidity makes the heat feel heavier than the temperature alone suggests.", ar: "احزم ملابس خفيفة وقابلة للتهوية، فرطوبة جدة الساحلية تجعل الحر أثقل مما توحي به درجة الحرارة وحدها." },
+      { en: "Top restaurants book out fast, especially Thursday and Friday evenings, reserve ahead where you can.", ar: "تمتلئ حجوزات أفضل المطاعم بسرعة، خاصة مساء الخميس والجمعة، فاحجز مسبقًا متى أمكن." },
+      { en: "The Haramain train makes Makkah or Madinah an easy add-on if your visit allows it.", ar: "يجعل قطار الحرمين إضافة مكة أو المدينة إلى رحلتك أمرًا سهلًا إن سمح وقتك بذلك." },
+      { en: "Tipping isn't mandatory but is appreciated, especially for drivers and in restaurants.", ar: "الإكرامية ليست إلزامية لكنها محل تقدير، خصوصًا للسائقين وفي المطاعم." },
+    ],
     attractions: [
       {
         nameEn: "Al-Balad",
@@ -424,6 +636,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "AlUla's desert nights swing much colder than the daytime heat suggests, pack layers even in winter.",
       tipAr: "ليالي العلا الصحراوية أبرد بكثير مما توحي به حرارة النهار، فاصطحب طبقات دافئة حتى في الشتاء.",
     },
+    transportation: [
+      {
+        modeEn: "AlUla International Airport",
+        modeAr: "مطار العلا الدولي",
+        descriptionEn: "Direct domestic flights from Riyadh, Jeddah and Dammam, plus international routes from Dubai and Doha. About 25 minutes by taxi to town.",
+        descriptionAr: "رحلات مباشرة من الرياض وجدة والدمام، إضافة إلى رحلات دولية من دبي والدوحة. نحو 25 دقيقة بالتاكسي إلى البلدة.",
+      },
+      {
+        modeEn: "Rental car or scenic drive",
+        modeAr: "استئجار سيارة أو طريق بانورامي",
+        descriptionEn: "AlUla is reachable by road from Madinah or Tabuk in around 4 hours, a scenic option if you're combining destinations.",
+        descriptionAr: "يمكن الوصول إلى العلا برًا من المدينة أو تبوك خلال نحو 4 ساعات، خيار جميل إن كنت تجمع بين وجهات.",
+      },
+      {
+        modeEn: "Resort transfers",
+        modeAr: "توصيل المنتجعات",
+        descriptionEn: "Most AlUla resorts arrange private transfers from the airport directly, worth asking about when you book your stay.",
+        descriptionAr: "ترتب معظم منتجعات العلا توصيلًا خاصًا من المطار مباشرة، يستحق السؤال عنه عند حجز إقامتك.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is AlUla famous for?",
+        questionAr: "بم تشتهر العلا؟",
+        answerEn: "Hegra, Saudi Arabia's first UNESCO World Heritage Site with over 110 Nabataean tombs, Elephant Rock, and Maraya, the world's largest mirrored building.",
+        answerAr: "بالحِجر، أول موقع تراث عالمي لليونسكو في السعودية بأكثر من 110 مقابر نبطية، وجبل الفيل، ومرايا أكبر مبنى مرآوي في العالم.",
+      },
+      {
+        questionEn: "What's the best time of year to visit AlUla?",
+        questionAr: "ما أفضل وقت لزيارة العلا؟",
+        answerEn: "November through March, with daytime temperatures around 20–27°C. Nights get cold even in winter, so pack layers.",
+        answerAr: "من نوفمبر إلى مارس، بحرارة نهارية بين 20 و27 درجة مئوية. تبرد الليالي حتى في الشتاء، فاصطحب طبقات دافئة.",
+      },
+      {
+        questionEn: "How many days should I spend in AlUla?",
+        questionAr: "كم يومًا يجب أن أقضي في العلا؟",
+        answerEn: "Three to four days is typical, enough for Hegra, Elephant Rock, Maraya and one destination dinner without rushing.",
+        answerAr: "من ثلاثة إلى أربعة أيام عادة، وهو وقت كافٍ للحِجر وجبل الفيل ومرايا وعشاء استثنائي واحد من دون استعجال.",
+      },
+      {
+        questionEn: "What are the best things to do in AlUla?",
+        questionAr: "ما أفضل الأنشطة في العلا؟",
+        answerEn: "Touring Hegra's tombs, watching sunset at Elephant Rock, a concert or dinner at Maraya, and a quiet evening in Sharaan Nature Reserve.",
+        answerAr: "جولة في مقابر الحِجر، ومشاهدة الغروب عند جبل الفيل، وحفلة أو عشاء في مرايا، وأمسية هادئة في محمية شرعان الطبيعية.",
+      },
+      {
+        questionEn: "Is AlUla safe for tourists?",
+        questionAr: "هل العلا آمنة للسياح؟",
+        answerEn: "Yes, AlUla is a carefully managed tourism destination and very safe to explore, including its desert sites.",
+        answerAr: "نعم، العلا وجهة سياحية تُدار بعناية وآمنة جدًا للاستكشاف، بما في ذلك مواقعها الصحراوية.",
+      },
+      {
+        questionEn: "What should I wear in AlUla?",
+        questionAr: "ماذا يجب أن أرتدي في العلا؟",
+        answerEn: "Comfortable, modest clothing for desert walking by day, and warm layers for cold evenings, temperatures swing a lot after sunset.",
+        answerAr: "ملابس مريحة ومحتشمة للمشي الصحراوي نهارًا، وطبقات دافئة للأمسيات الباردة، إذ تتقلب الحرارة كثيرًا بعد الغروب.",
+      },
+      {
+        questionEn: "Do I need a visa to visit AlUla?",
+        questionAr: "هل أحتاج تأشيرة لزيارة العلا؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is AlUla good for families?",
+        questionAr: "هل العلا مناسبة للعائلات؟",
+        answerEn: "Yes, though it leans toward an older-child and adult experience, desert walks, stargazing and heritage sites rather than playgrounds.",
+        answerAr: "نعم، رغم أنها تناسب أكثر الأطفال الأكبر سنًا والبالغين، بمشي صحراوي ورصد نجوم ومواقع تراثية بدل الملاعب.",
+      },
+      {
+        questionEn: "What's the dining scene like in AlUla?",
+        questionAr: "كيف هو مشهد الطعام في العلا؟",
+        answerEn: "Small but exceptional, destination restaurants like Maraya Social and OKTO pair fine dining with dramatic desert settings rarely found elsewhere.",
+        answerAr: "صغير لكنه استثنائي، إذ تجمع مطاعم الوجهات مثل مرايا سوشال وأوكتو بين الطعام الراقي والمشاهد الصحراوية الدرامية النادرة في أماكن أخرى.",
+      },
+    ],
+    travelTips: [
+      { en: "AlUla is a managed destination, many sites require advance booking through Experience AlUla rather than walk-up access.", ar: "العلا وجهة مُدارة، وتتطلب معظم المواقع حجزًا مسبقًا عبر إكسبيرينس العلا بدل الدخول المباشر." },
+      { en: "Nights get genuinely cold even when the day was hot, always pack a jacket.", ar: "تبرد الليالي فعليًا حتى بعد نهار حار، فاصطحب سترة دائمًا." },
+      { en: "The weekend in Saudi Arabia is Friday–Saturday, plan opening hours accordingly.", ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، فخطط لمواعيد العمل تبعًا لذلك." },
+      { en: "Alcohol isn't sold or served anywhere in the Kingdom.", ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة." },
+      { en: "The Winter at Tantora festival (roughly December–March) adds concerts and events, but also higher demand for stays.", ar: "يضيف مهرجان شتاء طنطورة (من ديسمبر إلى مارس تقريبًا) حفلات وفعاليات، لكنه يرفع أيضًا الطلب على الإقامة." },
+      { en: "Book destination restaurants like Maraya Social well ahead, tables go quickly.", ar: "احجز في مطاعم الوجهات مثل مرايا سوشال مبكرًا، فالطاولات تُحجز بسرعة." },
+    ],
     attractions: [
       {
         nameEn: "Hegra",
@@ -579,6 +875,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Makkah stays warm even in its coolest months, and Hajj dates shift earlier each Gregorian year, so always check the season before you plan.",
       tipAr: "تبقى مكة دافئة حتى في أبرد أشهرها، ومواعيد الحج تتقدم كل عام ميلادي، لذا تحقق دائمًا من الموسم قبل التخطيط.",
     },
+    transportation: [
+      {
+        modeEn: "Via Jeddah Airport",
+        modeAr: "عبر مطار جدة",
+        descriptionEn: "Most pilgrims fly into King Abdulaziz International Airport (Jeddah), then continue to Makkah by car or the Haramain High-Speed Railway.",
+        descriptionAr: "يصل معظم الحجاج عبر مطار الملك عبدالعزيز الدولي في جدة، ثم يتابعون إلى مكة بالسيارة أو قطار الحرمين السريع.",
+      },
+      {
+        modeEn: "Haramain High-Speed Railway",
+        modeAr: "قطار الحرمين السريع",
+        descriptionEn: "Connects Jeddah's airport and city to a Makkah station roughly 3–4km from the Haram, journey under an hour from Jeddah.",
+        descriptionAr: "يربط مطار جدة ومدينتها بمحطة في مكة تبعد نحو 3 إلى 4 كم عن الحرم، برحلة أقل من ساعة من جدة.",
+      },
+      {
+        modeEn: "Within Makkah",
+        modeAr: "داخل مكة",
+        descriptionEn: "Taxis and ride-hailing cover the city itself; most Haram-area hotels are within easy walking distance of the mosque.",
+        descriptionAr: "تغطي سيارات الأجرة وتطبيقات طلب المشاوير المدينة نفسها، وتقع معظم فنادق منطقة الحرم على مسافة قريبة يمكن المشي إليها.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "Do I need a special visa to visit Makkah?",
+        questionAr: "هل أحتاج تأشيرة خاصة لزيارة مكة؟",
+        answerEn: "Yes, entry requires a Muslim-only Umrah visa or a Hajj permit through the Nusuk platform; a standard tourist visa does not grant access to Makkah.",
+        answerAr: "نعم، يتطلب الدخول تأشيرة عمرة مقتصرة على المسلمين أو تصريح حج عبر منصة نُسُك؛ ولا تمنح التأشيرة السياحية العادية دخول مكة.",
+      },
+      {
+        questionEn: "Can non-Muslims visit Makkah?",
+        questionAr: "هل يمكن لغير المسلمين زيارة مكة؟",
+        answerEn: "No. Entry to Makkah is restricted to Muslims, and this is enforced at checkpoints on every road into the city.",
+        answerAr: "لا. دخول مكة مقتصر على المسلمين، ويُطبَّق ذلك عند نقاط التفتيش على كل طريق مؤدٍ إلى المدينة.",
+      },
+      {
+        questionEn: "How do I get to Makkah from the airport?",
+        questionAr: "كيف أصل إلى مكة من المطار؟",
+        answerEn: "Most journeys begin at Jeddah's King Abdulaziz International Airport, then continue by car or the Haramain High-Speed Railway, under an hour to central Makkah.",
+        answerAr: "تبدأ معظم الرحلات من مطار الملك عبدالعزيز الدولي في جدة، ثم تتابع بالسيارة أو قطار الحرمين السريع، بأقل من ساعة إلى وسط مكة.",
+      },
+      {
+        questionEn: "What's the best time of year for Umrah?",
+        questionAr: "ما أفضل وقت لأداء العمرة؟",
+        answerEn: "January to March offers the most manageable weather. Ramadan and the weeks around Hajj (roughly April–May 2026) see the highest crowds and, during Hajj itself, Umrah visas pause entirely.",
+        answerAr: "تقدم الفترة من يناير إلى مارس أكثر الأجواء اعتدالًا. ويشهد رمضان والأسابيع المحيطة بالحج (من أبريل إلى مايو 2026 تقريبًا) أعلى الأعداد، وتتوقف تأشيرات العمرة تمامًا خلال موسم الحج نفسه.",
+      },
+      {
+        questionEn: "How many days should I plan for Umrah?",
+        questionAr: "كم يومًا يجب أن أخطط لأداء العمرة؟",
+        answerEn: "Three to six days is typical, enough time for the rituals themselves without feeling rushed, plus rest between visits to the Haram.",
+        answerAr: "من ثلاثة إلى ستة أيام عادة، وقت كافٍ لأداء المناسك من دون استعجال، مع راحة بين زيارات الحرم.",
+      },
+      {
+        questionEn: "What should I bring or wear?",
+        questionAr: "ماذا يجب أن أحضر أو أرتدي؟",
+        answerEn: "Men wear the two-piece white ihram for the rituals; women wear modest, loose clothing covering the body. Comfortable walking shoes and a refillable water bottle are worth packing too.",
+        answerAr: "يرتدي الرجال الإحرام الأبيض المكوّن من قطعتين لأداء المناسك، وترتدي النساء ملابس فضفاضة ومحتشمة تغطي الجسم. يستحق أيضًا اصطحاب حذاء مشي مريح وقارورة ماء قابلة لإعادة التعبئة.",
+      },
+      {
+        questionEn: "Is Makkah safe?",
+        questionAr: "هل مكة آمنة؟",
+        answerEn: "Yes, Makkah is extremely well organised for the volume of pilgrims it receives, with security, crowd management and medical support throughout the Haram.",
+        answerAr: "نعم، مكة منظمة جيدًا جدًا نظرًا لأعداد الحجاج الكبيرة التي تستقبلها، مع أمن وإدارة للحشود ودعم طبي في أنحاء الحرم.",
+      },
+      {
+        questionEn: "Can I visit Makkah and Madinah on the same trip?",
+        questionAr: "هل يمكنني زيارة مكة والمدينة في الرحلة نفسها؟",
+        answerEn: "Yes, this is the most common way to perform Umrah. The Haramain High-Speed Railway connects the two cities in under three hours.",
+        answerAr: "نعم، وهذه الطريقة الأكثر شيوعًا لأداء العمرة. يربط قطار الحرمين السريع بين المدينتين في أقل من ثلاث ساعات.",
+      },
+      {
+        questionEn: "What's the Hajj season and how is it different?",
+        questionAr: "ما موسم الحج وكيف يختلف؟",
+        answerEn: "Hajj follows the Islamic lunar calendar, so its dates shift about 11 days earlier each Gregorian year. It requires a separate Hajj permit, not a standard Umrah visa, and sees the Kingdom's highest visitor numbers of the year.",
+        answerAr: "يتبع الحج التقويم الهجري، فتتقدم مواعيده نحو 11 يومًا كل عام ميلادي. ويتطلب تصريح حج منفصلًا وليس تأشيرة عمرة عادية، ويشهد أعلى أعداد الزوار في المملكة خلال العام.",
+      },
+    ],
+    travelTips: [
+      { en: "A Muslim-only Umrah visa or Hajj permit is required, standard tourist eVisas don't grant entry to Makkah.", ar: "تُشترط تأشيرة عمرة مقتصرة على المسلمين أو تصريح حج، ولا تمنح التأشيرة السياحية العادية دخول مكة." },
+      { en: "Register any worship permits needed through the official Nusuk platform ahead of travel.", ar: "سجّل أي تصاريح عبادة مطلوبة عبر منصة نُسُك الرسمية قبل السفر." },
+      { en: "Comfortable, well-worn walking shoes matter more than almost anything else you pack.", ar: "الحذاء المريح والمجرَّب مسبقًا أهم من أي شيء آخر تقريبًا تحزمه." },
+      { en: "Carry a refillable water bottle, Zamzam water is freely available throughout the Haram.", ar: "احمل قارورة ماء قابلة لإعادة التعبئة، فماء زمزم متوفر مجانًا في أنحاء الحرم." },
+      { en: "Outside the rituals themselves, dress modestly and comfortably; loose, breathable fabric handles the heat best.", ar: "خارج أداء المناسك نفسها، ارتدِ ملابس محتشمة ومريحة؛ فالأقمشة الفضفاضة القابلة للتهوية تتحمل الحر بشكل أفضل." },
+      { en: "Book accommodation near the Haram well in advance, especially around Ramadan, prices and demand rise sharply.", ar: "احجز الإقامة قرب الحرم مسبقًا، خاصة حول رمضان، إذ ترتفع الأسعار والطلب بشكل كبير." },
+    ],
     attractions: [
       {
         nameEn: "Masjid al-Haram & the Kaaba",
@@ -660,6 +1040,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Many travellers visit Madinah and Makkah on the same trip, plan the order around your dates and energy for each city.",
       tipAr: "يزور كثير من المسافرين المدينة ومكة في الرحلة نفسها، فخطط للترتيب بينهما حسب تواريخك وطاقتك في كل مدينة.",
     },
+    transportation: [
+      {
+        modeEn: "Prince Mohammad bin Abdulaziz Airport",
+        modeAr: "مطار الأمير محمد بن عبدالعزيز",
+        descriptionEn: "Madinah's own airport, with direct flights from Jeddah, Riyadh and international routes for pilgrims flying straight in.",
+        descriptionAr: "مطار المدينة الخاص بها، برحلات مباشرة من جدة والرياض ورحلات دولية للحجاج القادمين مباشرة.",
+      },
+      {
+        modeEn: "Haramain High-Speed Railway",
+        modeAr: "قطار الحرمين السريع",
+        descriptionEn: "Connects Madinah to Jeddah, its airport and Makkah, the Madinah station sits about 8–10km from Al-Masjid an-Nabawi.",
+        descriptionAr: "يربط المدينة بجدة ومطارها ومكة، وتقع محطة المدينة على بعد نحو 8 إلى 10 كم من المسجد النبوي.",
+      },
+      {
+        modeEn: "Within Madinah",
+        modeAr: "داخل المدينة",
+        descriptionEn: "Taxis and ride-hailing cover the city easily; many hotels near the mosque are within walking distance of the Haram.",
+        descriptionAr: "تغطي سيارات الأجرة وتطبيقات طلب المشاوير المدينة بسهولة، وتقع فنادق كثيرة قرب المسجد على مسافة يمكن المشي إليها.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "Can non-Muslims visit Madinah?",
+        questionAr: "هل يمكن لغير المسلمين زيارة المدينة؟",
+        answerEn: "Yes, unlike Makkah, the city of Madinah itself is open to non-Muslim visitors. Entry to Al-Masjid an-Nabawi, the Prophet's Mosque, remains for Muslims only.",
+        answerAr: "نعم، خلافًا لمكة، فإن مدينة المدينة نفسها مفتوحة لغير المسلمين. لكن دخول المسجد النبوي يبقى مقتصرًا على المسلمين.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Madinah?",
+        questionAr: "هل أحتاج تأشيرة لزيارة المدينة؟",
+        answerEn: "Muslim travellers typically visit on an Umrah visa alongside Makkah. Non-Muslims can generally visit the city on a standard Saudi tourist eVisa; we can help confirm what applies to you.",
+        answerAr: "يزور المسلمون عادة بتأشيرة عمرة إلى جانب مكة. ويمكن لغير المسلمين عمومًا زيارة المدينة بتأشيرة سياحية سعودية عادية؛ ويمكننا مساعدتك في تأكيد ما ينطبق عليك.",
+      },
+      {
+        questionEn: "How do I get to Madinah?",
+        questionAr: "كيف أصل إلى المدينة؟",
+        answerEn: "Either directly by air to Prince Mohammad bin Abdulaziz Airport, or via the Haramain High-Speed Railway from Jeddah or Makkah.",
+        answerAr: "إما مباشرة جوًا إلى مطار الأمير محمد بن عبدالعزيز، أو عبر قطار الحرمين السريع من جدة أو مكة.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Madinah?",
+        questionAr: "ما أفضل وقت لزيارة المدينة؟",
+        answerEn: "November through February, with mild temperatures around 25–28°C, comfortable for walking to Quba and Uhud as well as the mosque.",
+        answerAr: "من نوفمبر إلى فبراير، بحرارة معتدلة بين 25 و28 درجة مئوية، مناسبة للمشي إلى قباء وأحد إضافة إلى المسجد.",
+      },
+      {
+        questionEn: "How many days should I spend in Madinah?",
+        questionAr: "كم يومًا يجب أن أقضي في المدينة؟",
+        answerEn: "Three to five days is typical, enough for unhurried prayers at the mosque plus visits to Quba Mosque and Mount Uhud.",
+        answerAr: "من ثلاثة إلى خمسة أيام عادة، وقت كافٍ للصلاة في المسجد من دون استعجال إضافة إلى زيارة مسجد قباء وجبل أحد.",
+      },
+      {
+        questionEn: "What should I wear in Madinah?",
+        questionAr: "ماذا يجب أن أرتدي في المدينة؟",
+        answerEn: "Modest, comfortable clothing suited to walking, similar to what you'd wear in Makkah. Non-Muslim visitors should also dress modestly out of respect.",
+        answerAr: "ملابس محتشمة ومريحة مناسبة للمشي، مشابهة لما يُرتدى في مكة. ويُستحسن أن يرتدي الزوار غير المسلمين أيضًا ملابس محتشمة احترامًا.",
+      },
+      {
+        questionEn: "Is Madinah safe?",
+        questionAr: "هل المدينة آمنة؟",
+        answerEn: "Yes, Madinah is calm and well organised, with a noticeably slower pace than Makkah even during busy periods.",
+        answerAr: "نعم، المدينة هادئة ومنظمة جيدًا، بإيقاع أبطأ ملحوظ من مكة حتى في الفترات المزدحمة.",
+      },
+      {
+        questionEn: "Can I visit Madinah and Makkah on the same trip?",
+        questionAr: "هل يمكنني زيارة المدينة ومكة في الرحلة نفسها؟",
+        answerEn: "Yes, this is the most common way to travel. The Haramain High-Speed Railway connects the two cities in under three hours.",
+        answerAr: "نعم، وهذه الطريقة الأكثر شيوعًا للسفر. يربط قطار الحرمين السريع بين المدينتين في أقل من ثلاث ساعات.",
+      },
+      {
+        questionEn: "What else is there to see beyond the mosque?",
+        questionAr: "ما الذي يمكن رؤيته إلى جانب المسجد؟",
+        answerEn: "Quba Mosque, the first mosque built in Islam, and Mount Uhud, site of the Battle of Uhud and resting place of 70 of the Prophet's companions, are both short trips from central Madinah.",
+        answerAr: "مسجد قباء، أول مسجد بُني في الإسلام، وجبل أحد، موقع غزوة أحد ومقر دفن سبعين من صحابة النبي، وكلاهما على مسافة قصيرة من وسط المدينة.",
+      },
+    ],
+    travelTips: [
+      { en: "Entry to Al-Masjid an-Nabawi itself is for Muslims only, even though the city is open to all visitors.", ar: "دخول المسجد النبوي نفسه مقتصر على المسلمين، رغم أن المدينة مفتوحة لجميع الزوار." },
+      { en: "Comfortable walking shoes matter, hotels near the mosque still mean a fair amount of walking within the complex.", ar: "الحذاء المريح مهم، فحتى الفنادق القريبة من المسجد تعني قدرًا لا بأس به من المشي داخل المجمع." },
+      { en: "Many travellers pair Madinah with Makkah via the Haramain train, plan the order around your energy and dates.", ar: "يجمع كثير من المسافرين بين المدينة ومكة عبر قطار الحرمين، فخطط للترتيب حسب طاقتك وتواريخك." },
+      { en: "Dress modestly even outside prayer times, out of respect for the city's character.", ar: "ارتدِ ملابس محتشمة حتى خارج أوقات الصلاة، احترامًا لطابع المدينة." },
+      { en: "Quba Mosque and Mount Uhud are both easy half-day additions if your schedule allows.", ar: "يمكن إضافة مسجد قباء وجبل أحد بسهولة كنشاط نصف يوم إن سمح جدولك." },
+      { en: "Book Haram-area hotels well ahead during Ramadan and the weeks around Hajj, demand rises sharply.", ar: "احجز فنادق منطقة الحرم مسبقًا خلال رمضان والأسابيع المحيطة بالحج، إذ يرتفع الطلب بشكل كبير." },
+    ],
     attractions: [
       {
         nameEn: "Al-Masjid an-Nabawi",
@@ -740,6 +1204,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Late October and early March offer the best balance, good weather without the peak-season crowds.",
       tipAr: "أواخر أكتوبر وأوائل مارس يقدمان أفضل توازن، طقس جيد من دون ازدحام موسم الذروة.",
     },
+    transportation: [
+      {
+        modeEn: "Red Sea International Airport",
+        modeAr: "مطار البحر الأحمر الدولي",
+        descriptionEn: "Direct flights from Dubai, Doha and Milan, with more European routes launching through 2026. About an hour's drive from most resorts.",
+        descriptionAr: "رحلات مباشرة من دبي والدوحة وميلانو، مع مسارات أوروبية إضافية تنطلق خلال عام 2026. نحو ساعة بالسيارة من معظم المنتجعات.",
+      },
+      {
+        modeEn: "Resort transfers",
+        modeAr: "توصيل المنتجعات",
+        descriptionEn: "Most stays include arranged transfers from the airport, luggage is often delivered straight to your room, bypassing baggage claim.",
+        descriptionAr: "تشمل معظم الإقامات توصيلًا مرتبًا من المطار، وغالبًا ما يُسلَّم الأمتعة مباشرة إلى غرفتك، متجاوزًا استلام الأمتعة المعتاد.",
+      },
+      {
+        modeEn: "Inter-island boats",
+        modeAr: "قوارب بين الجزر",
+        descriptionEn: "Boats and speedboats connect the islands and Shura Island's hub, arranged through your resort for day trips or transfers.",
+        descriptionAr: "تربط القوارب والزوارق السريعة الجزر بمحور جزيرة شرعان، وتُرتَّب عبر منتجعك للرحلات اليومية أو التنقلات.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is the Red Sea destination famous for?",
+        questionAr: "بم تشتهر وجهة البحر الأحمر؟",
+        answerEn: "Some of the least-dived reef systems left in the world, private-island resorts and a coastline that's still largely untouched by mass tourism.",
+        answerAr: "بأنظمة مرجانية من الأقل غوصًا في العالم، ومنتجعات على جزر خاصة، وساحل لا يزال إلى حد بعيد بمنأى عن السياحة الجماهيرية.",
+      },
+      {
+        questionEn: "What's the best time of year to visit?",
+        questionAr: "ما أفضل وقت للزيارة؟",
+        answerEn: "November through April, with warm water, excellent visibility and calm seas for diving. Late October and early March balance good weather with fewer crowds.",
+        answerAr: "من نوفمبر إلى أبريل، بمياه دافئة ورؤية ممتازة وبحر هادئ للغوص. ويوازن أواخر أكتوبر وأوائل مارس بين الطقس الجيد وقلة الازدحام.",
+      },
+      {
+        questionEn: "How many nights should I book?",
+        questionAr: "كم ليلة يجب أن أحجز؟",
+        answerEn: "Three to seven nights is typical, resort-style stays reward slowing down rather than packing in day trips.",
+        answerAr: "من ثلاث إلى سبع ليالٍ عادة، فإقامات المنتجعات تكافئ التمهل بدل حشو الرحلات اليومية.",
+      },
+      {
+        questionEn: "What are the best things to do?",
+        questionAr: "ما أفضل الأنشطة؟",
+        answerEn: "Diving or snorkelling the reefs, a private beach afternoon, and resort wellness experiences, most days here are built around the water.",
+        answerAr: "الغوص أو السنوركل في الشعاب، وظهيرة على شاطئ خاص، وتجارب العافية في المنتجع، إذ تُبنى معظم الأيام هنا حول الماء.",
+      },
+      {
+        questionEn: "Is the Red Sea destination safe?",
+        questionAr: "هل وجهة البحر الأحمر آمنة؟",
+        answerEn: "Yes, the resorts are private, well-managed properties with a strong safety record for diving and water activities.",
+        answerAr: "نعم، المنتجعات ممتلكات خاصة تُدار جيدًا وتتمتع بسجل أمان قوي لأنشطة الغوص والأنشطة المائية.",
+      },
+      {
+        questionEn: "What should I wear at the resorts?",
+        questionAr: "ماذا يجب أن أرتدي في المنتجعات؟",
+        answerEn: "Resort and swimwear are the norm within these private island properties, a welcome difference from public beaches elsewhere in the Kingdom.",
+        answerAr: "الملابس المخصصة للمنتجعات والملابس البحرية هي المعتادة داخل هذه الممتلكات على الجزر الخاصة، وهو اختلاف مرحَّب به عن الشواطئ العامة في أماكن أخرى من المملكة.",
+      },
+      {
+        questionEn: "Do I need a visa to visit?",
+        questionAr: "هل أحتاج تأشيرة للزيارة؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is this a good destination for families?",
+        questionAr: "هل هذه وجهة جيدة للعائلات؟",
+        answerEn: "Many resorts welcome families with kids' clubs and gentle snorkelling spots, though some properties are positioned as adults-only, worth checking when you book.",
+        answerAr: "ترحب منتجعات كثيرة بالعائلات بنوادٍ للأطفال ومواقع سنوركل هادئة، لكن بعض المنتجعات مخصصة للبالغين فقط، ويستحق ذلك التحقق منه عند الحجز.",
+      },
+      {
+        questionEn: "What's dining like at the resorts?",
+        questionAr: "كيف هو الطعام في المنتجعات؟",
+        answerEn: "Each resort runs its own restaurants, typically several per property, ranging from casual all-day dining to fine dining, included or available depending on your package.",
+        answerAr: "يدير كل منتجع مطاعمه الخاصة، عادة عدة مطاعم في كل ممتلكات، تتراوح بين طعام غير رسمي طوال اليوم وطعام راقٍ، وتكون مشمولة أو متاحة حسب باقتك.",
+      },
+    ],
+    travelTips: [
+      { en: "Book well ahead for the November–April window, it's the most popular season for good reason.", ar: "احجز مسبقًا لفترة نوفمبر إلى أبريل، فهي الموسم الأكثر طلبًا لسبب وجيه." },
+      { en: "Check whether your resort is adults-only or family-friendly before booking.", ar: "تحقق مما إذا كان منتجعك مخصصًا للبالغين فقط أو مناسبًا للعائلات قبل الحجز." },
+      { en: "Reef-safe sunscreen is worth packing, some resorts request it specifically to protect the coral.", ar: "يستحق واقي الشمس الآمن للشعاب اصطحابه، إذ تطلبه بعض المنتجعات تحديدًا لحماية المرجان." },
+      { en: "Alcohol policies vary by resort, some serve it within the property, check ahead if this matters to you.", ar: "تختلف سياسات الكحول حسب المنتجع، ويقدمه بعضها داخل الممتلكات، فتحقق مسبقًا إن كان هذا مهمًا لك." },
+      { en: "Confirm what's included in your package, meals, activities and transfers vary widely between resorts.", ar: "تأكد مما يشمله باقتك، فالوجبات والأنشطة والتوصيل تختلف كثيرًا بين المنتجعات." },
+      { en: "Pack for both water and desert, several resorts sit where dunes meet the coastline.", ar: "احزم لكل من الماء والصحراء، إذ يقع بعض المنتجعات حيث تلتقي الكثبان بالساحل." },
+    ],
     attractions: [
       {
         nameEn: "Shura Island",
@@ -861,6 +1409,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Abha runs noticeably cooler than the rest of the Kingdom year-round, many Saudis visit specifically to escape summer heat elsewhere.",
       tipAr: "تكون أبها أكثر برودة بوضوح من بقية المملكة طوال العام، ويزورها كثير من السعوديين خصيصًا هربًا من حر الصيف في أماكن أخرى.",
     },
+    transportation: [
+      {
+        modeEn: "Abha International Airport",
+        modeAr: "مطار أبها الدولي",
+        descriptionEn: "Domestic flights connect Abha to Riyadh, Jeddah and other major cities, a short taxi ride from the airport into town.",
+        descriptionAr: "تربط رحلات داخلية أبها بالرياض وجدة ومدن رئيسية أخرى، وتبعد المدينة عن المطار مسافة قصيرة بالتاكسي.",
+      },
+      {
+        modeEn: "Rental car",
+        modeAr: "استئجار سيارة",
+        descriptionEn: "Worth it for reaching Rijal Almaa, Asir National Park and mountain viewpoints at your own pace.",
+        descriptionAr: "يستحق التجربة للوصول إلى رجال ألمع ومنتزه عسير الوطني والمطلات الجبلية بالوتيرة التي تناسبك.",
+      },
+      {
+        modeEn: "Taxis & ride-hailing",
+        modeAr: "التاكسي وتطبيقات طلب المشاوير",
+        descriptionEn: "Available around the city centre and As-Soudah for shorter trips without a rental car.",
+        descriptionAr: "متوفرة حول وسط المدينة والسودة للرحلات القصيرة من دون سيارة مستأجرة.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is Abha famous for?",
+        questionAr: "بم تشتهر أبها؟",
+        answerEn: "Being Saudi Arabia's cool-weather escape, misty mountain air, the As-Soudah cable car and the colourful stone palaces of Rijal Almaa.",
+        answerAr: "بكونها ملاذ السعودية من الحر، بهوائها الجبلي الضبابي، وتلفريك السودة، وقصور رجال ألمع الحجرية الملونة.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Abha?",
+        questionAr: "ما أفضل وقت لزيارة أبها؟",
+        answerEn: "March through August, when temperatures stay a mild 15–25°C even while the rest of the Kingdom bakes, this is Abha's peak season for exactly that reason.",
+        answerAr: "من مارس إلى أغسطس، حين تبقى الحرارة معتدلة بين 15 و25 درجة مئوية حتى بينما تحترق بقية المملكة، وهذا هو موسم أبها الأعلى طلبًا لهذا السبب بالتحديد.",
+      },
+      {
+        questionEn: "How many days should I spend in Abha?",
+        questionAr: "كم يومًا يجب أن أقضي في أبها؟",
+        answerEn: "Two to four days covers the cable car, Rijal Almaa, Abha Art Street and a hike or two in Asir National Park.",
+        answerAr: "يومان إلى أربعة أيام كافية للتلفريك ورجال ألمع وشارع الفن في أبها ونزهة أو نزهتين في منتزه عسير الوطني.",
+      },
+      {
+        questionEn: "What are the best things to do in Abha?",
+        questionAr: "ما أفضل الأنشطة في أبها؟",
+        answerEn: "Riding the As-Soudah cable car, wandering Rijal Almaa's stone palaces, and hiking the juniper forests of Asir National Park in the cool morning hours.",
+        answerAr: "ركوب تلفريك السودة، والتجول بين قصور رجال ألمع الحجرية، والمشي بين غابات العرعر في منتزه عسير الوطني في ساعات الصباح الباردة.",
+      },
+      {
+        questionEn: "Is Abha safe for tourists?",
+        questionAr: "هل أبها آمنة للسياح؟",
+        answerEn: "Yes, Abha is generally very safe. Mountain roads can get foggy in winter, so drive carefully if self-driving.",
+        answerAr: "نعم، أبها آمنة عمومًا. وقد تصبح طرق الجبال ضبابية في الشتاء، فقُد بحذر إن كنت تقود بنفسك.",
+      },
+      {
+        questionEn: "What should I wear in Abha?",
+        questionAr: "ماذا يجب أن أرتدي في أبها؟",
+        answerEn: "Layers. Days can be mild and evenings genuinely cool, especially December through February, unusual for Saudi Arabia but worth packing for.",
+        answerAr: "طبقات من الملابس. قد تكون الأيام معتدلة والأمسيات باردة فعليًا، خاصة من ديسمبر إلى فبراير، وهو أمر غير معتاد في السعودية لكنه يستحق الاستعداد له.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Abha?",
+        questionAr: "هل أحتاج تأشيرة لزيارة أبها؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is Abha good for families?",
+        questionAr: "هل أبها مناسبة للعائلات؟",
+        answerEn: "Yes, the cable car and Rijal Almaa are both easy, engaging visits for children, and the cooler climate makes outdoor time more comfortable than most of the Kingdom.",
+        answerAr: "نعم، يعد التلفريك ورجال ألمع زيارتين سهلتين وممتعتين للأطفال، ويجعل المناخ الأبرد الوقت في الخارج أكثر راحة من معظم أنحاء المملكة.",
+      },
+      {
+        questionEn: "What's the food like in Abha?",
+        questionAr: "كيف هو الطعام في أبها؟",
+        answerEn: "Traditional Aseeri cooking is the highlight, restaurants like Bab Al Turath serve it in settings styled after historic Aseer homes.",
+        answerAr: "المطبخ الأسيري التقليدي هو الأبرز، وتقدمه مطاعم مثل باب التراث في أجواء مصممة على طراز بيوت عسير التاريخية.",
+      },
+    ],
+    travelTips: [
+      { en: "Rijal Almaa operates seasonally, mainly through summer, check dates before you plan around it.", ar: "تعمل رجال ألمع موسميًا، غالبًا خلال الصيف، فتحقق من المواعيد قبل التخطيط حولها." },
+      { en: "Pack layers, Abha's temperature swings more between day and night than most Saudi destinations.", ar: "احزم طبقات من الملابس، فحرارة أبها تتفاوت بين النهار والليل أكثر من معظم وجهات السعودية." },
+      { en: "Mountain roads can get foggy, especially in winter mornings, drive with extra care if self-driving.", ar: "قد تصبح طرق الجبال ضبابية، خاصة في صباحات الشتاء، فقُد بحذر إضافي إن كنت تقود بنفسك." },
+      { en: "The weekend in Saudi Arabia is Friday–Saturday, plan opening hours accordingly.", ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، فخطط لمواعيد العمل تبعًا لذلك." },
+      { en: "Alcohol isn't sold or served anywhere in the Kingdom.", ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة." },
+      { en: "Book cable car tickets ahead on weekends and during the Abha Summer Festival, queues build quickly.", ar: "احجز تذاكر التلفريك مسبقًا في عطلات نهاية الأسبوع وخلال مهرجان أبها الصيفي، إذ تتشكل الطوابير بسرعة." },
+    ],
     attractions: [
       {
         nameEn: "As-Soudah Cable Car",
@@ -991,6 +1623,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Taif's elevation makes it noticeably cooler than the coast year-round, one of the reasons it became a summer retreat in the first place.",
       tipAr: "يجعل ارتفاع الطائف طقسها أبرد بوضوح من الساحل طوال العام، وهذا أحد أسباب تحولها إلى مصيف منذ البداية.",
     },
+    transportation: [
+      {
+        modeEn: "Taif International Airport",
+        modeAr: "مطار الطائف الدولي",
+        descriptionEn: "Domestic flights connect Taif to Riyadh, Jeddah and other cities; the airport sits close to the city centre.",
+        descriptionAr: "تربط رحلات داخلية الطائف بالرياض وجدة ومدن أخرى، ويقع المطار قريبًا من وسط المدينة.",
+      },
+      {
+        modeEn: "Road from Makkah or Jeddah",
+        modeAr: "الطريق من مكة أو جدة",
+        descriptionEn: "Taif is a scenic 90-minute to two-hour drive from Makkah or Jeddah via the Al Hada mountain road, a popular day-trip or stopover route.",
+        descriptionAr: "تبعد الطائف عن مكة أو جدة رحلة بانورامية تستغرق من 90 دقيقة إلى ساعتين عبر طريق جبل الهدا، وهو مسار مفضل للرحلات اليومية أو التوقف العابر.",
+      },
+      {
+        modeEn: "Rental car",
+        modeAr: "استئجار سيارة",
+        descriptionEn: "Recommended for reaching rose farms and mountain viewpoints beyond the city centre at your own pace.",
+        descriptionAr: "يُنصح به للوصول إلى مزارع الورد والمطلات الجبلية خارج وسط المدينة بالوتيرة التي تناسبك.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is Taif famous for?",
+        questionAr: "بم تشتهر الطائف؟",
+        answerEn: "Being the City of Roses, thousands of farms that perfume the hills each spring, plus Shubra Palace and the winding Al Hada mountain road.",
+        answerAr: "بكونها مدينة الورد، آلاف المزارع التي تعطر التلال كل ربيع، إضافة إلى قصر شبرا وطريق الهدا الجبلي المتعرج.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Taif?",
+        questionAr: "ما أفضل وقت لزيارة الطائف؟",
+        answerEn: "November through April for the most comfortable weather, and specifically April if you want to catch the Rose Festival.",
+        answerAr: "من نوفمبر إلى أبريل لأكثر الأجواء اعتدالًا، وتحديدًا أبريل إن أردت حضور مهرجان الورد.",
+      },
+      {
+        questionEn: "How many days should I spend in Taif?",
+        questionAr: "كم يومًا يجب أن أقضي في الطائف؟",
+        answerEn: "Two to four days is typical, often paired as a cooler add-on to a Makkah or Jeddah trip given the short drive.",
+        answerAr: "يومان إلى أربعة أيام عادة، وغالبًا ما تُضاف كوجهة أبرد إلى رحلة مكة أو جدة نظرًا لقصر مسافة الطريق.",
+      },
+      {
+        questionEn: "What are the best things to do in Taif?",
+        questionAr: "ما أفضل الأنشطة في الطائف؟",
+        answerEn: "Touring Shubra Palace, driving the Al Hada mountain road and riding the cable car, and visiting a rose farm during spring harvest.",
+        answerAr: "جولة في قصر شبرا، وقيادة طريق جبل الهدا وركوب التلفريك، وزيارة مزرعة ورد خلال موسم الحصاد الربيعي.",
+      },
+      {
+        questionEn: "Is Taif safe for tourists?",
+        questionAr: "هل الطائف آمنة للسياح؟",
+        answerEn: "Yes, Taif is generally very safe, and the mountain roads, while winding, are well maintained.",
+        answerAr: "نعم، الطائف آمنة عمومًا، وطرق الجبال، رغم تعرجها، مصانة جيدًا.",
+      },
+      {
+        questionEn: "What should I wear in Taif?",
+        questionAr: "ماذا يجب أن أرتدي في الطائف؟",
+        answerEn: "Modest, comfortable clothing; layers help since the mountain elevation makes evenings noticeably cooler than the coast.",
+        answerAr: "ملابس محتشمة ومريحة؛ وتساعد الطبقات لأن ارتفاع الجبل يجعل الأمسيات أكثر برودة بوضوح من الساحل.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Taif?",
+        questionAr: "هل أحتاج تأشيرة لزيارة الطائف؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is Taif good for families?",
+        questionAr: "هل الطائف مناسبة للعائلات؟",
+        answerEn: "Yes, the cable car, rose farms and Al Kar Tourist Village all work well for children, with cooler weather making outdoor time easier.",
+        answerAr: "نعم، يناسب التلفريك ومزارع الورد وقرية الكار السياحية الأطفال جميعًا، ويسهّل الطقس الأبرد الوقت في الخارج.",
+      },
+      {
+        questionEn: "What's Taif known for beyond roses?",
+        questionAr: "بم تشتهر الطائف إلى جانب الورد؟",
+        answerEn: "Honey, fresh mountain fruit and the Ottoman-era architecture of Shubra Palace, now a heritage museum in the old town.",
+        answerAr: "بالعسل والفاكهة الجبلية الطازجة وعمارة قصر شبرا من الحقبة العثمانية، وهو اليوم متحف تراثي في المدينة القديمة.",
+      },
+    ],
+    travelTips: [
+      { en: "April is peak rose season, book rose-farm tours ahead if visiting then.", ar: "أبريل هو موسم الورد الأعلى، فاحجز جولات مزارع الورد مسبقًا إن كانت زيارتك حينها." },
+      { en: "The Al Hada road has many switchbacks, take it slow if you're not used to mountain driving.", ar: "يضم طريق الهدا منعطفات كثيرة، فخذ وقتك إن لم تعتد القيادة الجبلية." },
+      { en: "Evenings are noticeably cooler than the coast, pack a light jacket even in summer.", ar: "الأمسيات أبرد بوضوح من الساحل، فاصطحب سترة خفيفة حتى في الصيف." },
+      { en: "The weekend in Saudi Arabia is Friday–Saturday, plan opening hours accordingly.", ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، فخطط لمواعيد العمل تبعًا لذلك." },
+      { en: "Alcohol isn't sold or served anywhere in the Kingdom.", ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة." },
+      { en: "Watch your belongings around the baboons on the Al Hada road, they're bold around food.", ar: "انتبه لمقتنياتك قرب قردة البابون على طريق الهدا، فهي جريئة حول الطعام." },
+    ],
     attractions: [
       {
         nameEn: "Shubra Palace",
@@ -1104,6 +1820,90 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       tipEn: "Al-Ahsa's long summer runs six months, plan around November through March if you can.",
       tipAr: "يمتد صيف الأحساء الطويل ستة أشهر، فحاول التخطيط بين نوفمبر ومارس إن أمكن.",
     },
+    transportation: [
+      {
+        modeEn: "al-Ahsa International Airport",
+        modeAr: "مطار الأحساء الدولي",
+        descriptionEn: "Domestic flights connect Al-Ahsa to Riyadh, Jeddah and other major cities.",
+        descriptionAr: "تربط رحلات داخلية الأحساء بالرياض وجدة ومدن رئيسية أخرى.",
+      },
+      {
+        modeEn: "Road from Dammam or Riyadh",
+        modeAr: "الطريق من الدمام أو الرياض",
+        descriptionEn: "Al-Ahsa is roughly a 90-minute drive from Dammam and about two and a half hours from Riyadh via well-maintained highways.",
+        descriptionAr: "تبعد الأحساء نحو 90 دقيقة بالسيارة عن الدمام وحوالي ساعتين ونصف عن الرياض عبر طرق سريعة مصانة جيدًا.",
+      },
+      {
+        modeEn: "Rental car or taxi",
+        modeAr: "استئجار سيارة أو سيارة أجرة",
+        descriptionEn: "The oasis, mountain and souq are spread across the city, so a car or ride-hailing app makes getting between them far easier.",
+        descriptionAr: "تتوزع الواحة والجبل والسوق في أنحاء المدينة، لذا تجعل السيارة أو تطبيقات النقل التنقل بينها أسهل بكثير.",
+      },
+    ],
+    faq: [
+      {
+        questionEn: "What is Al-Ahsa famous for?",
+        questionAr: "بم تشتهر الأحساء؟",
+        answerEn: "Being the largest oasis on Earth, a UNESCO World Heritage site with over two and a half million date palms, plus Al-Qarah Mountain's wind-carved caves.",
+        answerAr: "بكونها أكبر واحة على وجه الأرض، وموقع تراث عالمي لليونسكو يضم أكثر من مليونين ونصف مليون نخلة، إضافة إلى كهوف جبل القارة المنحوتة بفعل الرياح.",
+      },
+      {
+        questionEn: "What's the best time of year to visit Al-Ahsa?",
+        questionAr: "ما أفضل وقت لزيارة الأحساء؟",
+        answerEn: "November through March, when temperatures are mild; summers here are among the hottest in the Kingdom.",
+        answerAr: "من نوفمبر إلى مارس، حين تكون درجات الحرارة معتدلة؛ فصيف الأحساء من أشد الفصول حرارة في المملكة.",
+      },
+      {
+        questionEn: "How many days should I spend in Al-Ahsa?",
+        questionAr: "كم يومًا يجب أن أقضي في الأحساء؟",
+        answerEn: "One to two days covers the oasis, Al-Qarah Mountain and the souq comfortably.",
+        answerAr: "يوم إلى يومين يكفيان لتغطية الواحة وجبل القارة والسوق بشكل مريح.",
+      },
+      {
+        questionEn: "What are the best things to do in Al-Ahsa?",
+        questionAr: "ما أفضل الأنشطة في الأحساء؟",
+        answerEn: "Walking through the palm oasis, exploring the caves of Al-Qarah Mountain, browsing the centuries-old Al-Qaisariya Souq, and seeing the yellow waters of Al Asfar Lake.",
+        answerAr: "التجول في واحة النخيل، واستكشاف كهوف جبل القارة، والتجوّل في سوق القيصرية العريق، ومشاهدة المياه الصفراء لبحيرة الأصفر.",
+      },
+      {
+        questionEn: "Is Al-Ahsa safe for tourists?",
+        questionAr: "هل الأحساء آمنة للسياح؟",
+        answerEn: "Yes, Al-Ahsa is generally very safe and welcoming to visitors.",
+        answerAr: "نعم، الأحساء آمنة عمومًا ومرحبة بالزوار.",
+      },
+      {
+        questionEn: "What should I wear in Al-Ahsa?",
+        questionAr: "ماذا يجب أن أرتدي في الأحساء؟",
+        answerEn: "Modest, breathable clothing; the caves and covered souq stay cooler than the open oasis in summer.",
+        answerAr: "ملابس محتشمة وخفيفة؛ فالكهوف والسوق المسقوف أبرد من الواحة المكشوفة في الصيف.",
+      },
+      {
+        questionEn: "Do I need a visa to visit Al-Ahsa?",
+        questionAr: "هل أحتاج تأشيرة لزيارة الأحساء؟",
+        answerEn: "Many nationalities can apply for a Saudi tourist eVisa online before travelling. We can help confirm what applies to you as part of planning your trip.",
+        answerAr: "يمكن لكثير من الجنسيات التقدم للحصول على التأشيرة السياحية الإلكترونية السعودية عبر الإنترنت قبل السفر. يمكننا مساعدتك في تأكيد ما ينطبق عليك ضمن التخطيط لرحلتك.",
+      },
+      {
+        questionEn: "Is Al-Ahsa good for families?",
+        questionAr: "هل الأحساء مناسبة للعائلات؟",
+        answerEn: "Yes, the oasis and Al-Qarah Mountain caves are easy, walkable outings that work well for children.",
+        answerAr: "نعم، تُعد الواحة وكهوف جبل القارة نزهات سهلة يمكن السير فيها وتناسب الأطفال.",
+      },
+      {
+        questionEn: "What's Al-Ahsa known for beyond the oasis?",
+        questionAr: "بم تشتهر الأحساء إلى جانب الواحة؟",
+        answerEn: "Its dates, considered among the finest in Saudi Arabia, and traditional handicrafts still sold in the Al-Qaisariya Souq.",
+        answerAr: "بتمورها التي تُعد من أجود أنواع التمور في السعودية، وحرفها التقليدية التي لا تزال تُباع في سوق القيصرية.",
+      },
+    ],
+    travelTips: [
+      { en: "Wear sturdy, closed shoes for exploring the caves of Al-Qarah Mountain.", ar: "ارتدِ حذاءً مغلقًا ومريحًا لاستكشاف كهوف جبل القارة." },
+      { en: "December and January bring local food festivals, a good time to visit if the dates line up.", ar: "يجلب ديسمبر ويناير مهرجانات طعام محلية، وهو وقت جيد للزيارة إن توافقت التواريخ." },
+      { en: "Summers here are extreme, plan any warm-weather visit around early mornings only.", ar: "الصيف هنا شديد الحرارة، فخطط لأي زيارة في الطقس الدافئ في الصباح الباكر فقط." },
+      { en: "The weekend in Saudi Arabia is Friday–Saturday, plan opening hours accordingly.", ar: "عطلة نهاية الأسبوع في السعودية هي الجمعة والسبت، فخطط لمواعيد العمل تبعًا لذلك." },
+      { en: "Alcohol isn't sold or served anywhere in the Kingdom.", ar: "لا يُباع الكحول ولا يُقدَّم في أي مكان بالمملكة." },
+      { en: "The Al-Qaisariya Souq is at its liveliest in the early evening once the heat breaks.", ar: "يكون سوق القيصرية في أوج نشاطه في المساء الباكر بعد أن يخف الحر." },
+    ],
     attractions: [
       {
         nameEn: "Al-Ahsa Oasis",
