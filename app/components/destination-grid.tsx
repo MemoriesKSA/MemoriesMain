@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { CSSProperties, UIEvent, useRef, useState } from "react";
+import { legacyDestinationRoutes } from "../destination-guide-data";
 
 type Destination = { slug: string; name: string; image: string; blurb: string };
 
@@ -31,12 +32,12 @@ export function DestinationGrid({ destinations, locale = "en" }: { destinations:
   }
 
   const progressStyle = { "--carousel-index": current, "--carousel-count": destinations.length } as CSSProperties;
-  return <div className="destinationCarousel" dir={locale === "ar" ? "rtl" : "ltr"}><div ref={carouselRef} className="destinationGrid" onScroll={updateCurrent}>{destinations.map((destination, index) => (
-    <Link className="destinationCard" href={`${prefix}/destinations/${destination.slug}`} key={destination.slug} aria-label={locale === "ar" ? `استكشف ${destination.name}` : `Explore ${destination.name}`}>
+  return <div className="destinationCarousel" dir={locale === "ar" ? "rtl" : "ltr"}><div ref={carouselRef} className="destinationGrid" onScroll={updateCurrent}>{destinations.map((destination, index) => { const route = legacyDestinationRoutes[destination.slug]; return (
+    <Link className="destinationCard" href={route ? `${prefix}/destinations/${route.country}/${route.city}` : `${prefix}/destinations`} key={destination.slug} aria-label={locale === "ar" ? `استكشف ${destination.name}` : `Explore ${destination.name}`}>
       <Image src={destination.image} alt={destination.name} fill sizes="(max-width: 700px) 82vw, (max-width: 1100px) 32vw, 20vw" priority={index < 2} />
       <span className="destinationShade" />
       <span className="destinationCopy"><strong>{destination.name}</strong><span>{destination.blurb}</span></span>
       <span className="cardArrow"><ArrowRight className="directionArrow" size={16} /></span>
     </Link>
-  ))}</div><div className="carouselControls"><div className="carouselStatus"><strong>{locale === "ar" ? "اسحب لاستكشاف المزيد" : "Swipe to explore more"}</strong><span>{current + 1} / {destinations.length}</span></div><div className="carouselProgress" aria-hidden="true"><span style={progressStyle} /></div><div className="carouselButtons"><button type="button" onClick={() => goTo(current - 1)} disabled={current === 0} aria-label={locale === "ar" ? "الوجهة السابقة" : "Previous destination"}><ArrowLeft size={18} /></button><button type="button" onClick={() => goTo(current + 1)} disabled={current === destinations.length - 1} aria-label={locale === "ar" ? "الوجهة التالية" : "Next destination"}><ArrowRight size={18} /></button></div></div></div>;
+  );})}</div><div className="carouselControls"><div className="carouselStatus"><strong>{locale === "ar" ? "اسحب لاستكشاف المزيد" : "Swipe to explore more"}</strong><span>{current + 1} / {destinations.length}</span></div><div className="carouselProgress" aria-hidden="true"><span style={progressStyle} /></div><div className="carouselButtons"><button type="button" onClick={() => goTo(current - 1)} disabled={current === 0} aria-label={locale === "ar" ? "الوجهة السابقة" : "Previous destination"}><ArrowLeft size={18} /></button><button type="button" onClick={() => goTo(current + 1)} disabled={current === destinations.length - 1} aria-label={locale === "ar" ? "الوجهة التالية" : "Next destination"}><ArrowRight size={18} /></button></div></div></div>;
 }

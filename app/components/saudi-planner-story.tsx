@@ -6,7 +6,7 @@ const stories = {
       icon: Landmark,
       eyebrow: "A country of living stories",
       title: "Stand where history still feels close.",
-      copy: "Walk through Diriyah, AlUla and Al-Balad with time to notice the details—not simply tick landmarks off a list.",
+      copy: "Walk through Diriyah, AlUla and Al-Balad with time to notice the details, not simply tick landmarks off a list.",
     },
     {
       icon: Compass,
@@ -24,7 +24,7 @@ const stories = {
       icon: Heart,
       eyebrow: "Designed around you",
       title: "Your reason for travelling becomes the heart of the plan.",
-      copy: "Culture, family, business, Umrah, Hajj or pure curiosity—we bring the right cities, stays, transport and experiences into one clear journey.",
+      copy: "Culture, family, business, Umrah, Hajj or pure curiosity, we bring the right cities, stays, transport and experiences into one clear journey.",
     },
   ],
   ar: [

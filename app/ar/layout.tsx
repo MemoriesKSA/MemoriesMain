@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: { default: "ميموريز للسفر — رحلات تُصنع لك", template: "%s | ميموريز للسفر" },
+  title: { default: "ميموريز للسفر، رحلات تُصنع لك", template: "%s | ميموريز للسفر" },
   description: "رحلات أحلام وتجارب لاكتشاف السعودية وتخطيط للدراسة في الخارج للمسافرين حول العالم.",
   alternates: { canonical: "/ar", languages: { en: "/", ar: "/ar" } },
 };

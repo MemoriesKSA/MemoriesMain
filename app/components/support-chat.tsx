@@ -36,9 +36,9 @@ export function SupportChat() {
       <form className="supportComposer" onSubmit={preventSend}>
         <label className="srOnly" htmlFor="support-message">{copy(ar, "Your question", "سؤالك")}</label>
         <textarea id="support-message" rows={2} placeholder={copy(ar, "Type your question here…", "اكتب سؤالك هنا…")} />
-        <button type="submit" disabled aria-label={copy(ar, "Send message — coming soon", "إرسال الرسالة — قريبًا")} title={copy(ar, "Coming soon", "قريبًا")}><Send className="directionArrow" /></button>
+        <button type="submit" disabled aria-label={copy(ar, "Send message, coming soon", "إرسال الرسالة، قريبًا")} title={copy(ar, "Coming soon", "قريبًا")}><Send className="directionArrow" /></button>
       </form>
-      <p className="supportFootnote">{copy(ar, "Preview only — messages are not sent yet.", "نسخة تجريبية — لا يتم إرسال الرسائل حاليًا.")}</p>
+      <p className="supportFootnote">{copy(ar, "Preview only, messages are not sent yet.", "نسخة تجريبية، لا يتم إرسال الرسائل حاليًا.")}</p>
     </div>
     <button className="supportLauncher" type="button" aria-expanded={open} aria-controls="memories-support-panel" onClick={() => setOpen((value) => !value)}>
       <span className="supportLauncherIcon">{open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}</span>

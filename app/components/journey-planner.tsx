@@ -35,7 +35,7 @@ const transportChoices: LocalChoice[] = [
 ];
 const stayChoices: LocalChoice[] = [
   { value: "hotel", en: "Hotel", ar: "فندق" }, { value: "resort", en: "Resort", ar: "منتجع" }, { value: "apartment", en: "Serviced apartment", ar: "شقة فندقية" },
-  { value: "villa", en: "Private villa", ar: "فيلا خاصة" }, { value: "student-stay", en: "Student accommodation", ar: "سكن طلابي" }, { value: "none-stay", en: "No stay needed", ar: "لا أحتاج إقامة" },
+  { value: "villa", en: "Private villa", ar: "فيلا خاصة" }, { value: "student-stay", en: "Student accommodation", ar: "سكن طلابي" }, { value: "custom-stay", en: "Build my own stay mix", ar: "أصمم خيارات إقامتي بنفسي" }, { value: "none-stay", en: "No stay needed", ar: "لا أحتاج إقامة" },
 ];
 const planChoices: LocalChoice[] = [
   { value: "attractions", en: "Must-see places", ar: "أهم الأماكن السياحية" }, { value: "restaurants", en: "Restaurants & cafés", ar: "المطاعم والمقاهي" },
@@ -59,20 +59,25 @@ function text(ar: boolean, en: string, arabic: string) { return ar ? arabic : en
 function localize(ar: boolean, options: LocalChoice[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en, detail: ar ? option.detailAr : option.detailEn })); }
 function localizedOptions(ar: boolean, options: LocalizedOption[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en })); }
 
-export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey" }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath }) {
+export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey", initialCountry = "", initialCity = "", fromCityGuide = false }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath; initialCountry?: string; initialCity?: string; fromCityGuide?: boolean }) {
   const ar = locale === "ar";
   const [status, setStatus] = useState<"idle" | "reviewing" | "sent">("idle");
   const [path, setPath] = useState<PlannerPath>(initialPath);
-  const [country, setCountry] = useState(initialPath === "saudi" ? saudiArabia.value : "");
-  const [city, setCity] = useState("");
-  const [purpose, setPurpose] = useState("");
+  const [country, setCountry] = useState(initialCountry || (initialPath === "saudi" ? saudiArabia.value : ""));
+  const [city, setCity] = useState(initialCity);
+  const [purpose, setPurpose] = useState(fromCityGuide ? "leisure" : "");
   const [studySupport, setStudySupport] = useState("");
+  const [hasSpecificField, setHasSpecificField] = useState<"" | "yes" | "no">("");
+  const [specificField, setSpecificField] = useState("");
+  const [hasSpecificUniversity, setHasSpecificUniversity] = useState<"" | "yes" | "no">("");
+  const [specificUniversity, setSpecificUniversity] = useState("");
+  const [stayRating, setStayRating] = useState("");
   const [travellers, setTravellers] = useState("");
   const [travellerCount, setTravellerCount] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [transport, setTransport] = useState<string[]>([]);
   const [stays, setStays] = useState<string[]>([]);
-  const [planIncludes, setPlanIncludes] = useState<string[]>(["attractions", "restaurants"]);
+  const [planIncludes, setPlanIncludes] = useState<string[]>(fromCityGuide ? ["attractions", "restaurants", "experiences"] : ["attractions", "restaurants"]);
   const [delivery, setDelivery] = useState<string[]>(["email"]);
   const [currency, setCurrency] = useState("SAR");
   const [budget, setBudget] = useState("");
@@ -89,6 +94,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
   function choosePath(next: PlannerPath) {
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
+    setHasSpecificField(""); setSpecificField(""); setHasSpecificUniversity(""); setSpecificUniversity(""); setStayRating("");
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -97,12 +103,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     const formData = new FormData(form);
     const value = (name: string) => String(formData.get(name) ?? "").trim();
     const emailField = form.elements.namedItem("email") as HTMLInputElement | null;
+    const privacyAccepted = formData.get("privacyAccepted") === "yes";
     const missing = [
-      !country || !city || !purpose ? 1 : 0,
+      !country || !city || !purpose || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
       !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
       !transport.length || !stays.length ? 3 : 0,
       !value("budget") ? 4 : 0,
-      !delivery.length || !value("name") || (delivery.includes("email") && (!value("email") || !emailField?.validity.valid)) || (delivery.includes("whatsapp") && !value("phone")) ? 5 : 0,
+      !delivery.length || !value("name") || (delivery.includes("email") && (!value("email") || !emailField?.validity.valid)) || (delivery.includes("whatsapp") && !value("phone")) || !privacyAccepted ? 5 : 0,
     ].filter(Boolean) as number[];
     if (missing.length) {
       setMissingSections(missing);
@@ -159,6 +166,10 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
+      {path === "study" ? <div className="studyDetails">
+        <div className="binaryQuestion"><fieldset><legend>{text(ar, "Do you have a specific field of study?", "هل لديك تخصص محدد؟")} *</legend><div className="binaryOptions">{(["yes", "no"] as const).map((choice) => <button key={choice} type="button" className={hasSpecificField === choice ? "selected" : ""} aria-pressed={hasSpecificField === choice} onClick={() => { setHasSpecificField(choice); if (choice === "no") setSpecificField(""); }}>{choice === "yes" ? text(ar, "Yes", "نعم") : text(ar, "No", "لا")}</button>)}</div><input type="hidden" name="hasSpecificField" value={hasSpecificField} /></fieldset>{hasSpecificField === "yes" ? <label className="studyReveal"><span>{text(ar, "Preferred field or major", "التخصص الذي تفضله")} *</span><input name="specificField" value={specificField} onChange={(event) => setSpecificField(event.target.value)} placeholder={text(ar, "For example, computer science", "مثلاً، علوم الحاسب")} /></label> : null}</div>
+        <div className="binaryQuestion"><fieldset><legend>{text(ar, "Do you have a specific university in mind?", "هل لديك جامعة محددة؟")} *</legend><div className="binaryOptions">{(["yes", "no"] as const).map((choice) => <button key={choice} type="button" className={hasSpecificUniversity === choice ? "selected" : ""} aria-pressed={hasSpecificUniversity === choice} onClick={() => { setHasSpecificUniversity(choice); if (choice === "no") setSpecificUniversity(""); }}>{choice === "yes" ? text(ar, "Yes", "نعم") : text(ar, "No", "لا")}</button>)}</div><input type="hidden" name="hasSpecificUniversity" value={hasSpecificUniversity} /></fieldset>{hasSpecificUniversity === "yes" ? <label className="studyReveal"><span>{text(ar, "Preferred university", "الجامعة التي تفضلها")} *</span><input name="specificUniversity" value={specificUniversity} onChange={(event) => setSpecificUniversity(event.target.value)} placeholder={text(ar, "Type the university name", "اكتب اسم الجامعة")} /></label> : null}</div>
+      </div> : null}
     </section>
 
     <section className={sectionClass(2)} data-step="2"><div className="plannerStep"><span>02</span><div><strong>{text(ar, "Who and when", "من ومتى")}</strong><small>{text(ar, "The people and dates shape every recommendation.", "المسافرون والتواريخ يصنعون فرقًا في كل توصية.")}</small>{requiredWarning(2)}</div></div><div className="plannerFieldGrid">
@@ -171,6 +182,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
       <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
+      {path === "study" && !stays.includes("none-stay") ? <ElasticSelect label={text(ar, "Preferred accommodation rating", "عدد نجوم الإقامة المفضلة")} name="stayRating" placeholder={text(ar, "Choose a rating or stay flexible", "اختر عدد النجوم أو اتركه مرنًا")} options={localize(ar,[{value:"flexible",en:"Flexible, show me the best fit",ar:"مرن، اقترح الأنسب"},{value:"1-star",en:"1 star",ar:"نجمة واحدة"},{value:"2-star",en:"2 stars",ar:"نجمتان"},{value:"3-star",en:"3 stars",ar:"3 نجوم"},{value:"4-star",en:"4 stars",ar:"4 نجوم"},{value:"5-star",en:"5 stars",ar:"5 نجوم"}])} value={stayRating} onChange={setStayRating} /> : null}
       <MultiChoice legend={text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
       <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
     </section>
@@ -183,6 +195,8 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(5)} data-step="5"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose email, WhatsApp, or both.", "اختر البريد الإلكتروني أو واتساب أو كليهما.")}</small>{requiredWarning(5)}</div></div>
       <MultiChoice legend={text(ar, "Delivery preferences", "طرق الاستلام المفضلة")} name="delivery" options={localize(ar, deliveryChoices)} selected={delivery} onChange={setDelivery} />
       <div className="contactFields"><label><span>{text(ar, "Full name", "الاسم الكامل")} *</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")}{delivery.includes("email") ? " *" : ""}</span><input name="email" type="email" autoComplete="email" required={delivery.includes("email")} placeholder="you@example.com" /></label><div className="phoneField"><ElasticSelect label={text(ar, "Country code", "رمز الدولة")} name="phoneCode" searchable options={phoneCodes} value={phoneCode} onChange={setPhoneCode} placeholder="🇸🇦 +966" searchPlaceholder={text(ar, "Search code…", "ابحث عن الرمز…")} /><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")}{delivery.includes("whatsapp") ? " *" : ""}</span><input name="phone" type="tel" autoComplete="tel-national" inputMode="tel" required={delivery.includes("whatsapp")} placeholder={text(ar, "5X XXX XXXX", "5X XXX XXXX")} /></label></div><label className="full"><span>{text(ar, "Anything else that will make this journey yours?", "ما الذي سيجعل هذه الرحلة خاصة بك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your interests, preferred rhythm, repeated activities, accessibility needs or any final details…", "شاركنا اهتماماتك والتكرار المفضل للأنشطة واحتياجات سهولة الوصول أو أي تفاصيل أخيرة…")} /></label></div>
+      <label className="consentCheck full"><input type="checkbox" name="privacyAccepted" value="yes" required /><span>{ar ? <>أوافق على استخدام بياناتي للرد على طلب الرحلة وفق <a href="/ar/privacy" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a>، وأقر بأن هذا الطلب ليس حجزًا مؤكدًا وفق <a href="/ar/terms" target="_blank" rel="noopener noreferrer">شروط الاستخدام</a>.</> : <>I agree that MEMORIES may use my information to respond to this journey request under the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and understand that this is not a confirmed booking under the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a>.</>}</span></label>
+      <p className="privacyHint full">{text(ar, "Service emails about this request are not marketing. Please do not enter passport, payment-card or medical information in this form.", "رسائل الخدمة المتعلقة بهذا الطلب ليست تسويقًا. لا تدخل بيانات جواز السفر أو البطاقة أو المعلومات الطبية في هذا النموذج.")}</p>
     </section>
 
     {formError ? <p className="plannerError full" role="alert">{formError}</p> : null}

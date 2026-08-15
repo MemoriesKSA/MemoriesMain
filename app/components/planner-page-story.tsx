@@ -5,7 +5,7 @@ type Story = { icon: typeof Sparkles; eyebrow: string; title: string; copy: stri
 const dreamStories: Record<"en" | "ar", Story[]> = {
   en: [
     { icon: Heart, eyebrow: "Begin with a feeling", title: "A dream journey should feel unmistakably yours.", copy: "Tell us what excites you, what helps you unwind and what you want to remember. That feeling becomes the starting point for every recommendation." },
-    { icon: Compass, eyebrow: "Find your kind of place", title: "The right destination is more than a pin on a map.", copy: "We match countries, cities and neighbourhoods to your interests—whether you want culture, coastlines, quiet, energy, discovery or time together." },
+    { icon: Compass, eyebrow: "Find your kind of place", title: "The right destination is more than a pin on a map.", copy: "We match countries, cities and neighbourhoods to your interests, whether you want culture, coastlines, quiet, energy, discovery or time together." },
     { icon: Route, eyebrow: "Every detail, one rhythm", title: "Move through the journey without feeling rushed.", copy: "Flights, stays, drivers, restaurants and experiences come together at a pace that leaves room for both remarkable moments and genuine rest." },
     { icon: Sparkles, eyebrow: "Built around real life", title: "Your dates and budget shape something beautiful and possible.", copy: "We turn the choices into one clear proposal, designed for the people travelling and ready for a thoughtful human review." },
   ],

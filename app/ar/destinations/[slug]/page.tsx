@@ -1,3 +1,22 @@
-import type { Metadata } from "next"; import Image from "next/image"; import Link from "next/link"; import { notFound } from "next/navigation"; import { ArrowRight,Check } from "lucide-react"; import { destinationsAr } from "../../data";
-export function generateStaticParams(){return destinationsAr.map(({slug})=>({slug}))} export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const{slug}=await params;const item=destinationsAr.find(d=>d.slug===slug);return item?{title:item.name,description:item.description}:{}}
-export default async function Page({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const item=destinationsAr.find(d=>d.slug===slug);if(!item)notFound();return <main className="detailPage"><section className="destinationHero"><Image src={item.image} alt={item.name} fill priority sizes="100vw"/><div className="detailShade"/><div className="container destinationHeroCopy"><p className="kicker light">{item.country}</p><h1>{item.name}</h1><p>{item.description}</p></div></section><section className="container detailGrid"><div><p className="kicker">رحلتك</p><h2>هادئة، خاصة،<br/>ومصممة لك تمامًا.</h2><p>نبدأ بمحادثة ثم نبني برنامجًا خاصًا حول ما يهمك. بلا جولات جماعية عامة ولا قوائم مزدحمة.</p><ul className="checkList"><li><Check/>استقبال خاص في المطار وتنقلات مريحة</li><li><Check/>فنادق مختارة لعائلتك وتفضيلاتك</li><li><Check/>تجارب يومية مرنة مع مرشدين موثوقين</li><li><Check/>دعم باللغة العربية قبل الرحلة وخلالها</li></ul></div><aside><span>المدة المقترحة</span><strong>{item.duration}</strong><span>الأنسب لـ</span><strong>{item.bestFor}</strong><Link className="button gold" href={`/ar/design-your-journey?destination=${item.slug}`}>خطط لهذه الرحلة <ArrowRight className="directionArrow" size={16}/></Link></aside></section></main>}
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { CountryExplorer } from "../../../components/country-explorer";
+import { countryGuideBySlug, countryGuides, legacyDestinationRoutes } from "../../../destination-guide-data";
+
+export function generateStaticParams() { return countryGuides.map(({ slug }) => ({ slug })); }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const country = countryGuideBySlug(slug);
+  return country ? { title: `استكشف ${country.nameAr}`, description: country.introAr } : {};
+}
+
+export default async function CountryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const country = countryGuideBySlug(slug);
+  if (!country) {
+    const legacy = legacyDestinationRoutes[slug];
+    if (legacy) redirect(`/ar/destinations/${legacy.country}/${legacy.city}`);
+    notFound();
+  }
+  return <CountryExplorer country={country} locale="ar" />;
+}
