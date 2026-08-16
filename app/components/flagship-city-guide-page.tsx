@@ -201,7 +201,14 @@ export function FlagshipCityGuidePage({
           <div className="flagshipGrid stayGrid">
             {guide.stay.map((place: FlagshipStay) => (
               <article key={place.nameEn} className="hotelCard">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <div className="placeCardMedia">
+                  <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                  {place.tier && (
+                    <span className="placeBadge">
+                      {place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")}
+                    </span>
+                  )}
+                </div>
                 <h3>{ar ? place.nameAr : place.nameEn}</h3>
                 <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
               </article>

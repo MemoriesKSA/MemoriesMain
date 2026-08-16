@@ -30,6 +30,9 @@ export type FlagshipStay = {
   nameAr: string;
   descriptionEn: string;
   descriptionAr: string;
+  // Omit for a mid-range/unclassified stay. Lets both the page and the AI
+  // grounding distinguish a splurge pick from a genuine budget option.
+  tier?: "luxury" | "budget";
   image?: string;
 };
 
@@ -72,6 +75,15 @@ export type FlagshipTransportMode = {
   descriptionAr: string;
 };
 
+export type FlagshipTransportProvider = {
+  nameEn: string;
+  nameAr: string;
+  typeEn: string;
+  typeAr: string;
+  noteEn: string;
+  noteAr: string;
+};
+
 export type FlagshipCityGuide = {
   // Omit for the default leisure/excitement framing. Use "worship" for
   // pilgrimage cities (Makkah, Madinah) to swap section headings, drop the
@@ -90,6 +102,11 @@ export type FlagshipCityGuide = {
   // Optional: only include when there's real, verified transport guidance
   // for this destination (skip for resort regions etc. where it doesn't fit).
   transportation?: FlagshipTransportMode[];
+  // Optional (being rolled out city by city): real, named private-driver or
+  // chauffeur services, for planners who want a licensed driver over
+  // ride-hailing. Never invent a company; only list ones with real,
+  // findable, current operations in the city.
+  trustedProviders?: FlagshipTransportProvider[];
   // Optional (being rolled out city by city): 9 real Q&As — the component
   // appends a 10th "Having trouble planning?" itself.
   faq?: FlagshipFaq[];
@@ -156,6 +173,24 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         modeAr: "استئجار سيارة",
         descriptionEn: "Worth it for day trips beyond the city, Diriyah, the Edge of the World or Qiddiya. Major companies have desks at the airport.",
         descriptionAr: "يستحق التجربة للرحلات اليومية خارج المدينة، مثل الدرعية وحافة العالم والقدية. تتوفر مكاتب الشركات الكبرى في المطار.",
+      },
+    ],
+    trustedProviders: [
+      {
+        nameEn: "Blacklane",
+        nameAr: "بلاكلين",
+        typeEn: "International chauffeur service",
+        typeAr: "خدمة سائق خاص عالمية",
+        noteEn: "A well-established global chauffeur booking platform operating in Riyadh, useful for airport transfers or a driver by the hour, book directly and confirm current rates.",
+        noteAr: "منصة عالمية راسخة لحجز السائقين الخاصين تعمل في الرياض، مفيدة لتوصيل المطار أو حجز سائق بالساعة، يُفضل الحجز مباشرة والتأكد من الأسعار الحالية.",
+      },
+      {
+        nameEn: "Hello Chauffeur",
+        nameAr: "هيلو شوفير",
+        typeEn: "Licensed private driver",
+        typeAr: "سائق خاص مرخّص",
+        noteEn: "A Saudi-operating chauffeur service with bilingual, formally trained drivers, positioned as Ministry of Transport compliant, worth confirming current licensing when booking.",
+        noteAr: "خدمة سائقين خاصين تعمل في السعودية بسائقين ثنائيي اللغة ومدربين رسميًا، وتُوصف بالامتثال لوزارة النقل، ويُفضل التأكد من الترخيص الحالي عند الحجز.",
       },
     ],
     faq: [
@@ -334,12 +369,28 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "فندق فور سيزونز الرياض في برج المملكة",
         descriptionEn: "Floors 30 to 50 of the Kingdom Centre tower, with the city's skyline as a permanent backdrop.",
         descriptionAr: "يشغل الطوابق من 30 إلى 50 في برج المملكة، وأفق المدينة خلفية دائمة له.",
+        tier: "luxury",
       },
       {
         nameEn: "The Ritz-Carlton, Riyadh",
         nameAr: "ريتز كارلتون الرياض",
         descriptionEn: "52 acres of landscaped gardens in the Diplomatic Quarter, one of the most decorated hotels in the Kingdom.",
         descriptionAr: "حدائق مصممة على مساحة 52 فدانًا في حي السفارات، وأحد أكثر الفنادق حصولًا على تكريمات في المملكة.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "ibis Riyadh Al Muhammadiyah",
+        nameAr: "آيبيس الرياض المحمدية",
+        descriptionEn: "A reliable international budget chain in Al Olaya, a short walk from Olaya Mall, with the straightforward comfort ibis is known for worldwide.",
+        descriptionAr: "سلسلة عالمية اقتصادية موثوقة في حي العليا، على بعد دقائق سيرًا من العليا مول، براحة بسيطة تشتهر بها آيبيس عالميًا.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Al Muhaidb Al Olaya",
+        nameAr: "المهيدب العليا",
+        descriptionEn: "Serviced apartments from the established Saudi hospitality group Al Muhaidb, a practical, well-located choice for families or longer stays.",
+        descriptionAr: "شقق مخدومة من مجموعة المهيدب السعودية الراسخة في الضيافة، خيار عملي وجيد الموقع للعائلات أو الإقامات الأطول.",
+        tier: "budget",
       },
     ],
     sampleDay: [
@@ -424,6 +475,24 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         modeAr: "طلب المشاوير واستئجار السيارات",
         descriptionEn: "Uber and Careem cover the city easily; a rental car is worth it for a relaxed day moving between Al-Balad, the Corniche and the Waterfront.",
         descriptionAr: "يغطي أوبر وكريم المدينة بسهولة، وتستحق السيارة المستأجرة التجربة ليوم مريح للتنقل بين البلد والكورنيش والواجهة البحرية.",
+      },
+    ],
+    trustedProviders: [
+      {
+        nameEn: "Hello Chauffeur",
+        nameAr: "هيلو شوفير",
+        typeEn: "Licensed private driver",
+        typeAr: "سائق خاص مرخّص",
+        noteEn: "Operates across Jeddah and other major Saudi cities with bilingual, formally trained drivers, worth confirming current licensing when booking.",
+        noteAr: "تعمل في جدة وغيرها من المدن السعودية الكبرى بسائقين ثنائيي اللغة ومدربين رسميًا، ويُفضل التأكد من الترخيص الحالي عند الحجز.",
+      },
+      {
+        nameEn: "The Royal Chauffeur",
+        nameAr: "ذا رويال شوفير",
+        typeEn: "Private chauffeur service",
+        typeAr: "خدمة سائق خاص",
+        noteEn: "Covers Jeddah, Riyadh, Makkah, Madinah and Dammam with dedicated drivers, a reasonable option for city-to-city travel with the same provider.",
+        noteAr: "تغطي جدة والرياض ومكة والمدينة والدمام بسائقين مخصصين، خيار معقول للتنقل بين المدن مع مزود واحد.",
       },
     ],
     faq: [
@@ -564,12 +633,28 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "فندق فور سيزونز جدة على الكورنيش",
         descriptionEn: "The city's top-rated address, an infinity pool and Corniche views on the North Corniche.",
         descriptionAr: "العنوان الأعلى تقييمًا في المدينة، بمسبح لا متناهٍ وإطلالات على الكورنيش الشمالي.",
+        tier: "luxury",
       },
       {
         nameEn: "Rosewood Jeddah",
         nameAr: "روزوود جدة",
         descriptionEn: "Modern elegance and traditional Arabian hospitality, also on the North Corniche.",
         descriptionAr: "أناقة عصرية وضيافة عربية أصيلة، على الكورنيش الشمالي أيضًا.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Radisson Hotel Jeddah Tahlia",
+        nameAr: "راديسون جدة التحلية",
+        descriptionEn: "A recognizable international chain on Tahlia Street, a solid value pick within easy reach of the Corniche.",
+        descriptionAr: "سلسلة عالمية معروفة في شارع التحلية، خيار جيد القيمة وقريب من الكورنيش.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Ekono Hotel",
+        nameAr: "إيكونو",
+        descriptionEn: "A straightforward budget chain with a Jeddah airport-area property, a practical pick for a short stopover.",
+        descriptionAr: "سلسلة اقتصادية بسيطة بفرع قرب مطار جدة، خيار عملي للتوقف القصير.",
+        tier: "budget",
       },
     ],
     sampleDay: [

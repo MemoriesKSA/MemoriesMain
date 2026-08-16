@@ -66,7 +66,8 @@ function serializeFlagshipCity(city: CityGuide, guide: FlagshipCityGuide, locale
   if (guide.transportation?.length) lines.push(`Getting there/around: ${guide.transportation.map((t) => `${ar ? t.modeAr : t.modeEn}, ${ar ? t.descriptionAr : t.descriptionEn}`).join(" | ")}`);
   lines.push(`Places worth visiting: ${guide.attractions.map((a) => `${ar ? a.nameAr : a.nameEn} (${ar ? a.descriptionAr : a.descriptionEn})`).join("; ")}`);
   if (guide.dining.length) lines.push(`Dining: ${guide.dining.map((d) => `${ar ? d.nameAr : d.nameEn} (${ar ? d.cuisineAr : d.cuisineEn})`).join("; ")}`);
-  if (guide.stay.length) lines.push(`Places to stay: ${guide.stay.map((s) => ar ? s.nameAr : s.nameEn).join("; ")}`);
+  if (guide.stay.length) lines.push(`Places to stay: ${guide.stay.map((s) => `${ar ? s.nameAr : s.nameEn}${s.tier ? ` (${s.tier})` : ""}`).join("; ")}`);
+  if (guide.trustedProviders?.length) lines.push(`Trusted private drivers: ${guide.trustedProviders.map((p) => `${ar ? p.nameAr : p.nameEn} (${ar ? p.typeAr : p.typeEn})`).join("; ")}`);
   if (guide.faq?.length) lines.push(`Common questions answered on the page: ${guide.faq.map((f) => `Q: ${ar ? f.questionAr : f.questionEn} A: ${ar ? f.answerAr : f.answerEn}`).join(" ")}`);
   if (guide.travelTips?.length) lines.push(`Travel tips: ${guide.travelTips.map((t) => ar ? t.ar : t.en).join(" ")}`);
   return lines.join("\n");
