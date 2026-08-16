@@ -1,19 +1,51 @@
 "use client";
 
-import { MessageCircle, Send, X } from "lucide-react";
+import { ArrowRight, MessageCircle, Send, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { Fragment, FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+
+const PLAN_MARKER_EN = "[Start your plan]";
+const PLAN_MARKER_AR = "[ابدأ خطتك]";
 
 function copy(ar: boolean, en: string, arabic: string) {
   return ar ? arabic : en;
 }
 
+// If we're already on a destination page, carry that context into the
+// planner instead of dropping the visitor on a blank form.
+function getPlanHref(pathname: string, ar: boolean) {
+  const prefix = ar ? "/ar" : "";
+  const match = pathname.match(/\/destinations\/([^/]+)\/([^/]+)/);
+  if (match) {
+    const [, country, city] = match;
+    return `${prefix}/design-your-journey?country=${country}&city=${city}&source=concierge`;
+  }
+  return `${prefix}/design-your-journey`;
+}
+
+function renderBubble(content: string, planHref: string, ar: boolean) {
+  const marker = ar ? PLAN_MARKER_AR : PLAN_MARKER_EN;
+  if (!content.includes(marker)) return content;
+  return content.split(marker).map((part, index) => (
+    <Fragment key={index}>
+      {index > 0 && (
+        <Link className="supportPlanLink" href={planHref}>
+          {copy(ar, "Start your plan", "ابدأ خطتك")} <ArrowRight className="directionArrow" size={14} />
+        </Link>
+      )}
+      {part}
+    </Fragment>
+  ));
+}
+
 export function SupportChat() {
   const pathname = usePathname();
   const ar = pathname === "/ar" || pathname.startsWith("/ar/");
+  const planHref = getPlanHref(pathname, ar);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -122,7 +154,7 @@ export function SupportChat() {
                   {message.role === "assistant" && message.content === "" && isStreaming && index === messages.length - 1 ? (
                     <span className="supportTyping" aria-label={copy(ar, "Typing", "يكتب الآن")}><span /><span /><span /></span>
                   ) : (
-                    <span className="supportBubble">{message.content}</span>
+                    <span className="supportBubble">{renderBubble(message.content, planHref, ar)}</span>
                   )}
                 </div>
               </div>
