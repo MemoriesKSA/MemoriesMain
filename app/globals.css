@@ -483,3 +483,22 @@ html[dir="rtl"] .exploreCarousel .carouselButtons svg{transform:rotate(180deg)}
 }
 @media(max-width:640px){.faqQuestion{padding:15px 16px;font-size:.85rem}.faqAnswer{padding:0 16px 16px}}
 @media(prefers-reduced-motion:reduce){.faqChevron,.jumpNav a,.weatherTabs button{transition:none!important}}
+.knowIntro{max-width:640px;margin:18px 0 0;color:var(--muted);font-size:1rem;line-height:1.7}
+.knowLead{max-width:760px;color:var(--ink-2);font-size:.98rem;line-height:1.75}
+.knowGrid{grid-template-columns:repeat(4,1fr)}
+.emergencyGrid{grid-template-columns:repeat(4,1fr)}
+.emergencyCard{display:grid;gap:8px;padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.emergencyNumber{font-family:var(--font-display),Georgia,serif;font-size:2.1rem;color:var(--gold)}
+.emergencyCard p{margin:0;min-height:42px;color:var(--muted);font-size:.78rem;line-height:1.5}
+.emergencyCall{justify-self:start;padding:8px 18px;border-radius:999px;border:1px solid var(--gold);color:var(--gold);font-size:.72rem;font-weight:800;text-decoration:none;transition:.2s background,.2s color}
+.emergencyCall:hover{background:var(--gold);color:#fff}
+.telecomGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+.telecomCard{padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--ivory)}
+.telecomWordmark{display:block;margin-bottom:8px;font-family:var(--font-display),Georgia,serif;font-size:1.4rem;font-weight:700;color:var(--ink)}
+.telecomCard p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.5}
+.helpfulFeedback{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:22px 0;margin-block:10px 40px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--muted);font-size:.82rem}
+.helpfulButtons{display:flex;gap:10px}
+.helpfulButtons button{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font-size:.74rem;font-weight:700;cursor:pointer;transition:.2s background,.2s border-color}
+.helpfulButtons button:hover{background:var(--ivory);border-color:var(--gold)}
+@media(max-width:1000px){.knowGrid{grid-template-columns:1fr 1fr}.emergencyGrid{grid-template-columns:1fr 1fr}.telecomGrid{grid-template-columns:1fr}}
+@media(max-width:640px){.knowGrid{grid-template-columns:1fr}.emergencyGrid{grid-template-columns:1fr}}

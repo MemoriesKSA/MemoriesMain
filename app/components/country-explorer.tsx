@@ -16,6 +16,12 @@ export function CountryExplorer({ country, locale = "en" }: { country: CountryGu
         <p className="kicker light">{ar ? country.regionAr : country.region}</p>
         <h1>{ar ? country.nameAr : country.nameEn}</h1>
         <p>{ar ? country.introAr : country.introEn}</p>
+        {country.slug === "saudi-arabia" && (
+          <Link className="flagshipSoftCta" href={`${prefix}/know-before-you-go`}>
+            {ar ? "أول زيارة؟ اقرأ دليل قبل أن تسافر" : "First time visiting? Read Know Before You Go"}
+            <ArrowRight className={ar ? "directionArrow" : ""} size={15} />
+          </Link>
+        )}
       </div>
     </section>
     <section className="container citySelector">

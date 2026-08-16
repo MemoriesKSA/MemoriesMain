@@ -173,14 +173,14 @@ export function SupportChat() {
     <div className="supportPanel" id="memories-support-panel" aria-hidden={!open}>
       <header className="supportHeader">
         <span className="supportAvatar"><Image src="/images/memories-logo-full.webp" alt="" width={26} height={26} /></span>
-        <span><strong>{copy(ar, "Noor", "نور")}</strong><small><i /> {copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
+        <span><strong>{copy(ar, "Memory", "ذكرى")}</strong><small><i /> {copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
         <button type="button" onClick={() => setOpen(false)} aria-label={copy(ar, "Close support chat", "إغلاق محادثة الدعم")}><X /></button>
       </header>
       <div className="supportConversation" ref={conversationRef}>
         {messages.length === 0 ? (
           <>
             <span className="supportSpark"><Image src="/images/memories-logo-full.webp" alt="" width={22} height={22} /></span>
-            <p className="supportGreeting">{copy(ar, "Hi, I'm Noor. What would you like to ask?", "أهلًا، أنا نور. بماذا يمكننا مساعدتك؟")}</p>
+            <p className="supportGreeting">{copy(ar, "Hi, I'm Memory. What would you like to ask?", "أهلًا، أنا ذكرى. بماذا يمكننا مساعدتك؟")}</p>
             <p>{copy(ar, "Ask about a destination, your dream journey or studying abroad.", "اسأل عن وجهة أو رحلة أحلامك أو الدراسة في الخارج.")}</p>
             <div className="supportSuggestions" aria-label={copy(ar, "Suggested questions", "أسئلة مقترحة")}>
               {suggestions.map((suggestion) => (
@@ -198,7 +198,7 @@ export function SupportChat() {
                   <span className="supportMessageAvatar"><Image src="/images/memories-logo-full.webp" alt="" width={16} height={16} /></span>
                 )}
                 <div className="supportMessageContent">
-                  {message.role === "assistant" && <span className="supportMessageName">{copy(ar, "Noor", "نور")}</span>}
+                  {message.role === "assistant" && <span className="supportMessageName">{copy(ar, "Memory", "ذكرى")}</span>}
                   {message.role === "assistant" && message.content === "" && isStreaming && index === messages.length - 1 ? (
                     <span className="supportTyping" aria-label={copy(ar, "Typing", "يكتب الآن")}><span /><span /><span /></span>
                   ) : (
@@ -226,7 +226,7 @@ export function SupportChat() {
     </div>
     <button className="supportLauncher" type="button" aria-expanded={open} aria-controls="memories-support-panel" onClick={() => setOpen((value) => !value)}>
       <span className="supportLauncherIcon">{open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}</span>
-      <span className="supportLauncherCopy"><strong>{copy(ar, "Ask Noor", "اسأل نور")}</strong><small>{copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
+      <span className="supportLauncherCopy"><strong>{copy(ar, "Ask Memory", "اسأل ذكرى")}</strong><small>{copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
     </button>
   </aside>;
 }
