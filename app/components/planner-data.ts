@@ -20,7 +20,7 @@ export const saudiArabia: CountryOption = {
   cities: cities([
     ["riyadh", "Riyadh", "الرياض"], ["jeddah", "Jeddah", "جدة"], ["alula", "AlUla", "العلا"],
     ["makkah", "Makkah", "مكة المكرمة"], ["madinah", "Madinah", "المدينة المنورة"], ["red-sea", "The Red Sea", "البحر الأحمر"],
-    ["abha", "Abha", "أبها"], ["taif", "Taif", "الطائف"], ["al-ahsa", "Al-Ahsa", "الأحساء"],
+    ["abha", "Abha", "أبها"], ["aseer", "Aseer", "عسير"], ["taif", "Taif", "الطائف"], ["al-ahsa", "Al-Ahsa", "الأحساء"],
     ["jazan", "Jazan", "جازان"], ["al-jouf", "Al-Jouf", "الجوف"], ["dammam", "Dammam & Al Khobar", "الدمام والخبر"],
     ["tabuk", "Tabuk", "تبوك"], ["yanbu", "Yanbu", "ينبع"], ["other-saudi", "Another Saudi destination", "وجهة سعودية أخرى"],
   ]),

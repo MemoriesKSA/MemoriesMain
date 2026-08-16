@@ -339,6 +339,8 @@ html[dir="rtl"] .corporateCta h2{font-size:clamp(1.25rem,1.8vw,1.65rem);line-hei
    a weather strip, and card grids for attractions/dining/stay. */
 .flagshipHero{position:relative;min-height:560px;overflow:hidden;background:#062620;color:#fff;isolation:isolate}
 .flagshipHero>img{z-index:-2;object-fit:cover}
+.flagshipHeroImageSlot{position:absolute;z-index:-2;inset:0;display:grid;place-items:center;background:linear-gradient(135deg,#0d3a32,#062620)}
+.flagshipHeroImageSlot svg{width:34px;height:34px;color:rgba(255,255,255,.28)}
 .flagshipHeroShade{position:absolute;z-index:-1;inset:0;background:linear-gradient(0deg,rgba(2,24,20,.92),rgba(2,24,20,.2) 75%),linear-gradient(90deg,rgba(2,24,20,.5),transparent 62%)}
 .flagshipHeroCopy{display:flex;min-height:560px;justify-content:flex-end;flex-direction:column;padding-block:80px 60px}
 .flagshipHeroCopy h1{max-width:650px;margin:0;font-size:clamp(3rem,5.6vw,5.5rem);line-height:.9;letter-spacing:-.03em}

@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
@@ -16,6 +18,10 @@ function ImageSlot({ label }: { label: string }) {
       <Camera aria-hidden="true" />
     </div>
   );
+}
+
+function hasPublicImage(src: string) {
+  return existsSync(join(process.cwd(), "public", src));
 }
 
 export function FlagshipCityGuidePage({
@@ -37,6 +43,7 @@ export function FlagshipCityGuidePage({
   const cityName = ar ? city.nameAr : city.nameEn;
 
   const hasDining = guide.dining.length > 0;
+  const hasStay = guide.stay.length > 0;
   const hasSampleDay = guide.sampleDay.length > 0;
   const hasFaq = (guide.faq?.length ?? 0) > 0;
   const hasTips = (guide.travelTips?.length ?? 0) > 0;
@@ -48,7 +55,7 @@ export function FlagshipCityGuidePage({
     { id: "weather", labelEn: "Weather", labelAr: "الطقس" },
     { id: "places", labelEn: isWorship ? "Sites" : "Places", labelAr: isWorship ? "المعالم" : "أماكن" },
     ...(hasDining ? [{ id: "dining", labelEn: "Eat", labelAr: "الطعام" }] : []),
-    { id: "stay", labelEn: "Stay", labelAr: "الإقامة" },
+    ...(hasStay ? [{ id: "stay", labelEn: "Stay", labelAr: "الإقامة" }] : []),
     ...(hasSampleDay ? [{ id: "day", labelEn: "Sample day", labelAr: "يوم نموذجي" }] : []),
     ...(hasFaq ? [{ id: "faq", labelEn: "FAQ", labelAr: "الأسئلة" }] : []),
     ...(hasTips ? [{ id: "tips", labelEn: "Travel tips", labelAr: "نصائح السفر" }] : []),
@@ -80,7 +87,11 @@ export function FlagshipCityGuidePage({
       />
 
       <section className="flagshipHero">
-        <Image src={city.image} alt={cityName} fill priority sizes="100vw" />
+        {hasPublicImage(city.image) ? (
+          <Image src={city.image} alt={cityName} fill priority sizes="100vw" />
+        ) : (
+          <div className="flagshipHeroImageSlot" role="img" aria-label={cityName}><Camera aria-hidden="true" /></div>
+        )}
         <div className="flagshipHeroShade" />
         <div className="container flagshipHeroCopy">
           <p className="kicker light">
@@ -174,28 +185,30 @@ export function FlagshipCityGuidePage({
         </section>
       )}
 
-      <section className="container flagshipSection" id="stay">
-        <div className="flagshipSectionHeading">
-          <p className="kicker">
-            <BedDouble size={14} />{" "}
-            {isWorship ? (ar ? "أين تقيم بالقرب من الحرم" : "Staying near the Haram") : (ar ? "أين تقيم" : "Where to stay")}
-          </p>
-          <h2>
-            {isWorship
-              ? (ar ? "إقامة تمنحك الراحة والقرب في آنٍ واحد." : "A stay that balances comfort with proximity.")
-              : (ar ? "إقامات تليق ببداية الرحلة." : "A base worthy of where you're starting from.")}
-          </h2>
-        </div>
-        <div className="flagshipGrid stayGrid">
-          {guide.stay.map((place: FlagshipStay) => (
-            <article key={place.nameEn} className="hotelCard">
-              <ImageSlot label={ar ? place.nameAr : place.nameEn} />
-              <h3>{ar ? place.nameAr : place.nameEn}</h3>
-              <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {hasStay && (
+        <section className="container flagshipSection" id="stay">
+          <div className="flagshipSectionHeading">
+            <p className="kicker">
+              <BedDouble size={14} />{" "}
+              {isWorship ? (ar ? "أين تقيم بالقرب من الحرم" : "Staying near the Haram") : (ar ? "أين تقيم" : "Where to stay")}
+            </p>
+            <h2>
+              {isWorship
+                ? (ar ? "إقامة تمنحك الراحة والقرب في آنٍ واحد." : "A stay that balances comfort with proximity.")
+                : (ar ? "إقامات تليق ببداية الرحلة." : "A base worthy of where you're starting from.")}
+            </h2>
+          </div>
+          <div className="flagshipGrid stayGrid">
+            {guide.stay.map((place: FlagshipStay) => (
+              <article key={place.nameEn} className="hotelCard">
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <h3>{ar ? place.nameAr : place.nameEn}</h3>
+                <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {hasSampleDay && (
         <section className="container flagshipSampleDay" id="day">
