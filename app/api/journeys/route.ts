@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { after } from "next/server";
+import { generateDraftGuide } from "../../draft-guide";
 
 export const runtime = "nodejs";
 
@@ -214,6 +216,25 @@ export async function POST(request: Request) {
     }, { idempotencyKey: `journey-confirmation/${submission.submissionId}` });
 
     if (confirmation.error) console.error("Journey confirmation email failed", confirmation.error.name);
+  }
+
+  if (submission.journeyType === "saudi") {
+    after(() => generateDraftGuide({
+      submissionId: submission.submissionId,
+      city: submission.city,
+      purpose: submission.purpose,
+      travellers: submission.travellers,
+      travellerCount: submission.travellerCount,
+      fromDate: submission.fromDate,
+      toDate: submission.toDate,
+      transport: submission.transport,
+      stays: submission.stays,
+      planIncludes: submission.planIncludes,
+      packageNotes: submission.packageNotes,
+      currency: submission.currency,
+      budget: submission.budget,
+      name: submission.name,
+    }));
   }
 
   return Response.json({ ok: true, reference });
