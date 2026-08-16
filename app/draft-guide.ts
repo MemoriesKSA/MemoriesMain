@@ -96,7 +96,10 @@ async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideS
     model: "claude-opus-5",
     max_tokens: 6000,
     thinking: { type: "adaptive" },
-    output_config: { effort: "high" },
+    // "high" effort was pushing a single call's reasoning time past the
+    // function's own timeout even after parallelizing the two languages.
+    // "medium" is still a real reasoning pass, just faster.
+    output_config: { effort: "medium" },
     system: buildSystemPrompt(ar),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabel, groundedFacts) }],
   });

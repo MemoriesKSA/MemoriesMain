@@ -4,12 +4,12 @@ import { generateDraftGuide } from "../../draft-guide";
 
 export const runtime = "nodejs";
 // The bilingual AI draft (see draft-guide.ts) runs in the background via
-// after() once the customer response has already gone out, and can take
-// a while: Opus 5 with adaptive thinking, writing a full itinerary twice
-// (English then Arabic). Vercel's default function timeout is too short
-// for that, so it's raised here to give the background task room to
-// finish instead of getting killed mid-generation with no visible error.
-export const maxDuration = 60;
+// after() once the customer response has already gone out. Even with the
+// two languages generated in parallel, a single Opus 5 call with adaptive
+// thinking was still exceeding 60s on its own, so this is raised further
+// for headroom. If the account's plan caps functions below this, the
+// deploy itself will surface that rather than failing silently at runtime.
+export const maxDuration = 120;
 
 type JourneySubmission = {
   submissionId?: unknown;
