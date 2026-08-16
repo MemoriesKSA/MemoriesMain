@@ -27,19 +27,35 @@ function getPlanHref(pathname: string, ar: boolean) {
   return `${prefix}/design-your-journey`;
 }
 
+// Splits a reply into word tokens (each including its trailing whitespace)
+// for a word-by-word reveal, treating the plan marker as one atomic final
+// token so it's never exposed mid-bracket while streaming in.
+function tokenize(content: string, marker: string): string[] {
+  const markerIndex = content.indexOf(marker);
+  if (markerIndex === -1) return content.match(/\S+\s*/g) ?? [];
+  const before = content.slice(0, markerIndex).match(/\S+\s*/g) ?? [];
+  return [...before, content.slice(markerIndex)];
+}
+
 function renderBubble(content: string, planHref: string, ar: boolean) {
   const marker = ar ? PLAN_MARKER_AR : PLAN_MARKER_EN;
-  if (!content.includes(marker)) return content;
-  return content.split(marker).map((part, index) => (
-    <Fragment key={index}>
-      {index > 0 && (
-        <Link className="supportPlanLink" href={planHref}>
-          {copy(ar, "Start your plan", "ابدأ خطتك")} <ArrowRight className="directionArrow" size={14} />
-        </Link>
-      )}
-      {part}
-    </Fragment>
-  ));
+  return tokenize(content, marker).map((token, index) => {
+    if (token.startsWith(marker)) {
+      return (
+        <span className="wordFade" key={index}>
+          <Link className="supportPlanLink" href={planHref}>
+            {copy(ar, "Start your plan", "ابدأ خطتك")} <ArrowRight className="directionArrow" size={14} />
+          </Link>
+        </span>
+      );
+    }
+    const [, word, trailing] = token.match(/^(\S+)(\s*)$/) ?? [null, token, ""];
+    return (
+      <Fragment key={index}>
+        <span className="wordFade">{word}</span>{trailing}
+      </Fragment>
+    );
+  });
 }
 
 export function SupportChat() {
@@ -52,10 +68,41 @@ export function SupportChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const revealTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     conversationRef.current?.scrollTo({ top: conversationRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isStreaming]);
+
+  useEffect(() => () => {
+    if (revealTimerRef.current) clearInterval(revealTimerRef.current);
+  }, []);
+
+  // Reveals the already-complete response one word at a time, each word
+  // fading in via CSS, instead of reflecting raw, uneven network chunk
+  // timing or a rushed character-by-character sweep.
+  function revealText(fullText: string): Promise<void> {
+    return new Promise((resolve) => {
+      if (revealTimerRef.current) clearInterval(revealTimerRef.current);
+      const marker = ar ? PLAN_MARKER_AR : PLAN_MARKER_EN;
+      const tokens = tokenize(fullText, marker);
+      let shown = 0;
+      revealTimerRef.current = setInterval(() => {
+        shown = Math.min(tokens.length, shown + 1);
+        const partial = tokens.slice(0, shown).join("");
+        setMessages((current) => {
+          const updated = [...current];
+          updated[updated.length - 1] = { role: "assistant", content: partial };
+          return updated;
+        });
+        if (shown >= tokens.length) {
+          if (revealTimerRef.current) clearInterval(revealTimerRef.current);
+          revealTimerRef.current = null;
+          resolve();
+        }
+      }, 50);
+    });
+  }
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -86,17 +133,18 @@ export function SupportChat() {
         const { done, value } = await reader.read();
         if (done) break;
         assistantText += decoder.decode(value, { stream: true });
-        setMessages((current) => {
-          const updated = [...current];
-          updated[updated.length - 1] = { role: "assistant", content: assistantText };
-          return updated;
-        });
       }
 
       if (!assistantText.trim()) {
         throw new Error("Empty response");
       }
+
+      await revealText(assistantText);
     } catch {
+      if (revealTimerRef.current) {
+        clearInterval(revealTimerRef.current);
+        revealTimerRef.current = null;
+      }
       setError(copy(ar, "Something went wrong. Please try again.", "حدث خطأ ما. يرجى المحاولة مرة أخرى."));
       setMessages((current) => current.slice(0, -1));
     } finally {
