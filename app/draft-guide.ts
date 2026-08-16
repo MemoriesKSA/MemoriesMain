@@ -64,7 +64,7 @@ function buildSystemPrompt(ar: boolean) {
 Rules, factual accuracy and safety about the real companies named here matter more than anything else in this draft, a wrong claim about a real business is worse than an incomplete one:
 - Only use the real, named places (attractions, dining, hotels, private drivers) given to you in the grounded facts below. Never invent a business name, address or price. If something isn't covered by the grounded facts, say plainly that the team should research it, don't guess.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
-- Treat opening hours, seasonal operation and ticket pricing as always needing confirmation unless the grounded facts give a specific current date or price. Saudi tourism has real seasonal risk (Riyadh Season venues, summer hours) worth naming plainly rather than assuming normal operation.
+- Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it. This is separate from business licensing and compliance, which always keeps its hedge per the rule above no matter what the research notes say, research never touches that.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
 - Weigh the stated budget, traveller count and trip length when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
@@ -81,7 +81,10 @@ Format, this is the part to follow closely, the last version read as dense justi
 - Write the whole thing in ${ar ? "Arabic" : "English"} only, using the ${ar ? "Arabic" : "English"} place names and facts given to you below exactly as given, don't translate or transliterate them yourself.`;
 }
 
-function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string) {
+function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string) {
+  const researchSection = operationalResearch
+    ? `\n\nLive research notes on hours, seasonal status and ticket pricing (English, gathered just now via web search, not a guess, trust these the same as the grounded facts above, translate naturally if you're writing in Arabic. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive, fall back to flagging it as needing confirmation):\n${operationalResearch}`
+    : "";
   return `Customer request summary:
 Name: ${submission.name}
 Destination: ${cityLabel}, Saudi Arabia
@@ -95,12 +98,51 @@ Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString(
 Customer notes: ${submission.packageNotes || "none"}
 
 Real, grounded facts for ${cityLabel} (only use these named places):
-${groundedFacts}
+${groundedFacts}${researchSection}
 
 Draft the day-by-day sketch now.`;
 }
 
-async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, ar: boolean): Promise<string> {
+// Runs once, before both language calls, so English and Arabic drafts cite
+// the exact same live findings instead of two independent searches that
+// could disagree with each other. Deliberately scoped to what a search can
+// actually confirm (hours, season, pricing), and kept away from business
+// licensing/compliance, which a search can't verify, it would just surface
+// the same self-reported marketing claim already sitting in our own data.
+async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
+  try {
+    const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
+    if (!attractionNames) return "";
+
+    const response = await anthropic.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 2000,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "low" },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+      system: `You are a research assistant checking current, time-sensitive facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it.
+
+Scope, stay inside it:
+- Only check opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below.
+- Do NOT research or make any claim about business licensing, certification, safety compliance or regulatory status for any company, that is explicitly out of scope for you, leave it alone entirely.
+- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it.
+- Report only what you actually find, with enough detail a planner could act on (e.g. "open year-round, standard hours" or "seasonal, tied to Riyadh Season, likely closed outside it"). If search turns up nothing conclusive for a place, say so plainly in one line, don't guess or extrapolate.
+- Output short plain-text lines, one per place you checked, no markdown, no preamble, no closing summary.`,
+      messages: [{
+        role: "user",
+        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nAttractions to check: ${attractionNames}\n\nSearch and report now.`,
+      }],
+    });
+
+    const textBlocks = response.content.filter((block): block is Anthropic.TextBlock => block.type === "text");
+    return textBlocks[textBlocks.length - 1]?.text?.trim() ?? "";
+  } catch (error) {
+    console.error("Operational research failed", error);
+    return "";
+  }
+}
+
+async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string, ar: boolean): Promise<string> {
   const response = await anthropic.messages.create({
     model: "claude-opus-5",
     max_tokens: 6000,
@@ -110,7 +152,7 @@ async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideS
     // "medium" is still a real reasoning pass, just faster.
     output_config: { effort: "medium" },
     system: buildSystemPrompt(ar),
-    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabel, groundedFacts) }],
+    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabel, groundedFacts, operationalResearch) }],
   });
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
@@ -142,9 +184,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const reference = submission.submissionId.slice(0, 8).toUpperCase();
 
     const anthropic = new Anthropic({ apiKey: anthropicKey });
+    const operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
     const [englishDraft, arabicDraft] = await Promise.all([
-      generateOneLanguage(anthropic, submission, cityLabelEn, serializeGuideForDraft(guide, false), false),
-      generateOneLanguage(anthropic, submission, cityLabelAr, serializeGuideForDraft(guide, true), true),
+      generateOneLanguage(anthropic, submission, cityLabelEn, serializeGuideForDraft(guide, false), operationalResearch, false),
+      generateOneLanguage(anthropic, submission, cityLabelAr, serializeGuideForDraft(guide, true), operationalResearch, true),
     ]);
 
     if (!englishDraft && !arabicDraft) return;

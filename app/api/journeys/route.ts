@@ -6,10 +6,13 @@ export const runtime = "nodejs";
 // The bilingual AI draft (see draft-guide.ts) runs in the background via
 // after() once the customer response has already gone out. Even with the
 // two languages generated in parallel, a single Opus 5 call with adaptive
-// thinking was still exceeding 60s on its own, so this is raised further
-// for headroom. If the account's plan caps functions below this, the
-// deploy itself will surface that rather than failing silently at runtime.
-export const maxDuration = 120;
+// thinking was still exceeding 60s on its own. It now also runs a web
+// search research step (operational facts only, sequentially, before the
+// two language calls, so they can cite the same findings), adding more
+// wall-clock time on top of that, so this is raised further for headroom.
+// If the account's plan caps functions below this, the deploy itself will
+// surface that rather than failing silently at runtime.
+export const maxDuration = 180;
 
 type JourneySubmission = {
   submissionId?: unknown;
