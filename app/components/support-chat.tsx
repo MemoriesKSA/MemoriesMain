@@ -60,6 +60,10 @@ export function SupportChat() {
           return updated;
         });
       }
+
+      if (!assistantText.trim()) {
+        throw new Error("Empty response");
+      }
     } catch {
       setError(copy(ar, "Something went wrong. Please try again.", "حدث خطأ ما. يرجى المحاولة مرة أخرى."));
       setMessages((current) => current.slice(0, -1));

@@ -69,6 +69,11 @@ export async function POST(request: Request) {
           // Opus's cost, with faster streaming for a live chat widget.
           model: "claude-sonnet-5",
           max_tokens: 600,
+          // This is short, grounded conversation, not a reasoning task.
+          // Adaptive thinking is on by default on Sonnet 5 and can eat into
+          // max_tokens before any visible reply is written, disabling it
+          // keeps the full budget for the actual answer.
+          thinking: { type: "disabled" },
           system: [
             // Persona/instructions are identical on every request, so this
             // block caches; only the grounded-facts block below varies.
