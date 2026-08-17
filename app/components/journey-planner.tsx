@@ -43,6 +43,20 @@ const planChoices: LocalChoice[] = [
   { value: "hidden-gems", en: "Hidden gems", ar: "أماكن مميزة غير معروفة" },
   { value: "free-time", en: "Planned free time", ar: "وقت حر منظم" },
 ];
+// Study Abroad asks a different question entirely: this isn't a holiday, the
+// student is working out whether they can actually live in this city. So the
+// city plan offers what a student needs to settle in and study, not sights.
+const studyPlanChoices: LocalChoice[] = [
+  { value: "student-areas", en: "Student neighbourhoods", ar: "الأحياء الطلابية", detailEn: "Where students actually live, and what rent looks like", detailAr: "أين يسكن الطلاب فعليًا وكم تبلغ الإيجارات" },
+  { value: "campus", en: "Campus & university visits", ar: "زيارات الجامعة والحرم", detailEn: "Seeing the university and getting to it daily", detailAr: "زيارة الجامعة وكيفية الوصول إليها يوميًا" },
+  { value: "student-activities", en: "Student activities & societies", ar: "الأنشطة والنوادي الطلابية", detailEn: "Clubs, sports and meeting people", detailAr: "النوادي والرياضة والتعرف على الآخرين" },
+  { value: "budget-eats", en: "Affordable eats & study cafés", ar: "مطاعم اقتصادية ومقاهي للدراسة", detailEn: "Cheap food near campus and places to work", detailAr: "طعام اقتصادي قرب الجامعة وأماكن للمذاكرة" },
+  { value: "prayer-halal", en: "Prayer spaces & halal food", ar: "أماكن الصلاة والطعام الحلال", detailEn: "Mosques, prayer rooms and halal options nearby", detailAr: "المساجد ومصليات الجامعة وخيارات الطعام الحلال" },
+  { value: "student-transport", en: "Student transport & discounts", ar: "تنقل الطلاب والخصومات", detailEn: "Travel passes and student pricing", detailAr: "بطاقات النقل وأسعار الطلاب" },
+  { value: "settling-in", en: "Settling-in essentials", ar: "أساسيات الاستقرار", detailEn: "SIM card, bank account, registration and paperwork", detailAr: "شريحة الاتصال والحساب البنكي والتسجيل والأوراق" },
+  { value: "arabic-community", en: "Arab & Muslim student community", ar: "مجتمع الطلاب العرب والمسلمين", detailEn: "Finding people from home once you arrive", detailAr: "التعرف على أبناء بلدك بعد الوصول" },
+];
+const STUDY_PLAN_DEFAULTS = ["student-areas", "campus", "settling-in"];
 const deliveryChoices: LocalChoice[] = [
   { value: "email", en: "Email", ar: "البريد الإلكتروني", detailEn: "Receive the complete journey brief in your inbox", detailAr: "استلم تصور الرحلة الكامل في بريدك" },
   { value: "whatsapp", en: "WhatsApp", ar: "واتساب", detailEn: "Receive the plan and continue the conversation", detailAr: "استلم الخطة وتابع المحادثة معنا" },
@@ -77,7 +91,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [fromDate, setFromDate] = useState("");
   const [transport, setTransport] = useState<string[]>([]);
   const [stays, setStays] = useState<string[]>([]);
-  const [planIncludes, setPlanIncludes] = useState<string[]>(fromCityGuide ? ["attractions", "restaurants", "experiences"] : ["attractions", "restaurants"]);
+  const [planIncludes, setPlanIncludes] = useState<string[]>(initialPath === "study" ? STUDY_PLAN_DEFAULTS : fromCityGuide ? ["attractions", "restaurants", "experiences"] : ["attractions", "restaurants"]);
   const [delivery, setDelivery] = useState<string[]>(["email"]);
   const [currency, setCurrency] = useState("SAR");
   const [budget, setBudget] = useState("");
@@ -95,6 +109,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   function choosePath(next: PlannerPath) {
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
     setHasSpecificField(""); setSpecificField(""); setHasSpecificUniversity(""); setSpecificUniversity(""); setStayRating("");
+    // Study Abroad and the travel paths offer completely different city-plan
+    // options, so anything already ticked belongs to the other list and would
+    // otherwise submit values the new path never showed. Reset to that path's
+    // own defaults instead of carrying orphaned selections across.
+    setPlanIncludes(next === "study" ? STUDY_PLAN_DEFAULTS : ["attractions", "restaurants"]);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -183,7 +202,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
       <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
       {!stays.includes("none-stay") ? <ElasticSelect label={text(ar, "Preferred accommodation rating", "عدد نجوم الإقامة المفضلة")} name="stayRating" placeholder={text(ar, "Choose a rating or stay flexible", "اختر عدد النجوم أو اتركه مرنًا")} options={localize(ar,[{value:"flexible",en:"Flexible, show me the best fit",ar:"مرن، اقترح الأنسب"},{value:"1-star",en:"1 star",ar:"نجمة واحدة"},{value:"2-star",en:"2 stars",ar:"نجمتان"},{value:"3-star",en:"3 stars",ar:"3 نجوم"},{value:"4-star",en:"4 stars",ar:"4 نجوم"},{value:"5-star",en:"5 stars",ar:"5 نجوم"}])} value={stayRating} onChange={setStayRating} /> : null}
-      <MultiChoice legend={text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
+      <MultiChoice legend={path === "study" ? text(ar, "What should your student city plan cover?", "ماذا تريد أن تغطي خطة مدينتك الدراسية؟") : text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, path === "study" ? studyPlanChoices : planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
       <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
     </section>
 

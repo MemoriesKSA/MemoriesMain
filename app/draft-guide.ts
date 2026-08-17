@@ -136,7 +136,7 @@ Format, this is the part to follow closely, the last version read as dense justi
 
 function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string) {
   const researchSection = operationalResearch
-    ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
+    ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These may also include review scores or licensing signals for restaurants/rental cars, always keep whatever hedge the note itself uses (an attributed claim like "their website states..." stays attributed, it never becomes a flat "licensed" statement). If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
     : "";
   const calendar = dayByDayCalendar(submission.fromDate, submission.toDate);
   return `Customer request summary:
@@ -163,10 +163,13 @@ Draft the day-by-day sketch now.`;
 // attractions, which airlines/routes exist, real restaurants when our own
 // curated dining list is thin, and real rental car companies when the
 // customer asked for one, all of which a plain web search can genuinely
-// confirm. Stays away from business licensing/compliance and from live
-// flight times or prices, neither of which a generic web search can
-// honestly verify, that needs a real flight-search API and isn't in scope
-// here, see the flight rule below for why.
+// confirm, plus review-site and official-registry trust signals for
+// restaurants/rental cars (always attributed, never asserted as a verified
+// fact, a web search can't independently confirm real regulatory status,
+// only report what a genuine source actually says). Stays away from live
+// flight times or prices, which a generic web search can't honestly
+// verify, that needs a real flight-search API and isn't in scope here, see
+// the flight rule below for why.
 async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
   try {
     const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
@@ -187,23 +190,23 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
       ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through Riyadh or Jeddah first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
       : "";
     const diningScope = needsDining
-      ? `\n- 3-5 real, currently-operating restaurants in ${cityLabelEn} that fit a ${readable(submission.purpose)} trip (mix of price points if you can), each with name, cuisine, and one line on what it's known for. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run at least two differently-worded searches before concluding a city this size genuinely has nothing findable, e.g. "best restaurants in ${cityLabelEn}" and "popular places to eat near [a specific landmark from the attractions list]", well-known national chains count too, not just standalone restaurants.`
+      ? `\n- A genuinely price-tier-diverse set of real, currently-operating restaurants in ${cityLabelEn} that fit a ${readable(submission.purpose)} trip: aim for at least 2 budget/cheap options, at least 2 normal/mid-range options, and 1-2 upscale/expensive options if the city genuinely has them (roughly 8-12 total, this category is worth real search budget). For each: name, cuisine, one line on what it's known for, and a rough price tier (budget / normal / upscale) based on what you find. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run multiple differently-worded searches covering each tier, e.g. "best restaurants in ${cityLabelEn}", "cheap eats ${cityLabelEn}", "fine dining ${cityLabelEn}", and "popular places to eat near [a specific landmark from the attractions list]", well-known national chains count too, not just standalone restaurants.`
       : "";
     const rentalScope = wantsRentalCar
-      ? `\n- 2-4 real rental car companies operating in ${cityLabelEn} (international chains and local ones both count), each with name and one line on what they offer. The customer asked for a rental car and we have no rental providers in our own data. Run at least two differently-worded searches, e.g. "car rental ${cityLabelEn}" and "car hire companies ${cityLabelEn} Saudi Arabia", before concluding none exist.`
+      ? `\n- A genuinely price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: aim for at least one budget/cheap option, one normal/mid-range option, and one upscale/premium option if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo, etc., wherever they actually operate there) and real local operators, international chains are generally easier to verify as legitimate so don't skip them in favor of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor review scores and counts, how long they've operated, whether an official Saudi tourism or transport-authority source lists them). The customer asked for a rental car and we have no rental providers in our own data. Run multiple differently-worded searches, e.g. "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} Saudi Arabia", "cheap car rental ${cityLabelEn}", and "[company name] reviews" / "[company name] trustpilot" for whichever names come up, before concluding a tier or a reputation signal isn't findable.`
       : "";
 
     const response = await anthropic.messages.create({
       model: "claude-opus-5",
-      max_tokens: 3000,
+      max_tokens: 6000,
       thinking: { type: "adaptive" },
-      output_config: { effort: "medium" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 20 }],
-      system: `You are a research assistant checking current, real-world facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real Saudi city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen.
+      output_config: { effort: "high" },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 35 }],
+      system: `You are a research assistant checking current, real-world facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real Saudi city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
 
 Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${rentalScope}
 - Opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below. If a place turns out to be a free, unticketed public site with no formal opening hours (a public trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best done in early morning before the heat", that IS a real, useful finding, don't leave it as "unconfirmed" just because there's no ticket office to look up.${flightScope}
-- Do NOT research or make any claim about business licensing, certification, safety compliance or regulatory status for any company, that is explicitly out of scope for you, leave it alone entirely.
+- For restaurants and rental cars specifically, also look for real third-party trust signals: review sites (Google reviews, Trustpilot, TripAdvisor - report the score and how many ratings it's based on), and any official government source (Saudi Ministry of Tourism, Ministry of Transport / general transport authority licensed-operator listings, municipal directories). A company genuinely appearing on an official government registry is a verifiable finding, report it plainly with the source named, e.g. "listed on [authority]'s registered operator directory". A company's own website or marketing merely claiming to be "licensed" or "certified" is NOT independently verified by that, report that only as an attributed, hedged claim, e.g. "their website states they're licensed by [X]", never as a confirmed fact and never as your own assessment, you cannot personally verify regulatory status, only report what a genuine source actually says. If you find nothing on licensing or reviews for a company after a real attempt, don't guess or imply anything, just leave that part out for that company, an unknown quantity is not the same as "unsafe", say only what you actually found.
 - For the attractions: only spend search budget where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing everything.
 - Report only what you actually find, with enough detail a planner could act on. If search genuinely turns up nothing conclusive after a real attempt for a place, say so plainly in one line for that place, don't guess or extrapolate, but don't give up after a single search either, try more than one query before concluding something isn't findable.
 - If you run out of search budget partway through, report everything you DID find for what you finished checking, then list the rest as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
@@ -276,6 +279,16 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
   if (!englishDraft) return "";
   try {
     const response = await anthropic.messages.create({
+      // KEEP THIS ON OPUS. Sonnet was measured on a real draft here and
+      // failed twice in one sample. It translated the "Day 1" header into
+      // "اليوم 1", which stops matching DAY_HEADING in
+      // journey/parse-itinerary.ts, so every Arabic itinerary silently
+      // loses its day-card layout and renders as one raw block. It also
+      // downgraded صلاة الجمعة (Jumu'ah) to صلاة الظهر, which is wrong:
+      // Jumu'ah replaces Dhuhr on a Friday, they aren't interchangeable,
+      // and getting that wrong in Arabic copy for Muslim customers reads
+      // as not knowing the subject. The self-check pass below runs on
+      // Sonnet, that one is fine, this one is not.
       model: "claude-opus-5",
       max_tokens: 6000,
       thinking: { type: "adaptive" },
@@ -296,23 +309,36 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
 // human ever sees them. This tightens the draft the reviewer receives, it
 // does NOT replace the reviewer, nothing here ever publishes to a
 // customer on its own.
-async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string): Promise<string> {
-  try {
-    if (!englishDraft && !arabicDraft) return "";
-
-    const response = await anthropic.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 1200,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "low" },
-      system: cachedSystem(`You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. The Arabic version below is meant to be a faithful translation of the English, not an independent draft, read with fresh eyes, skeptical of anything that isn't clearly sourced.
+function buildSelfCheckSystemPrompt() {
+  return `You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. The Arabic version below is meant to be a faithful translation of the English, not an independent draft, read with fresh eyes, skeptical of anything that isn't clearly sourced.
 
 Check for, and only for:
 - Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts or research notes below, that's likely invented and must be flagged.
 - Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge, anywhere in the draft including its own closing section.
 - Any way the Arabic translation actually disagrees with the English, a different hotel or driver named, a different day order, a place appearing on a different day, a flag present in one but not the other. Minor phrasing or word-order differences don't count, only substantive disagreements a translation should never have introduced.
 
-Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`),
+Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`;
+}
+
+async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string): Promise<string> {
+  try {
+    if (!englishDraft && !arabicDraft) return "";
+
+    const response = await anthropic.messages.create({
+      // Sonnet rather than Opus here, measured on a real stored draft: it
+      // runs about 3x faster at roughly half the cost, and on the sample
+      // tested it caught the highest-stakes issue Opus actually missed (a
+      // driver company's hedged "worth confirming current licensing"
+      // restated flatly as "licensed"). Opus flags more invented specifics,
+      // so this trades a little recall for speed and cost. Safe trade only
+      // because this pass advises the human reviewer, it never gates
+      // publishing, so a missed flag costs a reviewer a second look rather
+      // than reaching a customer.
+      model: "claude-sonnet-5",
+      max_tokens: 1200,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "low" },
+      system: cachedSystem(buildSelfCheckSystemPrompt()),
       messages: [{
         role: "user",
         content: `GROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES:\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
@@ -355,13 +381,24 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
 // research findings were never treated as gospel, just a strong first pass.
 const RESEARCH_CACHE_TTL_DAYS = 7;
 
-async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<string | null> {
+// Returns whatever is cached along with whether it's past the TTL, rather
+// than throwing away an expired entry outright. An expired entry is still
+// real research that a human reviewer will verify anyway, so it beats
+// sending the drafting pass in with nothing at all when a live refresh
+// isn't possible, see the fallback in generateDraftGuide.
+//
+// Curated entries (hand-researched and verified, see the curated column
+// migration) never go stale on a timer, so the automated pass never
+// overwrites them. They're refreshed deliberately instead.
+type CachedResearch = { notes: string; stale: boolean };
+
+async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<CachedResearch | null> {
   try {
-    const { data } = await supabase.from("city_research_cache").select("research_notes, updated_at").eq("city_slug", citySlug).single();
+    const { data } = await supabase.from("city_research_cache").select("research_notes, updated_at, curated").eq("city_slug", citySlug).single();
     if (!data?.research_notes) return null;
+    if (data.curated) return { notes: data.research_notes, stale: false };
     const ageMs = Date.now() - new Date(data.updated_at).getTime();
-    if (ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000) return null;
-    return data.research_notes;
+    return { notes: data.research_notes, stale: ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000 };
   } catch {
     return null;
   }
@@ -370,7 +407,13 @@ async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdmin
 async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string, notes: string): Promise<void> {
   if (!notes) return;
   try {
-    await supabase.from("city_research_cache").upsert({ city_slug: citySlug, research_notes: notes, updated_at: new Date().toISOString() });
+    // Never let the automated pass overwrite a hand-verified entry. In the
+    // normal flow it can't reach here for a curated city (those never go
+    // stale, so research never runs), this is the guard for anything that
+    // calls in outside that flow.
+    const { data: existing } = await supabase.from("city_research_cache").select("curated").eq("city_slug", citySlug).single();
+    if (existing?.curated) return;
+    await supabase.from("city_research_cache").upsert({ city_slug: citySlug, research_notes: notes, updated_at: new Date().toISOString(), curated: false });
   } catch (error) {
     console.error("Caching research failed", error);
   }
@@ -404,10 +447,20 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // translation only exists once English is final, self-check only
     // means something once both are final. Parallelizing English/Arabic
     // (the old approach) was exactly what let them disagree.
-    let operationalResearch = supabase ? await getCachedResearch(supabase, submission.city) : null;
+    const cached = supabase ? await getCachedResearch(supabase, submission.city) : null;
+    let operationalResearch = cached && !cached.stale ? cached.notes : "";
     if (!operationalResearch) {
-      operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
-      if (supabase && operationalResearch) await cacheResearch(supabase, submission.city, operationalResearch);
+      const freshResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
+      if (freshResearch) {
+        operationalResearch = freshResearch;
+        if (supabase) await cacheResearch(supabase, submission.city, freshResearch);
+      } else if (cached) {
+        // Live research failed (API error, out of credits, timeout) and the
+        // cached copy is past its TTL. Use it anyway: slightly-dated real
+        // findings still beat drafting with none, which is what used to
+        // happen here, and the reviewer verifies hours/pricing regardless.
+        operationalResearch = cached.notes;
+      }
     }
     const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch);
     if (!englishDraft) return;

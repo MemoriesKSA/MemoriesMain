@@ -7,3 +7,4 @@ out
 *.log
 .DS_Store
 .deploy-payload.json
+tsconfig.tsbuildinfo
