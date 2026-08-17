@@ -169,6 +169,7 @@ export function SupportChat() {
     { en: "Tell me about Saudi Arabia", ar: "أخبرني عن السعودية" },
   ];
 
+  if (pathname?.startsWith("/internal")) return null;
   return <aside className={`supportChat ${open ? "open" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <div className="supportPanel" id="memories-support-panel" aria-hidden={!open}>
       <header className="supportHeader">

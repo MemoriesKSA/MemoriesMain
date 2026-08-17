@@ -61,6 +61,7 @@ export function Header() {
   }, [open]);
 
   const pillStyle = { "--pill-x": `${pill.x}px`, "--pill-width": `${pill.width}px` } as CSSProperties;
+  if (pathname?.startsWith("/internal")) return null;
   return <header dir={isArabic ? "rtl" : "ltr"} className={`siteHeader ${pathname === "/" || pathname === "/ar" ? "overHero" : "solidHeader"} ${open ? "menuOpen" : ""}`}>
     <div className="container headerInner">
       <Link href={isArabic ? "/ar" : "/"} className="brand" aria-label={isArabic ? "العودة إلى الرئيسية" : "Memories home"}><Image className="brandLogo" src="/images/memories-logo-full.webp" width={703} height={720} alt={isArabic ? "شعار ميموريز للسفر" : "MEMORIES travel logo"} preload /></Link>

@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import { NewsletterForm } from "./newsletter-form";
 
 export function Footer() {
-  const pathname = usePathname(); const ar = pathname === "/ar" || pathname.startsWith("/ar/"); const p = ar ? "/ar" : "";
+  const pathname = usePathname();
+  if (pathname?.startsWith("/internal")) return null;
+  const ar = pathname === "/ar" || pathname.startsWith("/ar/"); const p = ar ? "/ar" : "";
   const isHome = pathname === "/" || pathname === "/ar";
   const isPlanner = pathname === "/design-your-journey" || pathname === "/ar/design-your-journey";
   const showNewsletter = !isHome && !isPlanner;
