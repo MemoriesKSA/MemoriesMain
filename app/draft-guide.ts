@@ -119,14 +119,15 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
       max_tokens: 2000,
       thinking: { type: "adaptive" },
       output_config: { effort: "low" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 12 }],
       system: `You are a research assistant checking current, time-sensitive facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it.
 
 Scope, stay inside it:
 - Only check opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below.
 - Do NOT research or make any claim about business licensing, certification, safety compliance or regulatory status for any company, that is explicitly out of scope for you, leave it alone entirely.
-- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it.
-- Report only what you actually find, with enough detail a planner could act on (e.g. "open year-round, standard hours" or "seasonal, tied to Riyadh Season, likely closed outside it"). If search turns up nothing conclusive for a place, say so plainly in one line, don't guess or extrapolate.
+- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing.
+- Report only what you actually find, with enough detail a planner could act on (e.g. "open year-round, standard hours" or "seasonal, tied to Riyadh Season, likely closed outside it"). If search turns up nothing conclusive for a place, say so plainly in one line for that place, don't guess or extrapolate.
+- If you run out of search budget partway through, report everything you DID find for the places you finished checking, then list the remaining places as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
 - Output short plain-text lines, one per place you checked, no markdown, no preamble, no closing summary.`,
       messages: [{
         role: "user",
