@@ -115,6 +115,15 @@ export type FlagshipCityGuide = {
   dining: FlagshipDining[];
   stay: FlagshipStay[];
   sampleDay: FlagshipDayBeat[];
+  // AI-only grounding: flagship-city-guide-page.tsx never reads these, only
+  // the AI draft generator (draft-guide.ts) and concierge (concierge-data.ts)
+  // do. The public page stays curated and editorial (a couple of featured
+  // picks); these hold a deeper, real, sourced set of options across price
+  // points so the AI has genuine choices to weigh instead of just the ones
+  // worth featuring on a page. Same rule as everywhere else: real, verified,
+  // findable businesses only, hedge anything not independently confirmable.
+  extendedStay?: FlagshipStay[];
+  extendedProviders?: FlagshipTransportProvider[];
 };
 
 const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
@@ -391,6 +400,59 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionEn: "Serviced apartments from the established Saudi hospitality group Al Muhaidb, a practical, well-located choice for families or longer stays.",
         descriptionAr: "شقق مخدومة من مجموعة المهيدب السعودية الراسخة في الضيافة، خيار عملي وجيد الموقع للعائلات أو الإقامات الأطول.",
         tier: "budget",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "Mandarin Oriental Al Faisaliah, Riyadh",
+        nameAr: "ماندارين أورينتال الفيصلية، الرياض",
+        descriptionEn: "Set inside the landmark Al Faisaliah Tower in Olaya, with the tower's golden glass sphere as a backdrop, six restaurants and a women's spa.",
+        descriptionAr: "يقع داخل برج الفيصلية الشهير في العليا، وتتصدره الكرة الزجاجية الذهبية للبرج، مع ستة مطاعم ومنتجع صحي مخصص للسيدات.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Fairmont Riyadh",
+        nameAr: "فيرمونت الرياض",
+        descriptionEn: "A 298-room address inside the Business Gate complex, about 15 minutes from King Khalid International Airport.",
+        descriptionAr: "فندق بـ298 غرفة داخل مجمع بزنس جيت، على بعد نحو 15 دقيقة من مطار الملك خالد الدولي.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Courtyard by Marriott Riyadh Olaya",
+        nameAr: "كورتيارد من ماريوت الرياض العليا",
+        descriptionEn: "A dependable Marriott address in the heart of Olaya, with two restaurants, an outdoor pool and a sun terrace.",
+        descriptionAr: "عنوان موثوق من ماريوت في قلب العليا، بمطعمين ومسبح خارجي وتراس مشمس.",
+      },
+      {
+        nameEn: "Novotel Suites Riyadh Olaya",
+        nameAr: "نوفوتيل سويتس الرياض العليا",
+        descriptionEn: "Self-catering suites on Olaya Street with kitchenettes, an indoor pool and spa, a practical base for longer stays.",
+        descriptionAr: "أجنحة بمطابخ صغيرة في شارع العليا، مع مسبح داخلي ومنتجع صحي، قاعدة عملية للإقامات الأطول.",
+      },
+      {
+        nameEn: "Boudl Al Olaya",
+        nameAr: "بودل العليا",
+        descriptionEn: "Saudi-owned hotel apartments on Olaya Main Street, a short walk from Al Faisaliah Tower and Mall, a straightforward budget base in a central location.",
+        descriptionAr: "شقق فندقية سعودية الملكية في شارع العليا الرئيسي، على بعد خطوات من برج الفيصلية ومولها، خيار اقتصادي بسيط في موقع مركزي.",
+        tier: "budget",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "NAYLAM",
+        nameAr: "نيلم",
+        typeEn: "Saudi luxury chauffeur app",
+        typeAr: "تطبيق سائق خاص فاخر سعودي",
+        noteEn: "A Saudi-founded chauffeur app covering Riyadh, Jeddah and Dammam with app-based booking for airport transfers, hourly hire and city-to-city trips, a homegrown alternative to the global platforms, worth confirming current rates and driver vetting when booking.",
+        noteAr: "تطبيق سائقين خاصين تأسس في السعودية ويغطي الرياض وجدة والدمام، مع حجز عبر التطبيق لتوصيل المطار والحجز بالساعة والتنقل بين المدن، بديل محلي عن المنصات العالمية، ويُفضل التأكد من الأسعار الحالية وإجراءات التحقق من السائقين عند الحجز.",
+      },
+      {
+        nameEn: "MyChauffeur",
+        nameAr: "ماي شوفير",
+        typeEn: "International chauffeur booking platform",
+        typeAr: "منصة عالمية لحجز السائقين الخاصين",
+        noteEn: "A Germany-based chauffeur booking platform (MyChauffeur GmbH) with a dedicated Riyadh page for airport transfers and hourly hire, similar in model to Blacklane, worth comparing rates and confirming current local coverage when booking.",
+        noteAr: "منصة عالمية لحجز السائقين الخاصين مقرها ألمانيا (MyChauffeur GmbH)، ولها صفحة مخصصة للرياض لتوصيل المطار والحجز بالساعة، بنموذج مشابه لبلاكلين، ويُفضل مقارنة الأسعار والتأكد من التغطية المحلية الحالية عند الحجز.",
       },
     ],
     sampleDay: [
@@ -895,6 +957,50 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "يقع بين صخور وادي عشار الرملية، وجهة مفضلة لزوار العلا لأول مرة.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Dar Tantora The House Hotel",
+        nameAr: "دار تنطورة ذا هاوس هوتيل",
+        descriptionEn: "A 30-room earth-built boutique hotel inside AlUla's Old Town, constructed with traditional mudbrick methods around a historic fort.",
+        descriptionAr: "فندق بوتيكي مبني من الطين بثلاثين غرفة داخل بلدة العلا القديمة، شُيِّد بأساليب البناء الطينية التقليدية حول قلعة تاريخية.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "The Chedi Hegra",
+        nameAr: "ذا شيدي الحِجر",
+        descriptionEn: "35 guesthouses and suites built into a former railway station and fort inside the Hegra UNESCO site, with butler service.",
+        descriptionAr: "35 جناحًا وغرفة ضيافة أُقيمت داخل محطة قطار وقلعة سابقتين ضمن موقع الحِجر المسجل في تراث اليونسكو، مع خدمة الخادم الشخصي.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Shaden Resort",
+        nameAr: "منتجع شادن",
+        descriptionEn: "A 4-star resort near AlUla's Old Town with an outdoor pool and garden, a straightforward, well-reviewed mid-range base.",
+        descriptionAr: "منتجع أربع نجوم قرب بلدة العلا القديمة بمسبح خارجي وحديقة، خيار متوسط الفئة موثوق ومشهود له بتقييمات جيدة.",
+      },
+      {
+        nameEn: "Cloud7 Residence AlUla",
+        nameAr: "كلاود 7 ريزيدنس العلا",
+        descriptionEn: "Design-led bungalows in the Al Aziziyah district with a pool and mountain views, part of the boutique Cloud7 hotel group.",
+        descriptionAr: "بنغلوهات بتصميم عصري في حي العزيزية بمسبح وإطلالات جبلية، ضمن مجموعة كلاود 7 الفندقية البوتيكية.",
+      },
+      {
+        nameEn: "Al Wateen Hotel",
+        nameAr: "فندق الوطين",
+        descriptionEn: "A straightforward 3-star hotel in AlUla, useful for travellers prioritising sites over amenities, though nightly rates vary widely with demand so it isn't a reliable budget anchor.",
+        descriptionAr: "فندق بسيط من ثلاث نجوم في العلا، مفيد للمسافرين الذين يفضلون المواقع على الرفاهية، إلا أن أسعاره الليلية تتفاوت كثيرًا حسب الطلب، لذا لا يُعتمد كخيار اقتصادي ثابت.",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "Easy Access AlUla",
+        nameAr: "إيزي أكسس العلا",
+        typeEn: "Local private driver & car hire",
+        typeAr: "سائق خاص محلي وتأجير سيارات مع سائق",
+        noteEn: "A registered local AlUla operator offering sedan and SUV hire with a driver plus airport transfers, worth confirming current terms and vehicle options directly when booking.",
+        noteAr: "مشغّل محلي مسجّل في العلا يقدّم تأجير سيارات صالون ودفع رباعي مع سائق إضافة إلى توصيل المطار، ويُفضل تأكيد الشروط الحالية وخيارات المركبات مباشرة عند الحجز.",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -1085,6 +1191,59 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "فندق بأجنحة كاملة يلاصق الحرم مباشرة، مع خدمة الخادم الشخصي على مدار الساعة.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Conrad Makkah",
+        nameAr: "كونراد مكة",
+        descriptionEn: "In the Jabal Omar development with direct pedestrian access to Masjid al-Haram, about a 2-minute walk.",
+        descriptionAr: "في مشروع جبل عمر مع ممر مشاة مباشر إلى المسجد الحرام، على بعد نحو دقيقتين مشيًا.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Swissôtel Al Maqam Makkah",
+        nameAr: "سويسوتيل المقام مكة",
+        descriptionEn: "Inside the Abraj Al Bait complex, among the closest hotels to the Haram at roughly 50 metres.",
+        descriptionAr: "داخل مجمع أبراج البيت، من أقرب الفنادق إلى الحرم بمسافة تقارب 50 مترًا.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Pullman ZamZam Makkah",
+        nameAr: "بولمان زمزم مكة",
+        descriptionEn: "Part of the Clock Tower complex facing King Abdulaziz Gate, a 2-3 minute walk to the Haram.",
+        descriptionAr: "ضمن مجمع أبراج الساعة مقابل باب الملك عبدالعزيز، على بعد دقيقتين إلى ثلاث دقائق مشيًا من الحرم.",
+      },
+      {
+        nameEn: "Mövenpick Hajar Tower Makkah",
+        nameAr: "موڤنبيك حجر تاور مكة",
+        descriptionEn: "Within the Clock Tower complex, about 100 metres from King Abdulaziz Gate.",
+        descriptionAr: "ضمن مجمع أبراج الساعة، على بعد نحو 100 متر من باب الملك عبدالعزيز.",
+      },
+      {
+        nameEn: "Al Kiswah Towers Hotel",
+        nameAr: "فندق أبراج الكسوة",
+        descriptionEn: "A large group-oriented property on Ajyad Street, roughly 700-800 metres from the Haram with a 24-hour shuttle bus.",
+        descriptionAr: "منشأة كبيرة موجهة للمجموعات في شارع أجياد، على بعد نحو 700 إلى 800 متر من الحرم مع خدمة حافلات مكوكية على مدار الساعة.",
+        tier: "budget",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "The Royal Chauffeur",
+        nameAr: "ذا رويال شوفير",
+        typeEn: "Private chauffeur service",
+        typeAr: "خدمة سائق خاص",
+        noteEn: "Covers Makkah alongside Jeddah, Madinah, Riyadh and Dammam with dedicated drivers, a reasonable option for pilgrims moving between cities with the same provider.",
+        noteAr: "تغطي مكة إلى جانب جدة والمدينة والرياض والدمام بسائقين مخصصين، خيار معقول للحجاج المتنقلين بين المدن مع مزود واحد.",
+      },
+      {
+        nameEn: "Online Umrah Taxi",
+        nameAr: "أونلاين عمرة تاكسي",
+        typeEn: "Pilgrimage transport specialist",
+        typeAr: "متخصص في نقل الحجاج والمعتمرين",
+        noteEn: "A Makkah-based private transport operator with a physical address in the city, positioned as licensed with Saudi transport authorities and geared specifically toward Umrah and Ziyarat routes, worth confirming current licensing and fixed fares when booking.",
+        noteAr: "مشغّل نقل خاص مقره مكة وله عنوان فعلي في المدينة، يُوصف بأنه مرخّص لدى جهات النقل السعودية ومتخصص تحديدًا في مسارات العمرة والزيارة، ويُفضل التأكد من الترخيص الحالي والأسعار الثابتة عند الحجز.",
+      },
+    ],
     sampleDay: [],
   },
   "saudi-arabia/madinah": {
@@ -1248,6 +1407,53 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "أنوار المدينة موڤنبيك",
         descriptionEn: "Two minutes from the Prophet's Mosque, with direct mall access.",
         descriptionAr: "على بعد دقيقتين من المسجد النبوي، مع وصول مباشر إلى المول.",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "The Oberoi Madinah",
+        nameAr: "الأوبروي المدينة",
+        descriptionEn: "About 100 metres from Al-Masjid an-Nabawi on flat ground, a 2-3 minute walk with rooms overlooking the mosque.",
+        descriptionAr: "على بعد نحو 100 متر من المسجد النبوي على أرض مستوية، بمسافة مشي دقيقتين إلى ثلاث دقائق وغرف تطل على المسجد.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "InterContinental Dar Al Iman Madinah",
+        nameAr: "إنتركونتيننتال دار الإيمان المدينة",
+        descriptionEn: "Sits within the mosque's outer courtyard, about a minute from the ladies' entrance.",
+        descriptionAr: "يقع ضمن الساحة الخارجية للمسجد، على بعد نحو دقيقة واحدة من مدخل النساء.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Crowne Plaza Madinah",
+        nameAr: "كراون بلازا المدينة",
+        descriptionEn: "Overlooks the Haram, roughly 5-10 minutes' walk or a free shuttle to the mosque gates.",
+        descriptionAr: "تطل على الحرم، وتبعد نحو 5 إلى 10 دقائق مشيًا أو عبر حافلة مجانية إلى أبواب المسجد.",
+      },
+      {
+        nameEn: "Nozol Royal Inn Hotel",
+        nameAr: "فندق نزل رويال إن",
+        descriptionEn: "A 4-star hotel roughly 100-350 metres behind the mosque, a budget-friendlier pick still within easy walking distance.",
+        descriptionAr: "فندق أربع نجوم يقع على بعد نحو 100 إلى 350 مترًا خلف المسجد، خيار أقرب إلى الاقتصادي مع بقائه على مسافة مشي سهلة.",
+        tier: "budget",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "The Royal Chauffeur",
+        nameAr: "ذا رويال شوفير",
+        typeEn: "Private chauffeur service",
+        typeAr: "خدمة سائق خاص",
+        noteEn: "Covers Madinah alongside Jeddah, Makkah, Riyadh and Dammam with dedicated drivers, a reasonable option for pilgrims travelling onward to or from Makkah with the same provider.",
+        noteAr: "تغطي المدينة إلى جانب جدة ومكة والرياض والدمام بسائقين مخصصين، خيار معقول للحجاج المنتقلين من مكة أو إليها مع مزود واحد.",
+      },
+      {
+        nameEn: "Online Umrah Taxi",
+        nameAr: "أونلاين عمرة تاكسي",
+        typeEn: "Pilgrimage transport specialist",
+        typeAr: "متخصص في نقل الحجاج والمعتمرين",
+        noteEn: "Also serves Madinah for airport transfers, Ziyarat routes to Quba and Uhud, and onward travel to Makkah, positioned as licensed with Saudi transport authorities, worth confirming current licensing and fixed fares when booking.",
+        noteAr: "تخدم أيضًا المدينة لتوصيل المطار ومسارات الزيارة إلى قباء وأحد والانتقال إلى مكة، وتُوصف بأنها مرخّصة لدى جهات النقل السعودية، ويُفضل التأكد من الترخيص الحالي والأسعار الثابتة عند الحجز.",
       },
     ],
     sampleDay: [],
@@ -1428,6 +1634,46 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "نجومة، ريزيرف من ريتز كارلتون",
         descriptionEn: "The brand's most exclusive tier, an overwater and beachfront reserve on its own island.",
         descriptionAr: "أرقى تصنيفات العلامة، محمية على الماء والشاطئ في جزيرتها الخاصة.",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "The Red Sea EDITION",
+        nameAr: "ذا ريد سي إديشن",
+        descriptionEn: "The first hotel to open on Shura Island, low stone-and-timber pavilions along the beach with multiple pools and some of the destination's most talked-about dining.",
+        descriptionAr: "أول فندق يفتتح في جزيرة شورى، أجنحة منخفضة من الحجر والخشب على طول الشاطئ مع عدة مسابح ومطاعم من الأكثر حديثًا في الوجهة.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "InterContinental The Red Sea Resort",
+        nameAr: "منتجع إنتركونتيننتال ذا ريد سي",
+        descriptionEn: "Among the first resorts to open on Shura Island, beachfront and lagoon-facing rooms and suites from a globally familiar name.",
+        descriptionAr: "من أوائل المنتجعات افتتاحًا في جزيرة شورى، غرف وأجنحة تطل على الشاطئ والبحيرة من علامة عالمية معروفة.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Shebara Resort",
+        nameAr: "منتجع شيبارة",
+        descriptionEn: "Red Sea Global's own first resort, mirrored overwater villas on Sheybarah Island designed to reflect the sea and sky, running fully off-grid on solar power.",
+        descriptionAr: "أول منتجع تديره شركة البحر الأحمر الدولية بنفسها، فيلات عائمة على الماء بواجهات عاكسة في جزيرة شيبارة صُممت لتعكس البحر والسماء، وتعمل بالكامل بالطاقة الشمسية بمعزل عن الشبكة العامة.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Desert Rock Resort",
+        nameAr: "منتجع ديزرت روك",
+        descriptionEn: "Villas and cave suites carved into the canyon walls of the Hejaz mountains, some perched on the cliff edge above the desert wadi below.",
+        descriptionAr: "فيلات وأجنحة كهفية منحوتة في جدران الوادي بجبال الحجاز، بعضها معلق على حافة المنحدر فوق الوادي الصحراوي أسفلها.",
+        tier: "luxury",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "GH Trips",
+        nameAr: "جي إتش تريبس",
+        typeEn: "Private chauffeur & resort transfer service",
+        typeAr: "خدمة سائق خاص وتوصيل للمنتجعات",
+        noteEn: "A Dubai-based chauffeur company running dedicated private transfers to Shura Island's resorts from Red Sea International Airport, Jeddah and Tabuk, positioned as licensed and insured, worth confirming current terms and pricing directly when booking.",
+        noteAr: "شركة سائقين خاصين مقرها دبي، تقدم توصيلًا خاصًا مخصصًا لمنتجعات جزيرة شورى من مطار البحر الأحمر الدولي وجدة وتبوك، وتُوصف بأنها مرخّصة ومؤمّنة، ويُفضل تأكيد الشروط والأسعار الحالية مباشرة عند الحجز.",
       },
     ],
     sampleDay: [
@@ -1644,6 +1890,43 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "عمارة أسيرية تقليدية في كل تفاصيله، لإقامة تحمل إحساسًا أصيلًا بالمكان.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Boudl Abha",
+        nameAr: "بودل أبها",
+        descriptionEn: "A budget-friendly aparthotel near Abha Mall, kitchenette rooms a short drive from the city centre.",
+        descriptionAr: "شقق فندقية اقتصادية قرب أبها مول، بغرف مزودة بمطبخ صغير على بعد دقائق من وسط المدينة.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Citadines Abha",
+        nameAr: "سيتادينز أبها",
+        descriptionEn: "Serviced studio and one-bedroom apartments from the Ascott group, high in the mountains with a pool, gym and views over Abha.",
+        descriptionAr: "شقق فندقية استوديو وبغرفة نوم من مجموعة أسكوت، على ارتفاع عالٍ في الجبال مع مسبح وصالة رياضية وإطلالات على أبها.",
+      },
+      {
+        nameEn: "Assalam Palace Hotel",
+        nameAr: "فندق قصر السلام",
+        descriptionEn: "A city-centre hotel topped by the well-known 10th-floor revolving restaurant, a practical mid-range base for exploring Abha.",
+        descriptionAr: "فندق في وسط المدينة يعلوه المطعم الدوار الشهير في الطابق العاشر، قاعدة عملية بأسعار متوسطة لاستكشاف أبها.",
+      },
+      {
+        nameEn: "Best Western Plus Danat Almansak Hotel",
+        nameAr: "فندق بست ويسترن بلس دانة المنسك",
+        descriptionEn: "An international-chain 4-star hotel in the Al-Areen district, a few minutes from the airport with an indoor pool, sauna and spa.",
+        descriptionAr: "فندق أربع نجوم من سلسلة عالمية في حي العرين، على بعد دقائق من المطار، مع مسبح داخلي وساونا وسبا.",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "Transfeero",
+        nameAr: "ترانسفيرو",
+        typeEn: "Licensed private transfer platform",
+        typeAr: "منصة توصيل خاص مرخّصة",
+        noteEn: "A global transfer-booking platform connecting travellers to licensed local drivers holding Saudi Transport General Authority permits, useful for a fixed-price private pickup from Abha International Airport, book directly and confirm current rates.",
+        noteAr: "منصة عالمية لحجز التوصيل الخاص تربط المسافرين بسائقين محليين مرخّصين يحملون تصاريح الهيئة العامة للنقل السعودية، مفيدة لتوصيل خاص بسعر ثابت من مطار أبها الدولي، يُفضل الحجز مباشرة والتأكد من الأسعار الحالية.",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -1828,6 +2111,28 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
     ],
     dining: [],
     stay: [],
+    extendedStay: [
+      {
+        nameEn: "AlSarah Palace",
+        nameAr: "قصر السارة",
+        descriptionEn: "A small aparthotel in Al Namas with kitchenette rooms, one of the few places to stay in the town itself rather than driving back to Abha.",
+        descriptionAr: "شقق فندقية صغيرة في النماص بغرف مزودة بمطبخ صغير، من الخيارات القليلة للمبيت في البلدة نفسها بدل العودة إلى أبها.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Tanuma Aram Hospitality Apartments",
+        nameAr: "تنومة آرام للضيافة",
+        descriptionEn: "A modern aparthotel in Tanomah with wide windows over the mountains, a rare overnight base among the town's juniper forests and waterfalls.",
+        descriptionAr: "شقق فندقية حديثة في تنومة بنوافذ واسعة تطل على الجبال، قاعدة نادرة للمبيت وسط غابات العرعر وشلالات البلدة.",
+      },
+      {
+        nameEn: "Al Habala Resort",
+        nameAr: "منتجع الحبلة السياحي",
+        descriptionEn: "A modest 20-room resort in Anqarah, about a 25-minute walk from Al Habala village itself, the closest overnight option to the hanging village.",
+        descriptionAr: "منتجع متواضع من عشرين غرفة في عنقرة، على بعد نحو 25 دقيقة سيرًا من قرية الهبلة نفسها، أقرب خيار للمبيت من القرية المعلقة.",
+        tier: "budget",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -2023,6 +2328,34 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "لو ميريديان الهدا",
         descriptionEn: "Directly opposite the Al Hada cable car station, for easy access to the canyon views.",
         descriptionAr: "يقع مباشرة أمام محطة تلفريك الهدا، لسهولة الوصول إلى إطلالات الوادي.",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "InterContinental Taif",
+        nameAr: "إنتركونتيننتال الطائف",
+        descriptionEn: "A five-star mountain hotel on Airport Road at roughly 1,700 metres elevation, with sweeping views over the Hejaz highlands.",
+        descriptionAr: "فندق جبلي خمس نجوم على طريق المطار على ارتفاع نحو 1700 متر، بإطلالات واسعة على مرتفعات الحجاز.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Awaliv Hotel",
+        nameAr: "فندق أواليف",
+        descriptionEn: "A city-centre high-rise known for its revolving rooftop restaurant and panoramic views over Taif.",
+        descriptionAr: "برج فندقي في وسط المدينة يشتهر بمطعمه الدوّار على السطح وإطلالاته البانورامية على الطائف.",
+      },
+      {
+        nameEn: "Iris Boutique Taif Heart",
+        nameAr: "أيريس بوتيك قلب الطائف",
+        descriptionEn: "A small boutique hotel near Shubra Palace, fireplace-equipped rooms and a spa, well-reviewed for its beds and breakfast.",
+        descriptionAr: "فندق بوتيك صغير قرب قصر شبرا، بغرف مزودة بمواقد وسبا، ويحظى بتقييمات جيدة لأسرّته وإفطاره.",
+      },
+      {
+        nameEn: "Jadeel Serviced Apartments",
+        nameAr: "شقق جديل المخدومة",
+        descriptionEn: "Kitchenette-equipped apartments on King Faisal Road, a practical budget base near Shubra Palace.",
+        descriptionAr: "شقق مجهزة بمطابخ صغيرة على طريق الملك فيصل، قاعدة اقتصادية عملية قرب قصر شبرا.",
+        tier: "budget",
       },
     ],
     sampleDay: [
@@ -2222,6 +2555,44 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "فندق خمس نجوم مقابل جامعة الملك فيصل، على مسافة قريبة من المطاعم.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Braira Al-Ahsa",
+        nameAr: "بريرا الأحساء",
+        descriptionEn: "A 4-star hotel near the airport and train station, named the region's best luxury hotel by the Luxury Lifestyle Awards in 2025.",
+        descriptionAr: "فندق أربع نجوم قرب المطار ومحطة القطار، حاز لقب أفضل فندق فاخر في المنطقة من جوائز لاكجري لايف ستايل عام 2025.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Drwazet Al Nakheel Village",
+        nameAr: "قرية دروازة النخيل",
+        descriptionEn: "A chalet-style resort near Al-Qarah Mountain, with garden and pool views, a quieter alternative to the city-centre hotels.",
+        descriptionAr: "منتجع على طراز الشاليهات قرب جبل القارة، بإطلالات على الحديقة والمسبح، بديل هادئ عن فنادق وسط المدينة.",
+      },
+      {
+        nameEn: "Somewhere Hotel Al Ahsa",
+        nameAr: "فندق سموير الأحساء",
+        descriptionEn: "A modern hotel in Al-Mubarraz with a spa, hot tub and gym, praised for its quiet, comfortable rooms.",
+        descriptionAr: "فندق حديث في المبرز بسبا وحوض استرخاء ونادٍ رياضي، يحظى بتقدير لهدوئه وراحة غرفه.",
+      },
+      {
+        nameEn: "Al Muhaidb Residence Al Ahsa",
+        nameAr: "المهيدب ريزيدنس الأحساء",
+        descriptionEn: "Budget-friendly serviced apartments with kitchenettes and free breakfast, part of a well-known Saudi residence chain.",
+        descriptionAr: "شقق مخدومة اقتصادية بمطابخ صغيرة وإفطار مجاني، ضمن سلسلة سعودية معروفة للشقق الفندقية.",
+        tier: "budget",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "Noorha Transport",
+        nameAr: "نورها ترانسبورت",
+        typeEn: "Pre-booked private driver service",
+        typeAr: "خدمة سائق خاص بالحجز المسبق",
+        noteEn: "A locally based operator covering Hofuf, Al-Mubarraz and the wider Al-Ahsa Governorate with fixed-rate, WhatsApp-booked rides, positioned as Transport General Authority licensed, worth confirming current licensing when booking.",
+        noteAr: "مشغّل نقل محلي يغطي الهفوف والمبرز ومحافظة الأحساء بأكملها بأسعار ثابتة وحجز عبر واتساب، ويُوصف بأنه مرخّص من الهيئة العامة للنقل، ويُفضل التأكد من الترخيص الحالي عند الحجز.",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -2419,6 +2790,35 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "إقامة في الجزر نفسها، للمسافرين الذين يبنون أيامهم حول المحمية البحرية.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Radisson Blu Resort, Jizan",
+        nameAr: "منتجع راديسون بلو جازان",
+        descriptionEn: "A beachfront resort steps from the Red Sea with an outdoor pool and kids' facilities, close to the Farasan Islands ferry point.",
+        descriptionAr: "منتجع على الواجهة البحرية على بعد خطوات من البحر الأحمر، بمسبح خارجي ومرافق للأطفال، وقريب من نقطة العبّارة إلى جزر فرسان.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Grand Millennium Gizan",
+        nameAr: "فندق جراند ميلينيوم جازان",
+        descriptionEn: "A five-star hotel facing the Red Sea near Jazan University, with indoor and outdoor pools and a health club.",
+        descriptionAr: "فندق خمس نجوم يطل على البحر الأحمر قرب جامعة جازان، بمسبحين داخلي وخارجي ونادٍ صحي.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Courtyard by Marriott Jazan",
+        nameAr: "كورت يارد ماريوت جازان",
+        descriptionEn: "A central hotel connected to Al Rashid Mall, near the Corniche, with an indoor pool and daily breakfast buffet.",
+        descriptionAr: "فندق مركزي متصل بمول الراشد وقريب من الكورنيش، بمسبح داخلي وبوفيه إفطار يومي.",
+      },
+      {
+        nameEn: "Al Eairy Furnished Apartments Jizan 1",
+        nameAr: "العييري للشقق المفروشة جازان 1",
+        descriptionEn: "Budget apartment-style rooms in the Airport District, a short drive from Al Rashid and Al Khayal malls.",
+        descriptionAr: "غرف اقتصادية على طراز الشقق في حي المطار، على بعد دقائق من مولي الراشد والخيال.",
+        tier: "budget",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -2614,6 +3014,21 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "نزل رعوم سكاكا",
         descriptionEn: "A practical, well-reviewed stay in Sakaka, close to the old sites.",
         descriptionAr: "إقامة عملية وذات تقييمات جيدة في سكاكا، قريبة من المواقع القديمة.",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "Ewaa Express Hotel - Al Jouf",
+        nameAr: "فندق إيواء إكسبرس الجوف",
+        descriptionEn: "A straightforward budget stay on Fahd Street in Sakaka, about eight minutes from Zabal Castle, with a gym and free parking.",
+        descriptionAr: "إقامة اقتصادية عملية في شارع فهد بسكاكا، على بعد نحو ثماني دقائق من قصر زعبل، مع صالة رياضية وموقف سيارات مجاني.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Le Park Concord - Sakaka",
+        nameAr: "لو بارك كونكورد سكاكا",
+        descriptionEn: "Marketed as Sakaka's upscale option, a short drive from Zabal Castle with 52 rooms and a hot tub, though guest reviews on amenities are mixed, worth checking recent feedback before booking.",
+        descriptionAr: "يُسوَّق كخيار سكاكا الأرقى، على بعد دقائق من قصر زعبل، ويضم 52 غرفة وجاكوزي، إلا أن تقييمات النزلاء حول مستوى الخدمات متفاوتة، ويُفضل الاطلاع على أحدث المراجعات قبل الحجز.",
       },
     ],
     sampleDay: [
@@ -2846,6 +3261,52 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "إطلالات على الخليج من الواجهة البحرية، مع مسبح خارجي وملاعب تنس وسبا متكامل.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Dana Rayhaan by Rotana",
+        nameAr: "دانا ريحان من روتانا",
+        descriptionEn: "A 5-star address right on the Dammam Corniche, opened in 2023, with 285 rooms and four dining venues overlooking the Arabian Gulf.",
+        descriptionAr: "عنوان فاخر من فئة الخمس نجوم على كورنيش الدمام مباشرة، افتُتح عام 2023، ويضم 285 غرفة وجناحًا وأربعة مطاعم تطل على الخليج العربي.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Braira Dammam Hotel",
+        nameAr: "فندق بريرا الدمام",
+        descriptionEn: "A well-regarded Saudi hospitality brand on Prince Mohammed Bin Fahd Road, with two pools, a spa and gym, about ten minutes from the seafront.",
+        descriptionAr: "علامة ضيافة سعودية محبوبة في طريق الأمير محمد بن فهد، بمسبحين وسبا وصالة رياضية، وتبعد نحو عشر دقائق عن الواجهة البحرية.",
+      },
+      {
+        nameEn: "Novotel Dammam Business Park",
+        nameAr: "نوفوتيل الدمام بيزنس بارك",
+        descriptionEn: "A dependable 4-star option on the Al Khobar-Dammam highway, geared toward business travellers but comfortable for leisure stays too.",
+        descriptionAr: "خيار موثوق من فئة الأربع نجوم على طريق الخبر - الدمام، موجه لرجال الأعمال لكنه مريح أيضًا للإقامات الترفيهية.",
+      },
+      {
+        nameEn: "Radisson Hotel & Apartments Dammam Industrial City",
+        nameAr: "فندق وشقق راديسون الدمام الصناعية",
+        descriptionEn: "The only international 4-star hotel in Dammam's Second Industrial City, recently refurbished, with rooms and apartments near Half Moon Bay.",
+        descriptionAr: "الفندق الدولي الوحيد من فئة الأربع نجوم في مدينة الدمام الصناعية الثانية، جُدد مؤخرًا، ويضم غرفًا وشققًا قريبة من خليج نصف القمر.",
+        tier: "budget",
+      },
+    ],
+    extendedProviders: [
+      {
+        nameEn: "Blacklane",
+        nameAr: "بلاكلين",
+        typeEn: "International chauffeur service",
+        typeAr: "خدمة سائق خاص عالمية",
+        noteEn: "The same global chauffeur platform used in Riyadh, with a dedicated Dammam booking page for airport transfers and hourly hire, book directly and confirm current rates.",
+        noteAr: "المنصة العالمية نفسها لحجز السائقين الخاصين المستخدمة في الرياض، ولديها صفحة حجز مخصصة للدمام لتوصيل المطار والحجز بالساعة، يُفضل الحجز مباشرة والتأكد من الأسعار الحالية.",
+      },
+      {
+        nameEn: "NAYLAM",
+        nameAr: "نيلم",
+        typeEn: "Saudi private chauffeur app",
+        typeAr: "تطبيق سائق خاص سعودي",
+        noteEn: "A Saudi-built luxury chauffeur app naming Dammam among its three core coverage cities alongside Riyadh and Jeddah, book through the app and confirm current availability.",
+        noteAr: "تطبيق سعودي لحجز سائق خاص فاخر يذكر الدمام من بين مدنه الثلاث الأساسية إلى جانب الرياض وجدة، يُحجز عبر التطبيق مع التأكد من التوفر الحالي.",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -3043,6 +3504,35 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "إقامة مريحة وملائمة للعائلات، وموقع عملي للرحلات نحو نيوم.",
       },
     ],
+    extendedStay: [
+      {
+        nameEn: "Grand Millennium Tabuk",
+        nameAr: "جراند ميلينيوم تبوك",
+        descriptionEn: "A 5-star property inside the Tabuk University complex, the first Millennium Hotels & Resorts luxury property in the Kingdom, about 15 minutes from the airport.",
+        descriptionAr: "فندق فاخر من فئة الخمس نجوم داخل مجمع جامعة تبوك، أول فندق فاخر لمجموعة ميلينيوم للفنادق والمنتجعات في المملكة، على بعد نحو 15 دقيقة من المطار.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Best Western Plus Tabuk City Center",
+        nameAr: "بست ويسترن بلس تبوك سيتي سنتر",
+        descriptionEn: "A reliable international mid-range chain on Prince Sultan Bin Abdulaziz Road in Al Ulaya, central to the city's sites.",
+        descriptionAr: "سلسلة عالمية موثوقة من الفئة المتوسطة في طريق الأمير سلطان بن عبدالعزيز بحي العليا، قريبة من مواقع المدينة.",
+      },
+      {
+        nameEn: "City Landmark Hotel Suites Tabuk",
+        nameAr: "معلم المدينة للشقق الفندقية تبوك",
+        descriptionEn: "Budget serviced apartments on Imam Turki Ibn Abdullah Road, a short drive from the airport and a practical base for exploring on a rental car.",
+        descriptionAr: "شقق فندقية اقتصادية في طريق الإمام تركي بن عبدالله، على بعد دقائق من المطار، وقاعدة عملية للتنقل بسيارة مستأجرة.",
+        tier: "budget",
+      },
+      {
+        nameEn: "Royal Tulip Sharma Resort",
+        nameAr: "منتجع رويال توليب شرما",
+        descriptionEn: "A beach resort on Tabuk's Red Sea coast at Sharma, roughly 140 kilometres from Tabuk city near the NEOM area, with chalets and villas facing the water. Not an in-city option, factor in the drive.",
+        descriptionAr: "منتجع شاطئي على ساحل تبوك على البحر الأحمر في شرما، على بعد نحو 140 كيلومترًا من مدينة تبوك قرب منطقة نيوم، بشاليهات وفيلل تطل على الماء. ليس خيارًا داخل المدينة، يُراعى وقت التنقل إليه.",
+        tier: "luxury",
+      },
+    ],
     sampleDay: [
       {
         timeEn: "Morning",
@@ -3238,6 +3728,34 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "فندق كناري بيتش",
         descriptionEn: "An à la carte restaurant and fitness centre, close to the waterfront.",
         descriptionAr: "مطعم بقائمة طعام مفتوحة ومركز لياقة، قريب من الواجهة البحرية.",
+      },
+    ],
+    extendedStay: [
+      {
+        nameEn: "Kempinski Hotel & Resort Sariya Yanbu Red Sea",
+        nameAr: "فندق ومنتجع كمبينسكي السارية ينبع",
+        descriptionEn: "Yanbu's first 5-star hotel, opened January 2025 on the Royal Commission waterfront, with a private beach, marina and Red Sea-view suites.",
+        descriptionAr: "أول فندق فاخر من فئة الخمس نجوم في ينبع، افتُتح في يناير 2025 على واجهة الهيئة الملكية، بشاطئ خاص ومرسى وأجنحة تطل على البحر الأحمر.",
+        tier: "luxury",
+      },
+      {
+        nameEn: "Radisson Blu Hotel Yanbu",
+        nameAr: "فندق راديسون بلو ينبع",
+        descriptionEn: "An established upper mid-range choice on Abdullah Ibn Abdulaziz Road, a familiar international standard for business or leisure.",
+        descriptionAr: "خيار راسخ من الفئة المتوسطة العليا في طريق عبدالله بن عبدالعزيز، بمعايير عالمية مألوفة سواء للعمل أو الترفيه.",
+      },
+      {
+        nameEn: "Hotel & Resort Golden Marina Yanbu",
+        nameAr: "فندق ومنتجع جولدن مارينا ينبع",
+        descriptionEn: "A beachfront resort near Sharm Beach with chalets and villas, an outdoor pool and a short drive to the dive sites.",
+        descriptionAr: "منتجع على الشاطئ قرب شاطئ شرم بشاليهات وفيلل ومسبح خارجي، وعلى بعد دقائق من مواقع الغوص.",
+      },
+      {
+        nameEn: "Fakher Yanbu Apartment",
+        nameAr: "شقق فاخر ينبع",
+        descriptionEn: "A well-reviewed budget studio and apartment stay on King Abdulaziz Road, five minutes from the Corniche.",
+        descriptionAr: "إقامة اقتصادية بتقييمات جيدة في استوديوهات وشقق بطريق الملك عبدالعزيز، على بعد خمس دقائق من الكورنيش.",
+        tier: "budget",
       },
     ],
     sampleDay: [

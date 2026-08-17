@@ -39,8 +39,10 @@ function serializeGuideForDraft(guide: FlagshipCityGuide, ar: boolean): string {
   const lines: string[] = [];
   lines.push(`${ar ? "المعالم" : "Attractions"}: ${guide.attractions.map((a) => `${ar ? a.nameAr : a.nameEn} (${ar ? a.categoryAr : a.categoryEn}): ${ar ? a.descriptionAr : a.descriptionEn}`).join(" | ")}`);
   if (guide.dining.length) lines.push(`${ar ? "المطاعم" : "Dining"}: ${guide.dining.map((d) => `${ar ? d.nameAr : d.nameEn} (${ar ? d.cuisineAr : d.cuisineEn}): ${ar ? d.descriptionAr : d.descriptionEn}`).join(" | ")}`);
-  if (guide.stay.length) lines.push(`${ar ? "الفنادق" : "Hotels"}: ${guide.stay.map((s) => `${ar ? s.nameAr : s.nameEn}${s.tier ? ` [${s.tier}]` : ""}: ${ar ? s.descriptionAr : s.descriptionEn}`).join(" | ")}`);
-  if (guide.trustedProviders?.length) lines.push(`${ar ? "سائقون خاصون موثوقون" : "Trusted private drivers"}: ${guide.trustedProviders.map((p) => `${ar ? p.nameAr : p.nameEn} (${ar ? p.typeAr : p.typeEn}): ${ar ? p.noteAr : p.noteEn}`).join(" | ")}`);
+  const allStays = [...guide.stay, ...(guide.extendedStay ?? [])];
+  if (allStays.length) lines.push(`${ar ? "الفنادق" : "Hotels"}: ${allStays.map((s) => `${ar ? s.nameAr : s.nameEn}${s.tier ? ` [${s.tier}]` : ""}: ${ar ? s.descriptionAr : s.descriptionEn}`).join(" | ")}`);
+  const allProviders = [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])];
+  if (allProviders.length) lines.push(`${ar ? "سائقون خاصون موثوقون" : "Trusted private drivers"}: ${allProviders.map((p) => `${ar ? p.nameAr : p.nameEn} (${ar ? p.typeAr : p.typeEn}): ${ar ? p.noteAr : p.noteEn}`).join(" | ")}`);
   if (guide.sampleDay.length) lines.push(`${ar ? "نمط يوم استخدمه فريقنا من قبل" : "A sample day pattern our team has used before"}: ${guide.sampleDay.map((b) => `${ar ? b.timeAr : b.timeEn} — ${ar ? b.placeAr : b.placeEn}: ${ar ? b.descriptionAr : b.descriptionEn}`).join(" | ")}`);
   if (guide.travelTips?.length) lines.push(`${ar ? "نصائح السفر" : "Travel tips"}: ${guide.travelTips.map((t) => (ar ? t.ar : t.en)).join(" ")}`);
   return lines.join("\n");
