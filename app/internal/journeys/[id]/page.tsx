@@ -1,6 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import { getReviewerEmail } from "../../../supabase-server";
 import { createSupabaseAdminClient } from "../../../supabase-admin";
+import { getReviewerLocale } from "../../get-locale";
+import { reviewerT } from "../../i18n";
 import { ProposalForm } from "../proposal-form";
 import { updateProposal, publishProposal } from "../actions";
 
@@ -22,15 +24,20 @@ export default async function EditProposalPage({
   if (!proposal) notFound();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const locale = await getReviewerLocale();
+  const t = reviewerT(locale);
 
   return (
     <ProposalForm
+      locale={locale}
       action={updateProposal.bind(null, id)}
       publishAction={publishProposal.bind(null, id)}
-      submitLabel="Save changes"
+      submitLabel={t.saveChanges}
       status={proposal.status}
       publicUrl={`${siteUrl}/journey/${proposal.public_token}`}
       error={search.error}
+      justSaved={search.saved === "1"}
+      justPublished={search.published === "1"}
       defaultValues={{
         reference: proposal.reference,
         customerName: proposal.customer_name,

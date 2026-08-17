@@ -56,15 +56,30 @@ export async function updateProposal(id: string, formData: FormData) {
   redirect(`/internal/journeys/${id}?saved=1`);
 }
 
-export async function publishProposal(id: string) {
+// Takes the same form data as updateProposal so publishing always sends the
+// itinerary text currently in the editor, not whatever was last saved. A
+// reviewer editing text and clicking Publish without saving first should
+// never silently lose those edits.
+export async function publishProposal(id: string, formData: FormData) {
   await requireReviewer();
+  const input = readInput(formData);
   const supabase = createSupabaseAdminClient();
 
-  const { data, error } = await supabase.from("proposals").update({ status: "published" }).eq("id", id).select("*").single();
+  const { data, error } = await supabase.from("proposals").update({ ...input, status: "published" }).eq("id", id).select("*").single();
 
   if (error || !data) redirect(`/internal/journeys/${id}?error=publish-failed`);
 
   await sendProposalReadyEmail(data);
 
   redirect(`/internal/journeys/${id}?published=1`);
+}
+
+export async function deleteProposal(id: string) {
+  await requireReviewer();
+  const supabase = createSupabaseAdminClient();
+
+  const { error } = await supabase.from("proposals").delete().eq("id", id);
+  if (error) redirect(`/internal/journeys?error=${encodeURIComponent(error.message)}`);
+
+  redirect("/internal/journeys?deleted=1");
 }

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getReviewerEmail } from "../../../supabase-server";
+import { getReviewerLocale } from "../../get-locale";
+import { reviewerT } from "../../i18n";
 import { createProposal } from "../actions";
 import { ProposalForm } from "../proposal-form";
 
@@ -8,6 +10,8 @@ export default async function NewProposalPage({ searchParams }: { searchParams: 
   if (!email) redirect("/internal/login");
 
   const params = await searchParams;
+  const locale = await getReviewerLocale();
+  const t = reviewerT(locale);
 
-  return <ProposalForm action={createProposal} submitLabel="Create proposal" error={params.error} />;
+  return <ProposalForm locale={locale} action={createProposal} submitLabel={t.createProposal} error={params.error} />;
 }
