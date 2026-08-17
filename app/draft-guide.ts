@@ -14,6 +14,7 @@ import { randomBytes } from "node:crypto";
 import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city-data";
 import { saudiArabia } from "./components/planner-data";
 import { createSupabaseAdminClient } from "./supabase-admin";
+import { splitDraftForStorage } from "./journey/parse-itinerary";
 
 export type DraftGuideSubmission = {
   submissionId: string;
@@ -63,6 +64,27 @@ function tripLength(from: string, to: string) {
   return `${nights + 1} days / ${nights} nights`;
 }
 
+// LLMs are unreliable at computing the day of the week for an arbitrary
+// date, and the draft model doing that math itself produced a real bug: a
+// day header flatly labelled "Saturday" while a note elsewhere hedged the
+// same date as "if this falls on Friday". Compute the real calendar here
+// instead and hand it over as a fact, so there's nothing left to compute.
+function dayByDayCalendar(from: string, to: string): string {
+  const start = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end.getTime() < start.getTime()) return "";
+
+  const days: string[] = [];
+  const cursor = new Date(start);
+  for (let dayNumber = 1; cursor.getTime() <= end.getTime() && dayNumber <= 30; dayNumber++) {
+    const weekday = cursor.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
+    const dateLabel = cursor.toLocaleDateString("en-US", { day: "numeric", month: "long", timeZone: "UTC" });
+    days.push(`Day ${dayNumber} = ${weekday} ${dateLabel}`);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return days.join(", ");
+}
+
 // English only: this is the one reasoning-and-writing pass. Arabic is never
 // generated independently anymore, it's a faithful translation of exactly
 // this output (see translateDraftToArabic), so it can't disagree with it
@@ -72,37 +94,42 @@ function buildSystemPrompt() {
   return `You are drafting an internal first-pass itinerary sketch for the MEMORIES planning team, written in English. This is NOT a message to the customer, a human planner will review, correct and personalize it before anything reaches them, so it's fine to be structured, specific and detailed here in a way the customer-facing chat never is. This English draft will be translated into Arabic afterward by a separate step, so make every decision here, don't leave anything for the translation to decide.
 
 Rules, factual accuracy and safety about the real companies named here matter more than anything else in this draft, a wrong claim about a real business is worse than an incomplete one:
-- Only use the real, named places (attractions, dining, hotels, private drivers) given to you in the grounded facts below. Never invent a business name, address or price. If something isn't covered by the grounded facts, say plainly that the team should research it, don't guess.
+- Only use the real, named places (attractions, dining, hotels, private drivers, rental car companies) given to you in the grounded facts or the live research notes below, both are equally real, sourced information, not a guess. Never invent a business name, address or price. If a category (e.g. restaurants) genuinely isn't covered by either, say plainly that the team should research it, don't guess, but check the research notes first, they often cover exactly this now.
 - Never state or imply a specific proximity, walking distance or travel time between two named real places (e.g. a hotel and a restaurant) unless the grounded facts explicitly say so. Two places both being in the same district or area is NOT the same as being close to each other, don't write "walking distance" or "a short walk" or similar just because they share a neighbourhood, that's inventing a specific, checkable-sounding fact you don't actually have. Describe the place on its own merits and let the driver or logistics handle getting there, or say plainly the distance isn't known.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
 - Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it.
 - If the research notes mention flights (which airlines serve the destination, general connection patterns like "usually via Riyadh or Jeddah"), you can state that route/airline existence plainly, it's real research, not a guess. But never state or imply a specific flight time, schedule or price, always flag actual flight booking as something the team prices separately.
 - A hedge word you use anywhere in this draft (e.g. "typically", "positioned as", "worth confirming") must stay attached to that same claim EVERY time you reference it again, including in the closing "For the planner" section. Don't state something with a hedge once and then restate it as settled fact later in the same draft, that's as much a mistake as never hedging it at all.
-- Never assume, either way, whether the customer's stated total budget includes flights or excludes them, you have no way to know that. Always say plainly this needs the customer's confirmation, don't quietly build the rest of the draft on one assumption while also saying elsewhere that it needs confirming, that's a contradiction, pick "needs confirmation" and stay consistent about it throughout.
+- Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
+- The day-by-day calendar given to you in the user message states the real, correct weekday for every date in this trip, computed exactly, not a guess. Use those exact weekdays in your Day headers and anywhere else you mention a day of the week (e.g. Friday prayer timing, weekend closures). Never compute or second-guess a weekday yourself, and never contradict the calendar elsewhere in the draft, e.g. don't write "if this falls on a Friday" about a date the calendar already states is a Saturday.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
 - Weigh the stated budget, traveller count and trip length when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
-- If the customer's notes mention something specific (a hotel, dietary need, occasion), work it in or flag it clearly for the planner.
+- If the customer's notes mention something specific (a hotel, dietary need, occasion), work it in.
+- Practical information the customer actually needs to prepare, a required visa or permit, what to pack, dress code, prayer-time crowding, hydration, anything from the grounded facts' travel tips genuinely relevant to this trip, belongs directly in the customer-facing plan itself. Work it into the hotel/driver overview section at the top, or into the specific day it matters most, don't invent a new trailing heading for it, this draft has exactly four kinds of section (overview, "Needs a decision before booking", the day list, "For the planner") and nothing else, see the format rules below.
 
 Format, this is the part to follow closely, the last version read as dense justification-prose instead of something a planner can scan in ten seconds:
 - The hotel and driver picks at the top get the same short-line treatment as the days below: one short line for the pick and its tier/type, one short line for why (including any hedge from the rules above), not a single long sentence carrying three ideas at once.
 - Each day is a short header line, then 2-5 short lines under it, one stop or meal per line, time of day first. State the fact plainly (place name, what it is, when). Don't wrap it in a sentence explaining why it's a good choice, unless that reasoning would change what the planner books, in which case one short clause is enough, not a paragraph.
 - The first time, and only the first time, you name a business that isn't an obviously world-famous brand (a specific hotel chain, a specific driver company, a specific restaurant), add a 3-6 word plain-language tag in parentheses right after the name so a planner unfamiliar with it isn't left guessing, e.g. "ibis (budget hotel chain)", "Hello Chauffeur (Saudi private-driver service)", "Myazu (Japanese restaurant)". Every later mention of that same name in this draft, no tag, just the name.
 - No throat-clearing, no editorializing sentences that only restate that something is nice or worth doing. If a line doesn't give the planner a fact or a decision to make, cut it.
-- Bigger structural notes (a budget conflict, a scheduling conflict, something needing the customer's answer, or anything from the accuracy/safety rules above that the planner must double-check before this goes near the customer) all go together under ONE heading above the day list, headed exactly "Needs a decision before booking", each one its own short bullet line. Don't fold these into a day's bullet lines, and don't split them into a separate header per item, they all sit under that one heading.
-- Plain, clear text. Day headers like "Day 1" are fine here. No markdown asterisks.
-- End with a short "For the planner" section, plain bullet lines, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer. Anything hedged earlier in the draft stays hedged here too, per the rule above.`;
+- Everything above the "Needs a decision before booking" heading and everything from "Day 1" through the last day is customer-facing: it gets copied straight into what the customer receives, so it must read as a finished plan, not as notes about a plan. Never write things like "team to research", "to be confirmed", "placeholder", or similar meta-commentary inside the overview or day sections, if something genuinely isn't resolved, either leave it out of the day plan entirely or flag it in the internal sections below, don't leave a visible gap-marker in the customer-facing text.
+- Bigger structural notes are strictly for the internal team, never customer-relevant information (that belongs in the plan itself per the practical-information rule above): a genuinely unresolved booking action, a real budget or scheduling conflict, or anything from the accuracy/safety rules above the planner must double-check before this goes near the customer. All of it goes together under ONE heading above the day list, headed exactly "Needs a decision before booking", each one its own short bullet line. Don't fold these into a day's bullet lines, and don't split them into a separate header per item, they all sit under that one heading.
+- Plain text only, nothing else reads this before a human, so there's no reason for markdown: no "#"/"##" headings, no asterisks for bold or bullets, no numbered-list syntax. Day headers like "Day 1" are just a plain line of text, not a markdown heading. This matters mechanically, not just stylistically, a heading written as "## Day 1" instead of "Day 1" breaks the tooling that later splits this draft into what the customer sees, so a plain, exact "Day 1" is required, not a stylistic nicety.
+- Exactly four kinds of section, nothing else, and nothing outside them: the overview (hotel/driver picks and anything else customer-relevant that isn't day-specific), "Needs a decision before booking", the day list, "For the planner". Don't add a fifth heading of your own for anything, including practical/packing information, that belongs inside the overview section per the rule above.
+- End with a short "For the planner" section, plain bullet lines, internal team notes only, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer. Anything hedged earlier in the draft stays hedged here too, per the rule above.`;
 }
 
 function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string) {
   const researchSection = operationalResearch
-    ? `\n\nLive research notes on hours, seasonal status, ticket pricing and flight routes (gathered just now via web search, not a guess, trust these the same as the grounded facts above. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive, fall back to flagging it as needing confirmation):\n${operationalResearch}`
+    ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
     : "";
+  const calendar = dayByDayCalendar(submission.fromDate, submission.toDate);
   return `Customer request summary:
 Name: ${submission.name}
 Destination: ${cityLabel}, Saudi Arabia
 Trip dates: ${submission.fromDate} to ${submission.toDate} (${tripLength(submission.fromDate, submission.toDate)})
-Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}
+${calendar ? `Day-by-day calendar (correct, computed weekdays, use these exactly): ${calendar}\n` : ""}Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}
 Purpose / style: ${readable(submission.purpose)}
 Requested transport: ${submission.transport.map(readable).join(", ") || "not specified"}
 Requested stay type: ${submission.stays.map(readable).join(", ") || "not specified"}
@@ -117,9 +144,11 @@ Draft the day-by-day sketch now.`;
 }
 
 // Runs once, before the draft is written, so the draft can cite live
-// findings instead of guessing. Deliberately scoped to what a search can
-// actually confirm (hours, season, pricing, and which airlines/routes
-// exist), and kept away from business licensing/compliance and from live
+// findings instead of guessing. Covers hours/season/pricing for named
+// attractions, which airlines/routes exist, real restaurants when our own
+// curated dining list is thin, and real rental car companies when the
+// customer asked for one, all of which a plain web search can genuinely
+// confirm. Stays away from business licensing/compliance and from live
 // flight times or prices, neither of which a generic web search can
 // honestly verify, that needs a real flight-search API and isn't in scope
 // here, see the flight rule below for why.
@@ -129,33 +158,48 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
     if (!attractionNames) return "";
 
     const wantsFlights = submission.transport.includes("flights");
+    const wantsRentalCar = submission.transport.includes("rental");
+    const needsDining = guide.dining.length < 3;
+
     const flightScope = wantsFlights
-      ? `\n- Also check which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through Riyadh or Jeddah first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
+      ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through Riyadh or Jeddah first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
+      : "";
+    const diningScope = needsDining
+      ? `\n- 3-5 real, currently-operating restaurants in ${cityLabelEn} that fit a ${readable(submission.purpose)} trip (mix of price points if you can), each with name, cuisine, and one line on what it's known for. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run at least two differently-worded searches before concluding a city this size genuinely has nothing findable, e.g. "best restaurants in ${cityLabelEn}" and "popular places to eat near [a specific landmark from the attractions list]", well-known national chains count too, not just standalone restaurants.`
+      : "";
+    const rentalScope = wantsRentalCar
+      ? `\n- 2-4 real rental car companies operating in ${cityLabelEn} (international chains and local ones both count), each with name and one line on what they offer. The customer asked for a rental car and we have no rental providers in our own data. Run at least two differently-worded searches, e.g. "car rental ${cityLabelEn}" and "car hire companies ${cityLabelEn} Saudi Arabia", before concluding none exist.`
       : "";
 
     const response = await anthropic.messages.create({
       model: "claude-opus-5",
-      max_tokens: 2000,
+      max_tokens: 3000,
       thinking: { type: "adaptive" },
-      output_config: { effort: "low" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 12 }],
-      system: `You are a research assistant checking current, time-sensitive facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it.
+      output_config: { effort: "medium" },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 20 }],
+      system: `You are a research assistant checking current, real-world facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real Saudi city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen.
 
-Scope, stay inside it:
-- Only check opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below.
+Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${rentalScope}
+- Opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below. If a place turns out to be a free, unticketed public site with no formal opening hours (a public trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best done in early morning before the heat", that IS a real, useful finding, don't leave it as "unconfirmed" just because there's no ticket office to look up.${flightScope}
 - Do NOT research or make any claim about business licensing, certification, safety compliance or regulatory status for any company, that is explicitly out of scope for you, leave it alone entirely.
-- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing.${flightScope}
-- Report only what you actually find, with enough detail a planner could act on (e.g. "open year-round, standard hours" or "seasonal, tied to Riyadh Season, likely closed outside it"). If search turns up nothing conclusive for a place, say so plainly in one line for that place, don't guess or extrapolate.
-- If you run out of search budget partway through, report everything you DID find for the places you finished checking, then list the remaining places as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
-- Output short plain-text lines, one per place (or the flight-route line) you checked, no markdown, no preamble, no closing summary.`,
+- For the attractions: only spend search budget where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing everything.
+- Report only what you actually find, with enough detail a planner could act on. If search genuinely turns up nothing conclusive after a real attempt for a place, say so plainly in one line for that place, don't guess or extrapolate, but don't give up after a single search either, try more than one query before concluding something isn't findable.
+- If you run out of search budget partway through, report everything you DID find for what you finished checking, then list the rest as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
+- Output short plain-text lines, no markdown, no preamble, no closing summary. Group under short plain headers if that helps (e.g. "Attractions:", "Restaurants:", "Rental cars:").`,
       messages: [{
         role: "user",
-        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nAttractions to check: ${attractionNames}${wantsFlights ? `\nAlso check: general airline/route info for reaching ${cityLabelEn} (no times or prices)` : ""}\n\nSearch and report now.`,
+        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
       }],
     });
 
+    // A web-search turn comes back as many short text blocks interleaved
+    // with the search calls themselves (one burst of prose between each
+    // search), not one final block. Taking only the last one, as this used
+    // to, silently threw away everything the model found and reported
+    // before its final sentence, which in practice was most of it,
+    // including entire categories like restaurants and rental cars.
     const textBlocks = response.content.filter((block): block is Anthropic.TextBlock => block.type === "text");
-    return textBlocks[textBlocks.length - 1]?.text?.trim() ?? "";
+    return textBlocks.map((block) => block.text).join("\n").trim();
   } catch (error) {
     console.error("Operational research failed", error);
     return "";
@@ -193,7 +237,7 @@ Your only job is faithful translation, not re-drafting:
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
 - Keep the same section headings: "Needs a decision before booking" becomes "يحتاج قرارًا قبل الحجز", "For the planner" becomes "للمخطط".
 - Keep "Day 1", "Day 2" etc. as day headers, same numbering and order as the English.
-- Plain, clear Arabic, no markdown asterisks. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.`;
+- Plain text only, no markdown: no "#"/"##" headings, no asterisks, no numbered-list syntax, even if the English draft you're translating slipped and used some, translate it back to plain text, don't carry the markdown over. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.`;
 }
 
 function buildTranslationUserPrompt(englishDraft: string, groundedFactsAr: string) {
@@ -317,7 +361,22 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
         const supabase = createSupabaseAdminClient();
         const publicToken = randomBytes(24).toString("hex");
-        const notes = selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : null;
+
+        // The full drafts (still used for the reviewer email above) mix
+        // customer-facing plan with internal-only "Needs a decision" / "For
+        // the planner" sections. Split those apart here: only the
+        // customer-facing half goes into itinerary_en/itinerary_ar, which
+        // the customer's own page renders verbatim once published, the
+        // internal half goes into notes instead, alongside the self-check.
+        const englishSplit = splitDraftForStorage(englishDraft);
+        const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+        const internalNotesParts = [
+          selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
+          englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
+          arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
+        ].filter(Boolean);
+        const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
+
         const { data, error } = await supabase
           .from("proposals")
           .insert({
@@ -331,8 +390,8 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             from_date: submission.fromDate || null,
             to_date: submission.toDate || null,
             currency: submission.currency || "SAR",
-            itinerary_en: englishDraft,
-            itinerary_ar: arabicDraft || null,
+            itinerary_en: englishSplit.customerFacing || englishDraft,
+            itinerary_ar: arabicSplit?.customerFacing || arabicDraft || null,
             notes,
           })
           .select("id")

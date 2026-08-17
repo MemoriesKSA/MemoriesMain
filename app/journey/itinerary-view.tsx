@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import { AlertCircle, ClipboardList } from "lucide-react";
 import { parseItinerary, splitOverviewGroup } from "./parse-itinerary";
 
 const cardStyle: CSSProperties = { background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" };
@@ -23,10 +22,21 @@ function BulletLines({ lines }: { lines: string[] }) {
 // something free-form), so this never hides content it can't confidently
 // restructure.
 export function ItineraryView({ text }: { text: string }) {
-  const sections = parseItinerary(text);
-  if (!sections) {
+  const parsed = parseItinerary(text);
+  if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
   }
+
+  // Belt and suspenders: the generator now stores internal-only notes
+  // separately (see splitDraftForStorage in parse-itinerary.ts), so these
+  // section kinds shouldn't reach this column at all, but this is the
+  // customer's own page, never render them here even if one slips through
+  // some other path (a reviewer pasting raw draft text back in, etc).
+  const sections = parsed.filter((section) => section.kind === "overview" || section.kind === "day");
+  // Don't fall back to the raw text here, unlike the !parsed case above: if
+  // parsing succeeded but left nothing beyond internal-only sections, the
+  // raw text IS that internal content, showing it would defeat the filter.
+  if (!sections.length) return null;
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -55,52 +65,30 @@ export function ItineraryView({ text }: { text: string }) {
           );
         }
 
-        if (section.kind === "day") {
-          const dayNumber = section.title.match(/\d+/)?.[0] ?? "•";
-          return (
-            <div key={i} style={cardStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span
-                  style={{
-                    flexShrink: 0,
-                    display: "grid",
-                    placeItems: "center",
-                    width: 38,
-                    height: 38,
-                    borderRadius: "50%",
-                    background: "var(--ink)",
-                    color: "var(--gold-light)",
-                    fontFamily: "var(--font-display), Georgia, serif",
-                    fontSize: 16,
-                    fontWeight: 700,
-                  }}
-                >
-                  {dayNumber}
-                </span>
-                <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{section.title}</p>
-              </div>
-              <BulletLines lines={section.lines} />
-            </div>
-          );
-        }
-
-        if (section.kind === "decisions") {
-          return (
-            <div key={i} style={{ ...cardStyle, background: "rgba(200,149,63,.08)", borderColor: "var(--gold-light)", borderTop: "3px solid var(--gold)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <AlertCircle size={18} color="var(--gold)" style={{ flexShrink: 0 }} />
-                <p style={{ margin: 0, fontWeight: 800, fontSize: 14.5, color: "var(--ink)" }}>{section.title}</p>
-              </div>
-              <BulletLines lines={section.lines} />
-            </div>
-          );
-        }
-
+        // section.kind is narrowed to "overview" | "day" only, the filter
+        // above guarantees "decisions"/"notes" sections never reach here.
+        const dayNumber = section.title.match(/\d+/)?.[0] ?? "•";
         return (
-          <div key={i} style={{ ...cardStyle, background: "var(--ivory)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <ClipboardList size={17} color="var(--muted)" style={{ flexShrink: 0 }} />
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 13.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{section.title}</p>
+          <div key={i} style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
+                style={{
+                  flexShrink: 0,
+                  display: "grid",
+                  placeItems: "center",
+                  width: 38,
+                  height: 38,
+                  borderRadius: "50%",
+                  background: "var(--ink)",
+                  color: "var(--gold-light)",
+                  fontFamily: "var(--font-display), Georgia, serif",
+                  fontSize: 16,
+                  fontWeight: 700,
+                }}
+              >
+                {dayNumber}
+              </span>
+              <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{section.title}</p>
             </div>
             <BulletLines lines={section.lines} />
           </div>

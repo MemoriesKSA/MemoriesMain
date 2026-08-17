@@ -13,6 +13,16 @@ export type ItinerarySection =
 
 const DAY_HEADING = /^day\s*\d+\b/i;
 const LEADING_BULLET = /^[-*•–—]\s+/;
+const LEADING_MARKDOWN_HEADING = /^#{1,6}\s+/;
+
+// The draft is instructed to write plain text with no markdown, but the
+// model doesn't always hold to that. Strip a leading "## " before matching
+// or storing a line, otherwise "## Day 1" and "## Needs a decision before
+// booking" silently fail every heading check below, and the whole internal
+// section ends up misclassified as customer-facing content.
+function cleanLine(line: string) {
+  return line.replace(LEADING_MARKDOWN_HEADING, "");
+}
 
 // The draft is instructed to write plain lines, but the model still writes
 // its own "- " prefix sometimes. Strip it since the day-card view adds its
@@ -35,7 +45,7 @@ function isPlannerHeading(line: string) {
 
 export function parseItinerary(text: string): ItinerarySection[] | null {
   const rawLines = text.split(/\r?\n/);
-  if (!rawLines.some((line) => DAY_HEADING.test(line.trim()))) return null;
+  if (!rawLines.some((line) => DAY_HEADING.test(cleanLine(line.trim())))) return null;
 
   const sections: ItinerarySection[] = [];
   let overviewGroups: string[][] = [];
@@ -53,7 +63,7 @@ export function parseItinerary(text: string): ItinerarySection[] | null {
   }
 
   for (const rawLine of rawLines) {
-    const line = rawLine.trim();
+    const line = cleanLine(rawLine.trim());
 
     if (!line) {
       if (!current) flushOverviewGroup();
@@ -98,4 +108,34 @@ export function splitOverviewGroup(group: string[]): { label: string | null; lin
     return { label: group[0], lines: group.slice(1) };
   }
   return { label: null, lines: group };
+}
+
+// Separates the customer-facing plan (overview + days) from the internal-only
+// planning notes ("Needs a decision before booking" / "For the planner"),
+// by the same heading rules as parseItinerary above, but returning raw text
+// spans instead of structured sections. Used at draft-generation time so the
+// internal notes never end up stored in the itinerary_en/itinerary_ar
+// columns that get shown to the customer verbatim once published, they only
+// belong in the proposal's separate internal notes field.
+export function splitDraftForStorage(text: string): { customerFacing: string; internalOnly: string } {
+  const rawLines = text.split(/\r?\n/);
+  const customer: string[] = [];
+  const internal: string[] = [];
+  let mode: "customer" | "internal" = "customer";
+
+  for (const rawLine of rawLines) {
+    const line = cleanLine(rawLine.trim());
+    if (isDecisionsHeading(line) || isPlannerHeading(line)) {
+      mode = "internal";
+      internal.push(line);
+      continue;
+    }
+    if (DAY_HEADING.test(line)) mode = "customer";
+    (mode === "customer" ? customer : internal).push(line);
+  }
+
+  return {
+    customerFacing: customer.join("\n").trim(),
+    internalOnly: internal.join("\n").trim(),
+  };
 }
