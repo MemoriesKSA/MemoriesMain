@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "../../supabase-server";
+import { SubmitButton } from "./submit-button";
 
 async function sendMagicLink(formData: FormData) {
   "use server";
@@ -49,12 +50,7 @@ export default async function InternalLoginPage({
             />
             {params.error === "missing-email" && <p style={{ color: "#b3261e", fontSize: 13, margin: "0 0 12px" }}>Enter an email address.</p>}
             {params.error === "send-failed" && <p style={{ color: "#b3261e", fontSize: 13, margin: "0 0 12px" }}>Couldn&apos;t send the link, try again.</p>}
-            <button
-              type="submit"
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "none", background: "var(--ink)", color: "var(--paper)", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
-            >
-              Send sign-in link
-            </button>
+            <SubmitButton label="Send sign-in link" pendingLabel="Sending…" />
           </form>
         )}
       </div>
