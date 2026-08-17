@@ -169,12 +169,53 @@ async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideS
   return textBlock?.text?.trim() ?? "";
 }
 
-function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string) {
+// A second, independent AI pass over the two finished drafts, checking
+// them against the same grounded facts before a human ever sees them.
+// This tightens the draft the reviewer receives, it does NOT replace the
+// reviewer, nothing here ever publishes to a customer on its own, see the
+// "AI drafts + self-checks, human still publishes" decision this was
+// built to match.
+async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string): Promise<string> {
+  try {
+    if (!englishDraft && !arabicDraft) return "";
+
+    const response = await anthropic.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 1200,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "low" },
+      system: `You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. You did not write the draft, read it with fresh eyes, skeptical of anything that isn't clearly sourced.
+
+Check for, and only for:
+- Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts or research notes below, that's likely invented and must be flagged.
+- Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge.
+- Any real inconsistency between the English and Arabic versions, a different hotel picked, a flag present in one but not the other, contradictory information. Minor phrasing or ordering differences don't count, only substantive disagreements.
+
+Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, both drafts are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`,
+      messages: [{
+        role: "user",
+        content: `GROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES:\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT:\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT:\n${arabicDraft || "(empty, generation failed)"}\n\nCheck now.`,
+      }],
+    });
+
+    const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
+    return textBlock?.text?.trim() ?? "";
+  } catch (error) {
+    console.error("Draft self-check failed", error);
+    return "";
+  }
+}
+
+function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
   const arabicSection = arabicDraft
     ? `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px" dir="rtl"><p style="margin:0 0 14px;color:#ba8427;font-size:11px;font-weight:800;letter-spacing:1.5px">النسخة العربية</p><div style="font-size:14px;line-height:1.9">${escapeHtml(arabicDraft).replace(/\n/g, "<br />")}</div></div>`
     : "";
-  return `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:720px;margin:auto;overflow:hidden;border:1px solid #dce3de;border-radius:20px;background:#fff;box-shadow:0 14px 40px rgba(9,50,43,.08)"><div style="padding:24px 30px;background:#063b34;color:#fff"><p style="margin:0 0 8px;color:#e7b94f;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT ITINERARY, INTERNAL ONLY · مسودة داخلية</p><h1 style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:600">A first-pass sketch for ${escapeHtml(customerName)}'s ${escapeHtml(cityLabel)} trip</h1><p style="margin:9px 0 0;color:#b9cbc6;font-size:13px">Reference ${escapeHtml(reference)} · review and edit before this shapes anything sent to the customer</p></div><div style="padding:28px 30px;font-size:14px;line-height:1.7">${englishHtml}${arabicSection}</div></div></div>`;
+  const isClean = /^no issues found/i.test(selfCheck.trim());
+  const selfCheckSection = selfCheck
+    ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheck)}</div></div>`
+    : "";
+  return `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:720px;margin:auto;overflow:hidden;border:1px solid #dce3de;border-radius:20px;background:#fff;box-shadow:0 14px 40px rgba(9,50,43,.08)"><div style="padding:24px 30px;background:#063b34;color:#fff"><p style="margin:0 0 8px;color:#e7b94f;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT ITINERARY, INTERNAL ONLY · مسودة داخلية</p><h1 style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:600">A first-pass sketch for ${escapeHtml(customerName)}'s ${escapeHtml(cityLabel)} trip</h1><p style="margin:9px 0 0;color:#b9cbc6;font-size:13px">Reference ${escapeHtml(reference)} · review and edit before this shapes anything sent to the customer</p></div><div style="padding:24px 0 4px">${selfCheckSection}</div><div style="padding:0 30px 28px;font-size:14px;line-height:1.7">${englishHtml}${arabicSection}</div></div></div>`;
 }
 
 // Fire-and-forget: call from app/api/journeys/route.ts inside after(), never
@@ -196,12 +237,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
 
     const anthropic = new Anthropic({ apiKey: anthropicKey });
     const operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
+    const groundedFactsEn = serializeGuideForDraft(guide, false);
+    const groundedFactsAr = serializeGuideForDraft(guide, true);
     const [englishDraft, arabicDraft] = await Promise.all([
-      generateOneLanguage(anthropic, submission, cityLabelEn, serializeGuideForDraft(guide, false), operationalResearch, false),
-      generateOneLanguage(anthropic, submission, cityLabelAr, serializeGuideForDraft(guide, true), operationalResearch, true),
+      generateOneLanguage(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, false),
+      generateOneLanguage(anthropic, submission, cityLabelAr, groundedFactsAr, operationalResearch, true),
     ]);
 
     if (!englishDraft && !arabicDraft) return;
+
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch);
 
     const resend = new Resend(resendKey);
     const reviewEmail = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
@@ -211,8 +256,8 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       from: fromEmail,
       to: [reviewEmail],
       subject: `[AI DRAFT] ${reference} | ${cityLabelEn} itinerary sketch`,
-      html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft),
-      text: [englishDraft, arabicDraft].filter(Boolean).join("\n\n===\n\n"),
+      html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft, selfCheck),
+      text: [selfCheck ? `AI SELF-CHECK:\n${selfCheck}` : "", englishDraft, arabicDraft].filter(Boolean).join("\n\n===\n\n"),
       tags: [{ name: "email_type", value: "draft_guide" }],
     }, { idempotencyKey: `draft-guide/${submission.submissionId}` });
 
