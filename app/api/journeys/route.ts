@@ -250,6 +250,7 @@ export async function POST(request: Request) {
       toDate: submission.toDate,
       transport: submission.transport,
       stays: submission.stays,
+      stayRating: submission.stayRating,
       planIncludes: submission.planIncludes,
       packageNotes: submission.packageNotes,
       currency: submission.currency,

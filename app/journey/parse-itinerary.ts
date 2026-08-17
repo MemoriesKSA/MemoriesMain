@@ -31,10 +31,22 @@ function stripBulletMarker(line: string) {
   return line.replace(LEADING_BULLET, "");
 }
 
-function isDecisionsHeading(line: string) {
+// Two internal-only headings, split by who has to act: a question that
+// needs the customer's own answer, versus something the team just has to
+// go confirm or book with no customer involvement. Both keep matching the
+// older single "Needs a decision before booking" heading too, in case a
+// draft written under the previous prompt still uses it.
+function isCustomerInputHeading(line: string) {
   const normalized = line.trim().replace(/[:：]\s*$/, "");
+  if (/^needs the customer'?s? input$/i.test(normalized)) return true;
   if (/^needs a decision before booking$/i.test(normalized)) return true;
-  return normalized.includes("قرار") && normalized.includes("الحجز");
+  return normalized.includes("رأي العميل") || (normalized.includes("قرار") && normalized.includes("الحجز"));
+}
+
+function isTeamConfirmHeading(line: string) {
+  const normalized = line.trim().replace(/[:：]\s*$/, "");
+  if (/^team to confirm before booking$/i.test(normalized)) return true;
+  return normalized.includes("الفريق") && normalized.includes("تأكيد");
 }
 
 function isPlannerHeading(line: string) {
@@ -76,7 +88,7 @@ export function parseItinerary(text: string): ItinerarySection[] | null {
       current = { kind: "day", title: line, lines: [] };
       continue;
     }
-    if (isDecisionsHeading(line)) {
+    if (isCustomerInputHeading(line) || isTeamConfirmHeading(line)) {
       flushOverviewGroup();
       flushCurrent();
       current = { kind: "decisions", title: line, lines: [] };
@@ -125,7 +137,7 @@ export function splitDraftForStorage(text: string): { customerFacing: string; in
 
   for (const rawLine of rawLines) {
     const line = cleanLine(rawLine.trim());
-    if (isDecisionsHeading(line) || isPlannerHeading(line)) {
+    if (isCustomerInputHeading(line) || isTeamConfirmHeading(line) || isPlannerHeading(line)) {
       mode = "internal";
       internal.push(line);
       continue;

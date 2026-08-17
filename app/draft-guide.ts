@@ -26,6 +26,7 @@ export type DraftGuideSubmission = {
   toDate: string;
   transport: string[];
   stays: string[];
+  stayRating: string;
   planIncludes: string[];
   packageNotes: string;
   currency: string;
@@ -34,6 +35,16 @@ export type DraftGuideSubmission = {
   email: string;
   phone: string;
 };
+
+// Every system prompt in this file is a fixed string, the same text on
+// every single call regardless of city or customer. Prompt caching writes
+// it once and reads it back at roughly a tenth the input-token cost on
+// every later call within the TTL, at zero behavior change, this is the
+// cheapest of the cost fixes in this file, a 1-hour TTL rather than the 5-
+// minute default since submissions arrive sporadically, not back to back.
+function cachedSystem(text: string): Anthropic.TextBlockParam[] {
+  return [{ type: "text", text, cache_control: { type: "ephemeral", ttl: "1h" } }];
+}
 
 function readable(value: string) {
   return value.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -103,20 +114,23 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
 - The day-by-day calendar given to you in the user message states the real, correct weekday for every date in this trip, computed exactly, not a guess. Use those exact weekdays in your Day headers and anywhere else you mention a day of the week (e.g. Friday prayer timing, weekend closures). Never compute or second-guess a weekday yourself, and never contradict the calendar elsewhere in the draft, e.g. don't write "if this falls on a Friday" about a date the calendar already states is a Saturday.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
-- Weigh the stated budget, traveller count and trip length when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day.
+- Weigh the stated budget, traveller count, trip length and the customer's preferred accommodation rating (if given) when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day. If the customer's preferred rating and the budget point in different directions (e.g. they asked for 5-star but the budget only supports budget-tier), say so plainly as something needing the customer's input, don't silently pick one over the other.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
 - If the customer's notes mention something specific (a hotel, dietary need, occasion), work it in.
-- Practical information the customer actually needs to prepare, a required visa or permit, what to pack, dress code, prayer-time crowding, hydration, anything from the grounded facts' travel tips genuinely relevant to this trip, belongs directly in the customer-facing plan itself. Work it into the hotel/driver overview section at the top, or into the specific day it matters most, don't invent a new trailing heading for it, this draft has exactly four kinds of section (overview, "Needs a decision before booking", the day list, "For the planner") and nothing else, see the format rules below.
+- Practical information the customer actually needs to prepare, a required visa or permit, what to pack, dress code, prayer-time crowding, hydration, anything from the grounded facts' travel tips genuinely relevant to this trip, belongs directly in the customer-facing plan itself. Work it into the hotel/driver overview section at the top, or into the specific day it matters most, don't invent a new trailing heading for it, this draft has exactly five kinds of section (overview, "Needs the customer's input", "Team to confirm before booking", the day list, "For the planner") and nothing else, see the format rules below.
 
 Format, this is the part to follow closely, the last version read as dense justification-prose instead of something a planner can scan in ten seconds:
 - The hotel and driver picks at the top get the same short-line treatment as the days below: one short line for the pick and its tier/type, one short line for why (including any hedge from the rules above), not a single long sentence carrying three ideas at once.
 - Each day is a short header line, then 2-5 short lines under it, one stop or meal per line, time of day first. State the fact plainly (place name, what it is, when). Don't wrap it in a sentence explaining why it's a good choice, unless that reasoning would change what the planner books, in which case one short clause is enough, not a paragraph.
 - The first time, and only the first time, you name a business that isn't an obviously world-famous brand (a specific hotel chain, a specific driver company, a specific restaurant), add a 3-6 word plain-language tag in parentheses right after the name so a planner unfamiliar with it isn't left guessing, e.g. "ibis (budget hotel chain)", "Hello Chauffeur (Saudi private-driver service)", "Myazu (Japanese restaurant)". Every later mention of that same name in this draft, no tag, just the name.
 - No throat-clearing, no editorializing sentences that only restate that something is nice or worth doing. If a line doesn't give the planner a fact or a decision to make, cut it.
-- Everything above the "Needs a decision before booking" heading and everything from "Day 1" through the last day is customer-facing: it gets copied straight into what the customer receives, so it must read as a finished plan, not as notes about a plan. Never write things like "team to research", "to be confirmed", "placeholder", or similar meta-commentary inside the overview or day sections, if something genuinely isn't resolved, either leave it out of the day plan entirely or flag it in the internal sections below, don't leave a visible gap-marker in the customer-facing text.
-- Bigger structural notes are strictly for the internal team, never customer-relevant information (that belongs in the plan itself per the practical-information rule above): a genuinely unresolved booking action, a real budget or scheduling conflict, or anything from the accuracy/safety rules above the planner must double-check before this goes near the customer. All of it goes together under ONE heading above the day list, headed exactly "Needs a decision before booking", each one its own short bullet line. Don't fold these into a day's bullet lines, and don't split them into a separate header per item, they all sit under that one heading.
+- Everything above the two internal headings below and everything from "Day 1" through the last day is customer-facing: it gets copied straight into what the customer receives, so it must read as a finished plan, not as notes about a plan. Never write things like "team to research", "to be confirmed", "placeholder", or similar meta-commentary inside the overview or day sections, if something genuinely isn't resolved, either leave it out of the day plan entirely or flag it in the internal sections below, don't leave a visible gap-marker in the customer-facing text.
+- Bigger structural notes are strictly for the internal team, never customer-relevant information (that belongs in the plan itself per the practical-information rule above), and split by who has to act, under two separate headings placed above the day list, in this order:
+  - "Needs the customer's input" — only for things where the team genuinely cannot proceed without the customer answering a question first (their stated budget conflicts with their stated preferences, a real choice between two options only they can make). If nothing meets that bar, leave this heading out entirely, don't force an entry into it.
+  - "Team to confirm before booking" — everything else the team has to go verify, price, or book on their own before this reaches the customer (confirming a price, checking availability, verifying a hedge from the accuracy/safety rules above), nothing here requires going back to the customer.
+  Each item is its own short bullet line under the correct one of the two headings. Don't fold these into a day's bullet lines, and don't invent a third heading for this purpose.
 - Plain text only, nothing else reads this before a human, so there's no reason for markdown: no "#"/"##" headings, no asterisks for bold or bullets, no numbered-list syntax. Day headers like "Day 1" are just a plain line of text, not a markdown heading. This matters mechanically, not just stylistically, a heading written as "## Day 1" instead of "Day 1" breaks the tooling that later splits this draft into what the customer sees, so a plain, exact "Day 1" is required, not a stylistic nicety.
-- Exactly four kinds of section, nothing else, and nothing outside them: the overview (hotel/driver picks and anything else customer-relevant that isn't day-specific), "Needs a decision before booking", the day list, "For the planner". Don't add a fifth heading of your own for anything, including practical/packing information, that belongs inside the overview section per the rule above.
+- Exactly five kinds of section, nothing else, and nothing outside them: the overview (hotel/driver picks and anything else customer-relevant that isn't day-specific), "Needs the customer's input", "Team to confirm before booking", the day list, "For the planner". Don't add a sixth heading of your own for anything, including practical/packing information, that belongs inside the overview section per the rule above.
 - End with a short "For the planner" section, plain bullet lines, internal team notes only, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer. Anything hedged earlier in the draft stays hedged here too, per the rule above.`;
 }
 
@@ -133,6 +147,7 @@ ${calendar ? `Day-by-day calendar (correct, computed weekdays, use these exactly
 Purpose / style: ${readable(submission.purpose)}
 Requested transport: ${submission.transport.map(readable).join(", ") || "not specified"}
 Requested stay type: ${submission.stays.map(readable).join(", ") || "not specified"}
+Preferred accommodation rating: ${submission.stayRating && submission.stayRating !== "flexible" ? readable(submission.stayRating) : "flexible, no preference stated"}
 Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}
 Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}
 Customer notes: ${submission.packageNotes || "none"}
@@ -157,8 +172,15 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
     const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
     if (!attractionNames) return "";
 
-    const wantsFlights = submission.transport.includes("flights");
-    const wantsRentalCar = submission.transport.includes("rental");
+    // Always research flights and rental cars, not just when this specific
+    // customer asked for one. This result gets cached per city (see
+    // generateDraftGuide) and reused across every future customer for that
+    // city regardless of what they personally requested, so the cached copy
+    // needs to be useful to all of them, not just whoever happened to
+    // trigger the cache refresh. The drafting pass still only mentions what
+    // this customer actually asked for, per its own system prompt rules.
+    const wantsFlights = true;
+    const wantsRentalCar = true;
     const needsDining = guide.dining.length < 3;
 
     const flightScope = wantsFlights
@@ -216,7 +238,7 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     // gone now, see translateDraftToArabic, but medium is still the right
     // speed/quality balance for the one drafting pass that remains).
     output_config: { effort: "medium" },
-    system: buildSystemPrompt(),
+    system: cachedSystem(buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch) }],
   });
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
@@ -235,7 +257,7 @@ Your only job is faithful translation, not re-drafting:
 - Same hotel pick, same driver pick, same day count, same day order, same activity or meal on each day as the English original. Never swap which day something happens on, never substitute a different hotel, driver, restaurant or attraction than the one named in the English draft, never reorder the days.
 - For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never transliterate an English name yourself and never invent an Arabic name that isn't in the grounded facts.
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
-- Keep the same section headings: "Needs a decision before booking" becomes "يحتاج قرارًا قبل الحجز", "For the planner" becomes "للمخطط".
+- Keep the same section headings: "Needs the customer's input" becomes "يحتاج إلى رأي العميل", "Team to confirm before booking" becomes "على الفريق تأكيده قبل الحجز", "For the planner" becomes "للمخطط". Keep whichever of the two decision headings the English draft actually used, in the same order, don't add one that isn't there.
 - Keep "Day 1", "Day 2" etc. as day headers, same numbering and order as the English.
 - Plain text only, no markdown: no "#"/"##" headings, no asterisks, no numbered-list syntax, even if the English draft you're translating slipped and used some, translate it back to plain text, don't carry the markdown over. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.`;
 }
@@ -258,7 +280,7 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
       max_tokens: 6000,
       thinking: { type: "adaptive" },
       output_config: { effort: "medium" },
-      system: buildTranslationSystemPrompt(),
+      system: cachedSystem(buildTranslationSystemPrompt()),
       messages: [{ role: "user", content: buildTranslationUserPrompt(englishDraft, groundedFactsAr) }],
     });
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
@@ -283,14 +305,14 @@ async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabic
       max_tokens: 1200,
       thinking: { type: "adaptive" },
       output_config: { effort: "low" },
-      system: `You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. The Arabic version below is meant to be a faithful translation of the English, not an independent draft, read with fresh eyes, skeptical of anything that isn't clearly sourced.
+      system: cachedSystem(`You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. The Arabic version below is meant to be a faithful translation of the English, not an independent draft, read with fresh eyes, skeptical of anything that isn't clearly sourced.
 
 Check for, and only for:
 - Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts or research notes below, that's likely invented and must be flagged.
 - Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge, anywhere in the draft including its own closing section.
 - Any way the Arabic translation actually disagrees with the English, a different hotel or driver named, a different day order, a place appearing on a different day, a flag present in one but not the other. Minor phrasing or word-order differences don't count, only substantive disagreements a translation should never have introduced.
 
-Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`,
+Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`),
       messages: [{
         role: "user",
         content: `GROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES:\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
@@ -320,6 +342,40 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
   return `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:720px;margin:auto;overflow:hidden;border:1px solid #dce3de;border-radius:20px;background:#fff;box-shadow:0 14px 40px rgba(9,50,43,.08)"><div style="padding:24px 30px;background:#063b34;color:#fff"><p style="margin:0 0 8px;color:#e7b94f;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT ITINERARY, INTERNAL ONLY · مسودة داخلية</p><h1 style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:600">A first-pass sketch for ${escapeHtml(customerName)}'s ${escapeHtml(cityLabel)} trip</h1><p style="margin:9px 0 0;color:#b9cbc6;font-size:13px">Reference ${escapeHtml(reference)} · review and edit before this shapes anything sent to the customer</p></div><div style="padding:24px 0 4px">${proposalSection}${selfCheckSection}</div><div style="padding:0 30px 28px;font-size:14px;line-height:1.7">${englishHtml}${arabicSection}</div></div></div>`;
 }
 
+// City-level research cache: opening hours, ticket prices, restaurants and
+// rental car companies barely change week to week, so re-researching them
+// from scratch on every single customer submission for the same city was
+// mostly wasted spend, this was the single biggest cost driver in the whole
+// pipeline. Cached per city, refreshed after RESEARCH_CACHE_TTL_DAYS.
+// Trade-off, accepted deliberately: a cached entry can be slightly stale on
+// trip-date-specific seasonal findings if a later customer's dates differ
+// from whoever triggered the cache refresh. That's fine here because the
+// reviewer already double-checks hours/season/pricing before anything
+// reaches a customer (see the "Team to confirm before booking" section),
+// research findings were never treated as gospel, just a strong first pass.
+const RESEARCH_CACHE_TTL_DAYS = 7;
+
+async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<string | null> {
+  try {
+    const { data } = await supabase.from("city_research_cache").select("research_notes, updated_at").eq("city_slug", citySlug).single();
+    if (!data?.research_notes) return null;
+    const ageMs = Date.now() - new Date(data.updated_at).getTime();
+    if (ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000) return null;
+    return data.research_notes;
+  } catch {
+    return null;
+  }
+}
+
+async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string, notes: string): Promise<void> {
+  if (!notes) return;
+  try {
+    await supabase.from("city_research_cache").upsert({ city_slug: citySlug, research_notes: notes, updated_at: new Date().toISOString() });
+  } catch (error) {
+    console.error("Caching research failed", error);
+  }
+}
+
 // Fire-and-forget: call from app/api/journeys/route.ts inside after(), never
 // awaited by the customer-facing response. Swallows its own errors, a
 // failed draft should never surface anywhere or block anything.
@@ -341,11 +397,18 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const groundedFactsEn = serializeGuideForDraft(guide, false);
     const groundedFactsAr = serializeGuideForDraft(guide, true);
 
+    const supabaseReady = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = supabaseReady ? createSupabaseAdminClient() : null;
+
     // Sequential on purpose: research grounds the one drafting pass, the
     // translation only exists once English is final, self-check only
     // means something once both are final. Parallelizing English/Arabic
     // (the old approach) was exactly what let them disagree.
-    const operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
+    let operationalResearch = supabase ? await getCachedResearch(supabase, submission.city) : null;
+    if (!operationalResearch) {
+      operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
+      if (supabase && operationalResearch) await cacheResearch(supabase, submission.city, operationalResearch);
+    }
     const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch);
     if (!englishDraft) return;
     const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr);
@@ -358,8 +421,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // out, the reviewer can still work from the email content alone if
     // this doesn't succeed for some reason.
     try {
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const supabase = createSupabaseAdminClient();
+      if (supabase) {
         const publicToken = randomBytes(24).toString("hex");
 
         // The full drafts (still used for the reviewer email above) mix

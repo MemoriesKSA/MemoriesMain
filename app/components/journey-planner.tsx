@@ -40,7 +40,7 @@ const stayChoices: LocalChoice[] = [
 const planChoices: LocalChoice[] = [
   { value: "attractions", en: "Must-see places", ar: "أهم الأماكن السياحية" }, { value: "restaurants", en: "Restaurants & cafés", ar: "المطاعم والمقاهي" },
   { value: "experiences", en: "Local experiences", ar: "التجارب المحلية" }, { value: "family", en: "Family activities", ar: "أنشطة عائلية" },
-  { value: "tickets", en: "Tickets & reservations", ar: "التذاكر والحجوزات" }, { value: "hidden-gems", en: "Hidden gems", ar: "أماكن مميزة غير معروفة" },
+  { value: "hidden-gems", en: "Hidden gems", ar: "أماكن مميزة غير معروفة" },
   { value: "free-time", en: "Planned free time", ar: "وقت حر منظم" },
 ];
 const deliveryChoices: LocalChoice[] = [
@@ -182,7 +182,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
       <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
-      {path === "study" && !stays.includes("none-stay") ? <ElasticSelect label={text(ar, "Preferred accommodation rating", "عدد نجوم الإقامة المفضلة")} name="stayRating" placeholder={text(ar, "Choose a rating or stay flexible", "اختر عدد النجوم أو اتركه مرنًا")} options={localize(ar,[{value:"flexible",en:"Flexible, show me the best fit",ar:"مرن، اقترح الأنسب"},{value:"1-star",en:"1 star",ar:"نجمة واحدة"},{value:"2-star",en:"2 stars",ar:"نجمتان"},{value:"3-star",en:"3 stars",ar:"3 نجوم"},{value:"4-star",en:"4 stars",ar:"4 نجوم"},{value:"5-star",en:"5 stars",ar:"5 نجوم"}])} value={stayRating} onChange={setStayRating} /> : null}
+      {!stays.includes("none-stay") ? <ElasticSelect label={text(ar, "Preferred accommodation rating", "عدد نجوم الإقامة المفضلة")} name="stayRating" placeholder={text(ar, "Choose a rating or stay flexible", "اختر عدد النجوم أو اتركه مرنًا")} options={localize(ar,[{value:"flexible",en:"Flexible, show me the best fit",ar:"مرن، اقترح الأنسب"},{value:"1-star",en:"1 star",ar:"نجمة واحدة"},{value:"2-star",en:"2 stars",ar:"نجمتان"},{value:"3-star",en:"3 stars",ar:"3 نجوم"},{value:"4-star",en:"4 stars",ar:"4 نجوم"},{value:"5-star",en:"5 stars",ar:"5 نجوم"}])} value={stayRating} onChange={setStayRating} /> : null}
       <MultiChoice legend={text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
       <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
     </section>
