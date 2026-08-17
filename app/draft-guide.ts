@@ -67,6 +67,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Only use the real, named places (attractions, dining, hotels, private drivers) given to you in the grounded facts below. Never invent a business name, address or price. If something isn't covered by the grounded facts, say plainly that the team should research it, don't guess.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
 - Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it. This is separate from business licensing and compliance, which always keeps its hedge per the rule above no matter what the research notes say, research never touches that.
+- If the research notes mention flights (which airlines serve the destination, general connection patterns like "usually via Riyadh or Jeddah"), you can state that route/airline existence plainly, it's real research, not a guess. But never state or imply a specific flight time, schedule or price, the research notes never contain that and neither should you, always flag actual flight booking as something the team prices separately.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
 - Weigh the stated budget, traveller count and trip length when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
@@ -108,13 +109,20 @@ Draft the day-by-day sketch now.`;
 // Runs once, before both language calls, so English and Arabic drafts cite
 // the exact same live findings instead of two independent searches that
 // could disagree with each other. Deliberately scoped to what a search can
-// actually confirm (hours, season, pricing), and kept away from business
-// licensing/compliance, which a search can't verify, it would just surface
-// the same self-reported marketing claim already sitting in our own data.
+// actually confirm (hours, season, pricing, and which airlines/routes
+// exist), and kept away from business licensing/compliance and from live
+// flight times or prices, neither of which a generic web search can
+// honestly verify, that needs a real flight-search API and isn't in scope
+// here, see the flight rule below for why.
 async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
   try {
     const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
     if (!attractionNames) return "";
+
+    const wantsFlights = submission.transport.includes("flights");
+    const flightScope = wantsFlights
+      ? `\n- Also check which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through Riyadh or Jeddah first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
+      : "";
 
     const response = await anthropic.messages.create({
       model: "claude-opus-5",
@@ -127,13 +135,13 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
 Scope, stay inside it:
 - Only check opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below.
 - Do NOT research or make any claim about business licensing, certification, safety compliance or regulatory status for any company, that is explicitly out of scope for you, leave it alone entirely.
-- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing.
+- Only search for places where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Use judgment, don't burn searches on things that obviously don't need it. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing.${flightScope}
 - Report only what you actually find, with enough detail a planner could act on (e.g. "open year-round, standard hours" or "seasonal, tied to Riyadh Season, likely closed outside it"). If search turns up nothing conclusive for a place, say so plainly in one line for that place, don't guess or extrapolate.
 - If you run out of search budget partway through, report everything you DID find for the places you finished checking, then list the remaining places as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
-- Output short plain-text lines, one per place you checked, no markdown, no preamble, no closing summary.`,
+- Output short plain-text lines, one per place (or the flight-route line) you checked, no markdown, no preamble, no closing summary.`,
       messages: [{
         role: "user",
-        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nAttractions to check: ${attractionNames}\n\nSearch and report now.`,
+        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nAttractions to check: ${attractionNames}${wantsFlights ? `\nAlso check: general airline/route info for reaching ${cityLabelEn} (no times or prices)` : ""}\n\nSearch and report now.`,
       }],
     });
 
