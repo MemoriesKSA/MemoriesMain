@@ -3,12 +3,17 @@
 // flagship-city-data.ts. Runs in the background after the customer's
 // confirmation has already been sent (see app/api/journeys/route.ts), and
 // the result goes to the team only, never to the customer, a human always
-// reviews and edits before anything reaches them.
+// reviews and edits before anything reaches them. Also creates a draft row
+// in the proposals table (see supabase-admin.ts) so the reviewer can open
+// it pre-filled in /internal/journeys instead of retyping from the email,
+// they still have to open it and click Publish themselves.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
+import { randomBytes } from "node:crypto";
 import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city-data";
 import { saudiArabia } from "./components/planner-data";
+import { createSupabaseAdminClient } from "./supabase-admin";
 
 export type DraftGuideSubmission = {
   submissionId: string;
@@ -25,6 +30,8 @@ export type DraftGuideSubmission = {
   currency: string;
   budget: string;
   name: string;
+  email: string;
+  phone: string;
 };
 
 function readable(value: string) {
@@ -56,18 +63,21 @@ function tripLength(from: string, to: string) {
   return `${nights + 1} days / ${nights} nights`;
 }
 
-// English and Arabic run as two independent calls (see generateDraftGuide),
-// so each prompt only needs to produce one language, not both back-to-back
-// in a single response, that was taking long enough to hit Vercel's
-// function timeout.
-function buildSystemPrompt(ar: boolean) {
-  return `You are drafting an internal first-pass itinerary sketch for the MEMORIES planning team, written entirely in ${ar ? "Arabic" : "English"}. This is NOT a message to the customer, a human planner will review, correct and personalize it before anything reaches them, so it's fine to be structured, specific and detailed here in a way the customer-facing chat never is.
+// English only: this is the one reasoning-and-writing pass. Arabic is never
+// generated independently anymore, it's a faithful translation of exactly
+// this output (see translateDraftToArabic), so it can't disagree with it
+// on the hotel, the driver, the day order or anything else, there's only
+// one decision-making pass to disagree with itself.
+function buildSystemPrompt() {
+  return `You are drafting an internal first-pass itinerary sketch for the MEMORIES planning team, written in English. This is NOT a message to the customer, a human planner will review, correct and personalize it before anything reaches them, so it's fine to be structured, specific and detailed here in a way the customer-facing chat never is. This English draft will be translated into Arabic afterward by a separate step, so make every decision here, don't leave anything for the translation to decide.
 
 Rules, factual accuracy and safety about the real companies named here matter more than anything else in this draft, a wrong claim about a real business is worse than an incomplete one:
 - Only use the real, named places (attractions, dining, hotels, private drivers) given to you in the grounded facts below. Never invent a business name, address or price. If something isn't covered by the grounded facts, say plainly that the team should research it, don't guess.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
-- Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it. This is separate from business licensing and compliance, which always keeps its hedge per the rule above no matter what the research notes say, research never touches that.
-- If the research notes mention flights (which airlines serve the destination, general connection patterns like "usually via Riyadh or Jeddah"), you can state that route/airline existence plainly, it's real research, not a guess. But never state or imply a specific flight time, schedule or price, the research notes never contain that and neither should you, always flag actual flight booking as something the team prices separately.
+- Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it.
+- If the research notes mention flights (which airlines serve the destination, general connection patterns like "usually via Riyadh or Jeddah"), you can state that route/airline existence plainly, it's real research, not a guess. But never state or imply a specific flight time, schedule or price, always flag actual flight booking as something the team prices separately.
+- A hedge word you use anywhere in this draft (e.g. "typically", "positioned as", "worth confirming") must stay attached to that same claim EVERY time you reference it again, including in the closing "For the planner" section. Don't state something with a hedge once and then restate it as settled fact later in the same draft, that's as much a mistake as never hedging it at all.
+- Never assume, either way, whether the customer's stated total budget includes flights or excludes them, you have no way to know that. Always say plainly this needs the customer's confirmation, don't quietly build the rest of the draft on one assumption while also saying elsewhere that it needs confirming, that's a contradiction, pick "needs confirmation" and stay consistent about it throughout.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
 - Weigh the stated budget, traveller count and trip length when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
@@ -78,15 +88,14 @@ Format, this is the part to follow closely, the last version read as dense justi
 - Each day is a short header line, then 2-5 short lines under it, one stop or meal per line, time of day first. State the fact plainly (place name, what it is, when). Don't wrap it in a sentence explaining why it's a good choice, unless that reasoning would change what the planner books, in which case one short clause is enough, not a paragraph.
 - The first time, and only the first time, you name a business that isn't an obviously world-famous brand (a specific hotel chain, a specific driver company, a specific restaurant), add a 3-6 word plain-language tag in parentheses right after the name so a planner unfamiliar with it isn't left guessing, e.g. "ibis (budget hotel chain)", "Hello Chauffeur (Saudi private-driver service)", "Myazu (Japanese restaurant)". Every later mention of that same name in this draft, no tag, just the name.
 - No throat-clearing, no editorializing sentences that only restate that something is nice or worth doing. If a line doesn't give the planner a fact or a decision to make, cut it.
-- Bigger structural notes (a budget conflict, a scheduling conflict, something needing the customer's answer, or anything from the accuracy/safety rules above that the planner must double-check before this goes near the customer) all go together under ONE heading above the day list, headed exactly "${ar ? "يحتاج قرارًا قبل الحجز" : "Needs a decision before booking"}", each one its own short bullet line. Don't fold these into a day's bullet lines, and don't split them into a separate header per item, they all sit under that one heading.
+- Bigger structural notes (a budget conflict, a scheduling conflict, something needing the customer's answer, or anything from the accuracy/safety rules above that the planner must double-check before this goes near the customer) all go together under ONE heading above the day list, headed exactly "Needs a decision before booking", each one its own short bullet line. Don't fold these into a day's bullet lines, and don't split them into a separate header per item, they all sit under that one heading.
 - Plain, clear text. Day headers like "Day 1" are fine here. No markdown asterisks.
-- End with a short "${ar ? "للمخطط" : "For the planner"}" section, plain bullet lines, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer.
-- Write the whole thing in ${ar ? "Arabic" : "English"} only, using the ${ar ? "Arabic" : "English"} place names and facts given to you below exactly as given, don't translate or transliterate them yourself.`;
+- End with a short "For the planner" section, plain bullet lines, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer. Anything hedged earlier in the draft stays hedged here too, per the rule above.`;
 }
 
 function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string) {
   const researchSection = operationalResearch
-    ? `\n\nLive research notes on hours, seasonal status and ticket pricing (English, gathered just now via web search, not a guess, trust these the same as the grounded facts above, translate naturally if you're writing in Arabic. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive, fall back to flagging it as needing confirmation):\n${operationalResearch}`
+    ? `\n\nLive research notes on hours, seasonal status, ticket pricing and flight routes (gathered just now via web search, not a guess, trust these the same as the grounded facts above. These never cover business licensing, that always keeps its own hedge regardless. If a place isn't covered here or the notes are inconclusive, fall back to flagging it as needing confirmation):\n${operationalResearch}`
     : "";
   return `Customer request summary:
 Name: ${submission.name}
@@ -106,9 +115,8 @@ ${groundedFacts}${researchSection}
 Draft the day-by-day sketch now.`;
 }
 
-// Runs once, before both language calls, so English and Arabic drafts cite
-// the exact same live findings instead of two independent searches that
-// could disagree with each other. Deliberately scoped to what a search can
+// Runs once, before the draft is written, so the draft can cite live
+// findings instead of guessing. Deliberately scoped to what a search can
 // actually confirm (hours, season, pricing, and which airlines/routes
 // exist), and kept away from business licensing/compliance and from live
 // flight times or prices, neither of which a generic web search can
@@ -153,28 +161,74 @@ Scope, stay inside it:
   }
 }
 
-async function generateOneLanguage(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string, ar: boolean): Promise<string> {
+async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string): Promise<string> {
   const response = await anthropic.messages.create({
     model: "claude-opus-5",
     max_tokens: 6000,
     thinking: { type: "adaptive" },
     // "high" effort was pushing a single call's reasoning time past the
-    // function's own timeout even after parallelizing the two languages.
-    // "medium" is still a real reasoning pass, just faster.
+    // function's own timeout even after parallelizing (parallelism is
+    // gone now, see translateDraftToArabic, but medium is still the right
+    // speed/quality balance for the one drafting pass that remains).
     output_config: { effort: "medium" },
-    system: buildSystemPrompt(ar),
-    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabel, groundedFacts, operationalResearch) }],
+    system: buildSystemPrompt(),
+    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch) }],
   });
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
 }
 
-// A second, independent AI pass over the two finished drafts, checking
-// them against the same grounded facts before a human ever sees them.
-// This tightens the draft the reviewer receives, it does NOT replace the
-// reviewer, nothing here ever publishes to a customer on its own, see the
-// "AI drafts + self-checks, human still publishes" decision this was
-// built to match.
+// Deliberately NOT a second drafting pass: this only translates the exact
+// English draft already produced, it does not re-derive the hotel, the
+// driver, the day order or anything else. That's what makes it impossible
+// for Arabic to disagree with English on a decision, there's only one
+// decision-making step in the whole pipeline.
+function buildTranslationSystemPrompt() {
+  return `You are translating an already-finished internal itinerary draft from English into Arabic, for the same MEMORIES planning team. This is NOT a message to the customer, same internal-only rules apply.
+
+Your only job is faithful translation, not re-drafting:
+- Same hotel pick, same driver pick, same day count, same day order, same activity or meal on each day as the English original. Never swap which day something happens on, never substitute a different hotel, driver, restaurant or attraction than the one named in the English draft, never reorder the days.
+- For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never transliterate an English name yourself and never invent an Arabic name that isn't in the grounded facts.
+- Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
+- Keep the same section headings: "Needs a decision before booking" becomes "يحتاج قرارًا قبل الحجز", "For the planner" becomes "للمخطط".
+- Keep "Day 1", "Day 2" etc. as day headers, same numbering and order as the English.
+- Plain, clear Arabic, no markdown asterisks. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.`;
+}
+
+function buildTranslationUserPrompt(englishDraft: string, groundedFactsAr: string) {
+  return `Grounded facts in Arabic (use these exact Arabic names for the real places named in the draft below, matching them to their English names):
+${groundedFactsAr}
+
+English draft to translate faithfully into Arabic, same structure, same decisions, same hedges, nothing re-derived:
+${englishDraft}
+
+Translate now.`;
+}
+
+async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string, groundedFactsAr: string): Promise<string> {
+  if (!englishDraft) return "";
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 6000,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "medium" },
+      system: buildTranslationSystemPrompt(),
+      messages: [{ role: "user", content: buildTranslationUserPrompt(englishDraft, groundedFactsAr) }],
+    });
+    const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
+    return textBlock?.text?.trim() ?? "";
+  } catch (error) {
+    console.error("Arabic translation failed", error);
+    return "";
+  }
+}
+
+// A second, independent AI pass over the finished draft (and its
+// translation), checking them against the same grounded facts before a
+// human ever sees them. This tightens the draft the reviewer receives, it
+// does NOT replace the reviewer, nothing here ever publishes to a
+// customer on its own.
 async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string): Promise<string> {
   try {
     if (!englishDraft && !arabicDraft) return "";
@@ -184,17 +238,17 @@ async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabic
       max_tokens: 1200,
       thinking: { type: "adaptive" },
       output_config: { effort: "low" },
-      system: `You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. You did not write the draft, read it with fresh eyes, skeptical of anything that isn't clearly sourced.
+      system: `You are doing an independent second-pass accuracy check on an internal draft itinerary before a human reviewer sees it. The Arabic version below is meant to be a faithful translation of the English, not an independent draft, read with fresh eyes, skeptical of anything that isn't clearly sourced.
 
 Check for, and only for:
 - Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts or research notes below, that's likely invented and must be flagged.
-- Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge.
-- Any real inconsistency between the English and Arabic versions, a different hotel picked, a flag present in one but not the other, contradictory information. Minor phrasing or ordering differences don't count, only substantive disagreements.
+- Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge, anywhere in the draft including its own closing section.
+- Any way the Arabic translation actually disagrees with the English, a different hotel or driver named, a different day order, a place appearing on a different day, a flag present in one but not the other. Minor phrasing or word-order differences don't count, only substantive disagreements a translation should never have introduced.
 
-Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, both drafts are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`,
+Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`,
       messages: [{
         role: "user",
-        content: `GROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES:\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT:\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT:\n${arabicDraft || "(empty, generation failed)"}\n\nCheck now.`,
+        content: `GROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES:\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
       }],
     });
 
@@ -206,7 +260,7 @@ Output format: if you find genuine issues, a short plain-text bullet list, one l
   }
 }
 
-function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string) {
+function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
   const arabicSection = arabicDraft
     ? `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px" dir="rtl"><p style="margin:0 0 14px;color:#ba8427;font-size:11px;font-weight:800;letter-spacing:1.5px">النسخة العربية</p><div style="font-size:14px;line-height:1.9">${escapeHtml(arabicDraft).replace(/\n/g, "<br />")}</div></div>`
@@ -215,7 +269,10 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
   const selfCheckSection = selfCheck
     ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheck)}</div></div>`
     : "";
-  return `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:720px;margin:auto;overflow:hidden;border:1px solid #dce3de;border-radius:20px;background:#fff;box-shadow:0 14px 40px rgba(9,50,43,.08)"><div style="padding:24px 30px;background:#063b34;color:#fff"><p style="margin:0 0 8px;color:#e7b94f;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT ITINERARY, INTERNAL ONLY · مسودة داخلية</p><h1 style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:600">A first-pass sketch for ${escapeHtml(customerName)}'s ${escapeHtml(cityLabel)} trip</h1><p style="margin:9px 0 0;color:#b9cbc6;font-size:13px">Reference ${escapeHtml(reference)} · review and edit before this shapes anything sent to the customer</p></div><div style="padding:24px 0 4px">${selfCheckSection}</div><div style="padding:0 30px 28px;font-size:14px;line-height:1.7">${englishHtml}${arabicSection}</div></div></div>`;
+  const proposalSection = proposalUrl
+    ? `<div style="margin:0 30px 24px"><a href="${proposalUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700;font-size:13px">Open this draft in the reviewer tool →</a><p style="margin:8px 0 0;font-size:12px;color:#6a746f">Already saved as a draft proposal, pre-filled from this sketch. Nothing is sent to the customer until you edit and publish it there.</p></div>`
+    : "";
+  return `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:720px;margin:auto;overflow:hidden;border:1px solid #dce3de;border-radius:20px;background:#fff;box-shadow:0 14px 40px rgba(9,50,43,.08)"><div style="padding:24px 30px;background:#063b34;color:#fff"><p style="margin:0 0 8px;color:#e7b94f;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT ITINERARY, INTERNAL ONLY · مسودة داخلية</p><h1 style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:600">A first-pass sketch for ${escapeHtml(customerName)}'s ${escapeHtml(cityLabel)} trip</h1><p style="margin:9px 0 0;color:#b9cbc6;font-size:13px">Reference ${escapeHtml(reference)} · review and edit before this shapes anything sent to the customer</p></div><div style="padding:24px 0 4px">${proposalSection}${selfCheckSection}</div><div style="padding:0 30px 28px;font-size:14px;line-height:1.7">${englishHtml}${arabicSection}</div></div></div>`;
 }
 
 // Fire-and-forget: call from app/api/journeys/route.ts inside after(), never
@@ -236,17 +293,56 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const reference = submission.submissionId.slice(0, 8).toUpperCase();
 
     const anthropic = new Anthropic({ apiKey: anthropicKey });
-    const operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
     const groundedFactsEn = serializeGuideForDraft(guide, false);
     const groundedFactsAr = serializeGuideForDraft(guide, true);
-    const [englishDraft, arabicDraft] = await Promise.all([
-      generateOneLanguage(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, false),
-      generateOneLanguage(anthropic, submission, cityLabelAr, groundedFactsAr, operationalResearch, true),
-    ]);
 
-    if (!englishDraft && !arabicDraft) return;
-
+    // Sequential on purpose: research grounds the one drafting pass, the
+    // translation only exists once English is final, self-check only
+    // means something once both are final. Parallelizing English/Arabic
+    // (the old approach) was exactly what let them disagree.
+    const operationalResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
+    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch);
+    if (!englishDraft) return;
+    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr);
     const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch);
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    let proposalUrl: string | null = null;
+
+    // Best-effort: a failure here should never stop the email from going
+    // out, the reviewer can still work from the email content alone if
+    // this doesn't succeed for some reason.
+    try {
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const supabase = createSupabaseAdminClient();
+        const publicToken = randomBytes(24).toString("hex");
+        const notes = selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : null;
+        const { data, error } = await supabase
+          .from("proposals")
+          .insert({
+            reference,
+            public_token: publicToken,
+            status: "draft",
+            customer_name: submission.name,
+            customer_email: submission.email,
+            customer_phone: submission.phone || null,
+            city: cityLabelEn,
+            from_date: submission.fromDate || null,
+            to_date: submission.toDate || null,
+            currency: submission.currency || "SAR",
+            itinerary_en: englishDraft,
+            itinerary_ar: arabicDraft || null,
+            notes,
+          })
+          .select("id")
+          .single();
+
+        if (error) console.error("Auto-create proposal failed", error.message);
+        else if (data) proposalUrl = `${siteUrl}/internal/journeys/${data.id}`;
+      }
+    } catch (error) {
+      console.error("Auto-create proposal failed", error);
+    }
 
     const resend = new Resend(resendKey);
     const reviewEmail = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
@@ -256,8 +352,8 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       from: fromEmail,
       to: [reviewEmail],
       subject: `[AI DRAFT] ${reference} | ${cityLabelEn} itinerary sketch`,
-      html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft, selfCheck),
-      text: [selfCheck ? `AI SELF-CHECK:\n${selfCheck}` : "", englishDraft, arabicDraft].filter(Boolean).join("\n\n===\n\n"),
+      html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft, selfCheck, proposalUrl),
+      text: [proposalUrl ? `Open in reviewer tool: ${proposalUrl}` : "", selfCheck ? `AI SELF-CHECK:\n${selfCheck}` : "", englishDraft, arabicDraft].filter(Boolean).join("\n\n===\n\n"),
       tags: [{ name: "email_type", value: "draft_guide" }],
     }, { idempotencyKey: `draft-guide/${submission.submissionId}` });
 

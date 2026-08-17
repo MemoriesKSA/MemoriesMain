@@ -3,18 +3,17 @@ import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
 
 export const runtime = "nodejs";
-// The bilingual AI draft (see draft-guide.ts) runs in the background via
-// after() once the customer response has already gone out. Even with the
-// two languages generated in parallel, a single Opus 5 call with adaptive
-// thinking was still exceeding 60s on its own. It now also runs a web
-// search research step before the two language calls (so they can cite
-// the same findings) and a self-check pass after them (an independent
-// second AI read of both drafts against the grounded facts, before a
-// human reviewer sees it), three sequential stages in total, so this is
-// raised further for headroom. If the account's plan caps functions below
-// this, the deploy itself will surface that rather than failing silently
-// at runtime.
-export const maxDuration = 240;
+// The AI draft (see draft-guide.ts) runs in the background via after()
+// once the customer response has already gone out. English/Arabic used to
+// generate in parallel, but that let them independently disagree with
+// each other (different hotel picks, contradictory assumptions), so it's
+// now fully sequential on purpose: research, then one English drafting
+// pass, then a translation pass into Arabic (faithful to the English, no
+// independent redrafting), then a self-check pass, four stages with
+// nothing running concurrently. Raised accordingly for headroom. If the
+// account's plan caps functions below this, the deploy itself will
+// surface that rather than failing silently at runtime.
+export const maxDuration = 300;
 
 type JourneySubmission = {
   submissionId?: unknown;
@@ -256,6 +255,8 @@ export async function POST(request: Request) {
       currency: submission.currency,
       budget: submission.budget,
       name: submission.name,
+      email: submission.email,
+      phone: phoneDisplay,
     }));
   }
 
