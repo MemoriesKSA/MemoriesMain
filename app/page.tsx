@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Compass, Globe2, Handshake, Medal } from "lucide-react";
+import { ArrowRight, Compass, Globe2, GraduationCap, Medal } from "lucide-react";
 import { FeaturedJourneys } from "./components/featured-journeys";
 import { JourneyPlanner } from "./components/journey-planner";
 import { NewsletterForm } from "./components/newsletter-form";
 
 const promises = [
   { icon: Medal, title: "Tailor-made journeys", text: "Built around your dream" },
-  { icon: Handshake, title: "Trusted partners", text: "Carefully vetted worldwide" },
+  { icon: GraduationCap, title: "Study journeys", text: "Cities, universities & institutes" },
   { icon: Compass, title: "Complete planning", text: "Flights, stays, drivers & more" },
   { icon: Globe2, title: "Open to the world", text: "Travel from or to Saudi Arabia" },
 ];
@@ -21,7 +21,7 @@ export default function Home() {
         <div className="container heroContent">
           <p className="kicker light">Dream-led travel, made personal</p>
           <h1 id="hero-title" className="editorialHeroTitle">Every journey<br />begins with a dream.<br /><em>We turn it into<br />a memory.</em></h1>
-          <p className="heroIntro">Exceptional journeys for families, couples, explorers and students, within Saudi Arabia and around the world.</p>
+          <p className="heroIntro">Built around your budget, exceptional journeys for families, couples, explorers and students, within Saudi Arabia and around the world.</p>
           <div className="buttonRow">
             <Link className="button gold" href="/design-your-journey">Design your dream journey <ArrowRight size={16} /></Link>
             <Link className="button glass" href="/discover-saudi-arabia">Discover Saudi Arabia <ArrowRight size={16} /></Link>
