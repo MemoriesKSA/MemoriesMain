@@ -445,7 +445,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const cityLabelAr = cityOption?.ar ?? cityLabelEn;
     const reference = submission.submissionId.slice(0, 8).toUpperCase();
 
-    const anthropic = new Anthropic({ apiKey: anthropicKey });
+    // The API genuinely returns 529 "Overloaded" from time to time, and it
+    // cost us a real draft on a live Jeddah request: the SDK's default 2
+    // retries ran out while Anthropic was saturated, and the team got
+    // nothing at all. Nothing is billed for a failed call, so retrying
+    // harder is free, and the whole thing runs in the background where
+    // taking an extra minute costs nobody anything.
+    const anthropic = new Anthropic({ apiKey: anthropicKey, maxRetries: 6 });
     const groundedFactsEn = serializeGuideForDraft(guide, false);
     const groundedFactsAr = serializeGuideForDraft(guide, true);
 
@@ -544,5 +550,36 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     if (result.error) console.error("Draft guide email failed", result.error.name);
   } catch (error) {
     console.error("Draft guide generation failed", error);
+    // Tell the team the draft isn't coming. Silently swallowing this meant a
+    // failed draft was indistinguishable from a customer who simply hadn't
+    // submitted yet, so nobody knew to pick the request up by hand. The
+    // customer is unaffected either way, they already have their
+    // confirmation and never see the draft.
+    await notifyDraftFailed(submission, error).catch(() => {});
   }
+}
+
+// Deliberately plain and dependency-light: this runs when something has
+// already gone wrong, so it should have as little left to go wrong as
+// possible.
+async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknown): Promise<void> {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return;
+
+  const reference = submission.submissionId.slice(0, 8).toUpperCase();
+  const cityLabel = saudiArabia.cities.find((c) => c.value === submission.city)?.en ?? readable(submission.city);
+  const status = (error as { status?: number })?.status;
+  const overloaded = status === 529 || status === 429;
+  const reason = overloaded
+    ? "Anthropic's API was overloaded and did not recover after retries. This is temporary and on their side, nothing is wrong with the request itself."
+    : `The draft step failed with: ${escapeHtml(String((error as Error)?.message ?? error)).slice(0, 300)}`;
+
+  await new Resend(resendKey).emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>",
+    to: [process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com"],
+    subject: `[AI DRAFT FAILED] ${reference} | ${cityLabel} | plan this one by hand`,
+    html: `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:620px;margin:auto;border:1px solid #dce3de;border-radius:18px;background:#fff;overflow:hidden"><div style="padding:22px 26px;background:#7c2d20;color:#fff"><p style="margin:0 0 6px;color:#f3c9a6;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT DID NOT GENERATE</p><h1 style="margin:0;font-family:Georgia,serif;font-size:22px;font-weight:600">${escapeHtml(submission.name)}'s ${escapeHtml(cityLabel)} request needs manual planning</h1></div><div style="padding:22px 26px;font-size:14px;line-height:1.7"><p style="margin:0 0 14px">Reference <strong>${escapeHtml(reference)}</strong>. The customer's confirmation was sent normally and they are not affected, but no AI draft or draft proposal was created for this one.</p><p style="margin:0 0 14px;padding:12px 14px;border-radius:9px;background:#fdf6e8;border:1px solid #f0c987">${reason}</p><p style="margin:0;color:#66736f;font-size:13px">The original request details are in the [NEW] email for ${escapeHtml(reference)}. Re-submitting the same form would generate a fresh draft if you want to try again.</p></div></div></div>`,
+    text: `AI DRAFT FAILED for ${reference} (${cityLabel}, ${submission.name}). No draft or proposal was created; plan this one by hand. The customer is unaffected. Reason: ${reason}`,
+    tags: [{ name: "email_type", value: "draft_failed" }],
+  }, { idempotencyKey: `draft-failed/${submission.submissionId}` });
 }
