@@ -86,6 +86,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [hasSpecificUniversity, setHasSpecificUniversity] = useState<"" | "yes" | "no">("");
   const [specificUniversity, setSpecificUniversity] = useState("");
   const [stayRating, setStayRating] = useState("");
+  // Entry to Makkah is restricted to Muslims under Saudi law and is checked
+  // on the approaches to the city, so a non-Muslim customer's trip cannot go
+  // ahead no matter how well it's planned. Ask before anything else is filled
+  // in, rather than taking a full brief for a journey that can't happen.
+  const [makkahEligible, setMakkahEligible] = useState<"" | "yes" | "no">("");
   const [travellers, setTravellers] = useState("");
   const [travellerCount, setTravellerCount] = useState("");
   const [fromDate, setFromDate] = useState("");
@@ -105,10 +110,12 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
   const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
+  const isMakkah = city === "makkah";
+  const makkahBlocked = isMakkah && makkahEligible === "no";
 
   function choosePath(next: PlannerPath) {
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
-    setHasSpecificField(""); setSpecificField(""); setHasSpecificUniversity(""); setSpecificUniversity(""); setStayRating("");
+    setHasSpecificField(""); setSpecificField(""); setHasSpecificUniversity(""); setSpecificUniversity(""); setStayRating(""); setMakkahEligible("");
     // Study Abroad and the travel paths offer completely different city-plan
     // options, so anything already ticked belongs to the other list and would
     // otherwise submit values the new path never showed. Reset to that path's
@@ -123,8 +130,16 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     const value = (name: string) => String(formData.get(name) ?? "").trim();
     const emailField = form.elements.namedItem("email") as HTMLInputElement | null;
     const privacyAccepted = formData.get("privacyAccepted") === "yes";
+    // Hard stop, not a "missing field": a non-Muslim traveller cannot enter
+    // Makkah at all, so there is nothing to complete and nothing to submit.
+    if (makkahBlocked) {
+      setMissingSections([1]);
+      setFormError(text(ar, "Makkah is open to Muslim visitors only. Please choose a different city to continue.", "مكة المكرمة مفتوحة للزوار المسلمين فقط. اختر مدينة أخرى للمتابعة."));
+      requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
+      return;
+    }
     const missing = [
-      !country || !city || !purpose || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
+      !country || !city || !purpose || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
       !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
       !transport.length || !stays.length ? 3 : 0,
       !value("budget") ? 4 : 0,
@@ -180,17 +195,34 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(1)} data-step="1"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small>{requiredWarning(1)}</div></div>
       <div className="pathSelector" role="radiogroup" aria-label={text(ar, "Journey type", "نوع الرحلة")}>{pathOptions.map((option) => { const Icon = pathIcons[option.path]; return <button className={path === option.path ? "pathOption selected" : "pathOption"} type="button" role="radio" aria-checked={path === option.path} onClick={() => choosePath(option.path)} key={option.path}><Icon aria-hidden="true" /><span><strong>{ar ? option.ar : option.en}</strong><small>{ar ? option.descriptionAr : option.descriptionEn}</small></span></button>; })}<input type="hidden" name="journeyType" value={path} /></div>
       <div className="plannerFieldGrid destinationFields" key={path}>
-        <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); }} />
-        <ElasticSelect label={text(ar, path === "study" ? "Study city" : "City or destination", path === "study" ? "مدينة الدراسة" : "المدينة أو الوجهة")} name="city" required searchable disabled={!selectedCountry} searchPlaceholder={text(ar, "Search cities…", "ابحث عن مدينة…")} emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")} placeholder={text(ar, selectedCountry ? "Choose or search a city" : "Choose a country first", selectedCountry ? "اختر أو ابحث عن مدينة" : "اختر الدولة أولًا")} options={localizedOptions(ar, selectedCountry?.cities ?? [])} value={city} onChange={setCity} />
+        <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); setMakkahEligible(""); }} />
+        <ElasticSelect label={text(ar, path === "study" ? "Study city" : "City or destination", path === "study" ? "مدينة الدراسة" : "المدينة أو الوجهة")} name="city" required searchable disabled={!selectedCountry} searchPlaceholder={text(ar, "Search cities…", "ابحث عن مدينة…")} emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")} placeholder={text(ar, selectedCountry ? "Choose or search a city" : "Choose a country first", selectedCountry ? "اختر أو ابحث عن مدينة" : "اختر الدولة أولًا")} options={localizedOptions(ar, selectedCountry?.cities ?? [])} value={city} onChange={(value) => { setCity(value); setMakkahEligible(""); }} />
         <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
+      {isMakkah ? <div className="makkahGate">
+        <p className="makkahNote">{text(ar,
+          "One thing to check first: entry to Makkah is reserved for Muslim visitors under Saudi law, and this is verified on the roads into the city. We ask now so we only plan a journey that can actually go ahead.",
+          "نتحقق من أمر واحد أولًا: دخول مكة المكرمة مخصص للزوار المسلمين وفق أنظمة المملكة، ويتم التحقق من ذلك عند مداخل المدينة. نسأل الآن حتى لا نخطط إلا لرحلة يمكن إتمامها فعلًا.")}</p>
+        <div className="binaryQuestion"><fieldset><legend>{text(ar, "Are you Muslim?", "هل أنت مسلم؟")} *</legend><div className="binaryOptions">{(["yes", "no"] as const).map((choice) => <button key={choice} type="button" className={makkahEligible === choice ? "selected" : ""} aria-pressed={makkahEligible === choice} onClick={() => setMakkahEligible(choice)}>{choice === "yes" ? text(ar, "Yes", "نعم") : text(ar, "No", "لا")}</button>)}</div><input type="hidden" name="makkahEligible" value={makkahEligible} /></fieldset></div>
+        {makkahBlocked ? <div className="makkahBlocked" role="status" aria-live="polite">
+          <strong>{text(ar, "We can’t plan a Makkah journey, but we’d still love to plan something with you.", "لا يمكننا تخطيط رحلة إلى مكة المكرمة، لكن يسعدنا تخطيط رحلة أخرى معك.")}</strong>
+          <p>{text(ar,
+            "Thank you for telling us. The rest of the Kingdom is open to every visitor: Jeddah’s Al-Balad old town, AlUla’s Nabataean tombs, the mountains around Taif and the Red Sea coast. Choose a different city above and we’ll carry on from there.",
+            "شكرًا لإخبارنا. بقية المملكة مفتوحة لجميع الزوار: جدة التاريخية (البلد)، ومقابر الحِجر النبطية في العلا، وجبال الطائف، وساحل البحر الأحمر. اختر مدينة أخرى بالأعلى ونكمل من هناك.")}</p>
+        </div> : null}
+      </div> : null}
       {path === "study" ? <div className="studyDetails">
         <div className="binaryQuestion"><fieldset><legend>{text(ar, "Do you have a specific field of study?", "هل لديك تخصص محدد؟")} *</legend><div className="binaryOptions">{(["yes", "no"] as const).map((choice) => <button key={choice} type="button" className={hasSpecificField === choice ? "selected" : ""} aria-pressed={hasSpecificField === choice} onClick={() => { setHasSpecificField(choice); if (choice === "no") setSpecificField(""); }}>{choice === "yes" ? text(ar, "Yes", "نعم") : text(ar, "No", "لا")}</button>)}</div><input type="hidden" name="hasSpecificField" value={hasSpecificField} /></fieldset>{hasSpecificField === "yes" ? <label className="studyReveal"><span>{text(ar, "Preferred field or major", "التخصص الذي تفضله")} *</span><input name="specificField" value={specificField} onChange={(event) => setSpecificField(event.target.value)} placeholder={text(ar, "For example, computer science", "مثلاً، علوم الحاسب")} /></label> : null}</div>
         <div className="binaryQuestion"><fieldset><legend>{text(ar, "Do you have a specific university in mind?", "هل لديك جامعة محددة؟")} *</legend><div className="binaryOptions">{(["yes", "no"] as const).map((choice) => <button key={choice} type="button" className={hasSpecificUniversity === choice ? "selected" : ""} aria-pressed={hasSpecificUniversity === choice} onClick={() => { setHasSpecificUniversity(choice); if (choice === "no") setSpecificUniversity(""); }}>{choice === "yes" ? text(ar, "Yes", "نعم") : text(ar, "No", "لا")}</button>)}</div><input type="hidden" name="hasSpecificUniversity" value={hasSpecificUniversity} /></fieldset>{hasSpecificUniversity === "yes" ? <label className="studyReveal"><span>{text(ar, "Preferred university", "الجامعة التي تفضلها")} *</span><input name="specificUniversity" value={specificUniversity} onChange={(event) => setSpecificUniversity(event.target.value)} placeholder={text(ar, "Type the university name", "اكتب اسم الجامعة")} /></label> : null}</div>
       </div> : null}
     </section>
 
+    {/* A disabled fieldset natively disables every control inside it, so a
+        blocked Makkah request can't be filled in or submitted by keyboard or
+        script either, not just visually. display:contents keeps the form grid
+        layout exactly as it was. */}
+    <fieldset className="plannerLock" disabled={makkahBlocked}>
     <section className={sectionClass(2)} data-step="2"><div className="plannerStep"><span>02</span><div><strong>{text(ar, "Who and when", "من ومتى")}</strong><small>{text(ar, "The people and dates shape every recommendation.", "المسافرون والتواريخ يصنعون فرقًا في كل توصية.")}</small>{requiredWarning(2)}</div></div><div className="plannerFieldGrid">
       <ElasticSelect label={text(ar, "Travellers", "المسافرون")} name="travellers" required placeholder={text(ar, "Who is travelling?", "من سيسافر؟")} options={localize(ar, travellerTypes)} value={travellers} onChange={setTravellers} />
       <ElasticSelect label={text(ar, "Number of travellers", "عدد المسافرين")} name="travellerCount" required placeholder={text(ar, "Choose a number", "اختر العدد")} options={Array.from({length:12},(_,index)=>({value:String(index+1),label:ar?`${index+1} مسافر`:`${index+1} traveller${index ? "s" : ""}`})).concat([{value:"13+",label:ar?"١٣ مسافرًا أو أكثر":"13+ travellers"}])} value={travellerCount} onChange={setTravellerCount} />
@@ -218,8 +250,9 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       <p className="privacyHint full">{text(ar, "Service emails about this request are not marketing. Please do not enter passport, payment-card or medical information in this form.", "رسائل الخدمة المتعلقة بهذا الطلب ليست تسويقًا. لا تدخل بيانات جواز السفر أو البطاقة أو المعلومات الطبية في هذا النموذج.")}</p>
     </section>
 
+    </fieldset>
     {formError ? <p className="plannerError full" role="alert">{formError}</p> : null}
-    <button className="button gold full plannerSubmit" type="submit">{text(ar, "Send my journey for review", "أرسل رحلتي للمراجعة")} <ArrowRight className="directionArrow" size={17} /></button>
+    <button className="button gold full plannerSubmit" type="submit" disabled={makkahBlocked}>{text(ar, "Send my journey for review", "أرسل رحلتي للمراجعة")} <ArrowRight className="directionArrow" size={17} /></button>
     {path === "study" ? <p className="formNote full">{text(ar, "Visa decisions are made solely by the relevant authorities; MEMORIES provides application assistance, not guaranteed approval.", "تتخذ الجهات المختصة قرارات التأشيرات؛ تقدم ميموريز المساعدة في الطلب ولا تضمن الموافقة.")}</p> : null}
   </form>;
 }

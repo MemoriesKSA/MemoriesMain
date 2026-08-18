@@ -502,3 +502,20 @@ html[dir="rtl"] .exploreCarousel .carouselButtons svg{transform:rotate(180deg)}
 .helpfulButtons button:hover{background:var(--ivory);border-color:var(--gold)}
 @media(max-width:1000px){.knowGrid{grid-template-columns:1fr 1fr}.emergencyGrid{grid-template-columns:1fr 1fr}.telecomGrid{grid-template-columns:1fr}}
 @media(max-width:640px){.knowGrid{grid-template-columns:1fr}.emergencyGrid{grid-template-columns:1fr}}
+
+/* Makkah eligibility gate. Entry is restricted to Muslims under Saudi law,
+   so a non-Muslim traveller's request is stopped here rather than collected
+   in full and rejected later by a human. The lock uses a disabled fieldset
+   (display:contents so the form grid is untouched), which disables every
+   control inside natively, the dimming below is only the visible half of it. */
+.makkahGate{display:grid;gap:12px;margin-top:14px}
+.makkahNote{margin:0;padding:13px 15px;border:1px solid var(--gold);border-radius:11px;background:rgba(231,185,79,.12);font-size:.86rem;line-height:1.65}
+.makkahGate .binaryQuestion{max-width:340px}
+.makkahBlocked{display:grid;gap:7px;padding:15px 17px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.55);animation:study-reveal .42s cubic-bezier(.22,1,.36,1) both}
+.makkahBlocked strong{font-family:var(--font-display);font-size:1.02rem;line-height:1.45}
+.makkahBlocked p{margin:0;font-size:.86rem;line-height:1.7;color:var(--muted)}
+.plannerLock{display:contents;min-width:0;margin:0;padding:0;border:0}
+.plannerLock:disabled>*{opacity:.32;filter:grayscale(1);pointer-events:none;user-select:none;transition:opacity .35s ease,filter .35s ease}
+.plannerSubmit:disabled{opacity:.35;filter:grayscale(1);cursor:not-allowed}
+html[data-theme="dark"] .makkahNote{background:rgba(231,185,79,.09)}
+html[data-theme="dark"] .makkahBlocked{background:rgba(255,255,255,.03)}
