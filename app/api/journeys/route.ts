@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
+import { flagshipCityGuideBySlug } from "../../flagship-city-data";
 
 export const runtime = "nodejs";
 // The AI draft (see draft-guide.ts) runs in the background via after()
@@ -239,7 +240,13 @@ export async function POST(request: Request) {
     if (confirmation.error) console.error("Journey confirmation email failed", confirmation.error.name);
   }
 
-  if (submission.journeyType === "saudi") {
+  // Trigger on the destination, not the path the customer happened to click.
+  // Saudi Arabia is selectable from the general "design your journey" path as
+  // well as the Discover Saudi one, and gating on journeyType === "saudi"
+  // meant an identical Riyadh or AlUla trip silently got no draft just
+  // because of which card was picked first. If we hold real grounded facts
+  // for the city, the draft is worth generating however they arrived.
+  if (flagshipCityGuideBySlug("saudi-arabia", submission.city)) {
     after(() => generateDraftGuide({
       submissionId: submission.submissionId,
       city: submission.city,

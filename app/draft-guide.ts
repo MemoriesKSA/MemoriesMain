@@ -424,12 +424,21 @@ async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClie
 // failed draft should never surface anywhere or block anything.
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
   try {
+    // These early returns used to be completely silent, which made a missing
+    // key look identical to "the AI draft feature is broken", with nothing in
+    // the logs either way. Say why we stopped, every time.
     const guide = flagshipCityGuideBySlug("saudi-arabia", submission.city);
-    if (!guide) return;
+    if (!guide) {
+      console.error(`Draft skipped for ${submission.submissionId}: no flagship city data for "${submission.city}"`);
+      return;
+    }
 
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     const resendKey = process.env.RESEND_API_KEY;
-    if (!anthropicKey || !resendKey) return;
+    if (!anthropicKey || !resendKey) {
+      console.error(`Draft skipped for ${submission.submissionId}: missing ${!anthropicKey ? "ANTHROPIC_API_KEY" : ""}${!anthropicKey && !resendKey ? " and " : ""}${!resendKey ? "RESEND_API_KEY" : ""}`);
+      return;
+    }
 
     const cityOption = saudiArabia.cities.find((c) => c.value === submission.city);
     const cityLabelEn = cityOption?.en ?? readable(submission.city);
