@@ -1,0 +1,41 @@
+// Checks every URL in the registry actually resolves. A 403 usually means
+// bot-blocking rather than a dead page, so it's reported separately from a
+// genuine 404.
+
+import { PLACE_URLS } from "../app/journey/place-urls";
+
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36";
+
+async function check(url: string) {
+  try {
+    const res = await fetch(url, { redirect: "follow", headers: { "User-Agent": UA, Accept: "text/html" }, signal: AbortSignal.timeout(20000) });
+    return { status: res.status, finalUrl: res.url };
+  } catch (e) {
+    return { status: 0, finalUrl: "", error: (e as Error).message };
+  }
+}
+
+async function main() {
+  const entries: [string, string][] = Object.entries(PLACE_URLS);
+  const bad: string[] = [];
+  const blocked: string[] = [];
+
+  for (const [name, url] of entries) {
+    const r = await check(url);
+    const ok = r.status >= 200 && r.status < 400;
+    const redirected = r.finalUrl && r.finalUrl.replace(/\/$/, "") !== url.replace(/\/$/, "");
+    let tag = ok ? "OK  " : r.status === 403 ? "BLOCK" : "FAIL";
+    if (!ok && r.status !== 403) bad.push(`${name} -> ${url} (${r.status || r.error})`);
+    if (r.status === 403) blocked.push(`${name} -> ${url}`);
+    console.log(`${tag} ${String(r.status).padStart(3)}  ${name}`);
+    if (ok && redirected) console.log(`        redirects to: ${r.finalUrl}`);
+  }
+
+  console.log(`\n--- summary of ${entries.length} ---`);
+  console.log(`failed: ${bad.length}`);
+  bad.forEach((b) => console.log(`  ${b}`));
+  console.log(`bot-blocked (likely fine, verify by eye): ${blocked.length}`);
+  blocked.forEach((b) => console.log(`  ${b}`));
+}
+
+main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });

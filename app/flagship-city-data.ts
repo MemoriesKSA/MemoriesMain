@@ -689,14 +689,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "مطبخ شرق أوسطي وأرمني في أجواء دافئة وهادئة.",
       },
     ],
+    // Removed 2026-08-18: "Four Seasons Hotel Jeddah at the Corniche" was
+    // listed here as the city's top-rated address, but it does not exist yet.
+    // It is under construction on the Corniche, originally due 2024 and now
+    // reported as targeting 2027, and is not open or taking bookings. It was
+    // reachable by the AI draft generator, so a customer could have been sent
+    // a plan built around a hotel they cannot stay in. Add it back when it
+    // actually opens.
     stay: [
-      {
-        nameEn: "Four Seasons Hotel Jeddah at the Corniche",
-        nameAr: "فندق فور سيزونز جدة على الكورنيش",
-        descriptionEn: "The city's top-rated address, an infinity pool and Corniche views on the North Corniche.",
-        descriptionAr: "العنوان الأعلى تقييمًا في المدينة، بمسبح لا متناهٍ وإطلالات على الكورنيش الشمالي.",
-        tier: "luxury",
-      },
       {
         nameEn: "Rosewood Jeddah",
         nameAr: "روزوود جدة",
