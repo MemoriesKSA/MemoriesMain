@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity } from "./place-links";
+import { placeNamesForCity, officialUrlMapForCity } from "./place-links";
 
 export async function JourneyPageContent({ token, locale }: { token: string; locale: JourneyLocale }) {
   const t = journeyStrings[locale];
@@ -23,6 +23,9 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // each one to a Maps search. Empty list simply means nothing gets linked.
   const placesEn = placeNamesForCity(proposal.city, false);
   const placesAr = placeNamesForCity(proposal.city, true);
+  // Verified official sites where we have them; everything else falls back
+  // to a Maps search inside the linkifier.
+  const officialUrls = officialUrlMapForCity(proposal.city);
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>
@@ -55,7 +58,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={proposal.itinerary_en} places={placesEn} cityLabel={proposal.city} />
+            <ItineraryView text={proposal.itinerary_en} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} />
           </section>
         )}
 
@@ -64,7 +67,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={proposal.itinerary_ar} places={placesAr} cityLabel={proposal.city} />
+            <ItineraryView text={proposal.itinerary_ar} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} />
           </section>
         )}
 

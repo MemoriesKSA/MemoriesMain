@@ -12,6 +12,7 @@
 // reviews, and the venue's own website if it has one.
 
 import { flagshipCityGuideBySlug } from "../flagship-city-data";
+import { officialUrlFor } from "./place-urls";
 import { saudiArabia } from "../components/planner-data";
 
 export function mapsSearchUrl(placeName: string, cityLabel: string) {
@@ -47,4 +48,28 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
   // the "Kingdom Centre" sitting inside it and we don't link a fragment.
   return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
+}
+
+// English name -> official URL, for the names we hold in this city. The
+// itinerary is matched case-insensitively, so key the map that way too.
+export function officialUrlMapForCity(cityLabel: string): Record<string, string> {
+  const slug = citySlugFromLabel(cityLabel);
+  if (!slug) return {};
+  const guide = flagshipCityGuideBySlug("saudi-arabia", slug);
+  if (!guide) return {};
+
+  const map: Record<string, string> = {};
+  const add = (nameEn: string, nameAr: string) => {
+    const url = officialUrlFor(nameEn);
+    if (!url) return;
+    // Both languages point at the same official site, since that is where
+    // the customer actually books regardless of which page they are reading.
+    map[nameEn.toLowerCase()] = url;
+    if (nameAr) map[nameAr.toLowerCase()] = url;
+  };
+
+  guide.attractions.forEach((a) => add(a.nameEn, a.nameAr));
+  [...guide.stay, ...(guide.extendedStay ?? [])].forEach((s) => add(s.nameEn, s.nameAr));
+  [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].forEach((p) => add(p.nameEn, p.nameAr));
+  return map;
 }

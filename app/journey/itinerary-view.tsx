@@ -21,7 +21,7 @@ function escapeRegex(value: string) {
 // placeNamesForCity) so the alternation matches the fullest name rather than
 // a fragment of it. Anything not in the curated list is left as plain text,
 // we never try to guess at place names in prose.
-function linkifyPlaces(text: string, places: string[], cityLabel: string): ReactNode {
+function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>): ReactNode {
   if (!places.length) return text;
   const pattern = new RegExp(`(${places.map(escapeRegex).join("|")})`, "gi");
   const parts = text.split(pattern);
@@ -30,7 +30,7 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string): React
   const lookup = new Set(places.map((p) => p.toLowerCase()));
   return parts.map((part, i) =>
     lookup.has(part.toLowerCase()) ? (
-      <a key={i} href={mapsSearchUrl(part, cityLabel)} target="_blank" rel="noopener noreferrer" style={placeLinkStyle}>
+      <a key={i} href={officialUrls[part.toLowerCase()] ?? mapsSearchUrl(part, cityLabel)} target="_blank" rel="noopener noreferrer" style={placeLinkStyle}>
         {part}
       </a>
     ) : (
@@ -39,13 +39,13 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string): React
   );
 }
 
-function BulletLines({ lines, places, cityLabel }: { lines: string[]; places: string[]; cityLabel: string }) {
+function BulletLines({ lines, places, cityLabel, officialUrls }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string> }) {
   return (
     <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "grid", gap: 9 }}>
       {lines.map((line, i) => (
         <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15, lineHeight: 1.7, color: "var(--ink-2)" }}>
           <span style={{ flexShrink: 0, width: 6, height: 6, marginTop: 9, borderRadius: "50%", background: "var(--gold)" }} />
-          <span>{linkifyPlaces(line, places, cityLabel)}</span>
+          <span>{linkifyPlaces(line, places, cityLabel, officialUrls)}</span>
         </li>
       ))}
     </ul>
@@ -57,7 +57,7 @@ function BulletLines({ lines, places, cityLabel }: { lines: string[]; places: st
 // unchanged if it doesn't match the expected shape (e.g. a reviewer typed
 // something free-form), so this never hides content it can't confidently
 // restructure.
-export function ItineraryView({ text, places = [], cityLabel = "" }: { text: string; places?: string[]; cityLabel?: string }) {
+export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {} }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string> }) {
   const parsed = parseItinerary(text);
   if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
@@ -90,7 +90,7 @@ export function ItineraryView({ text, places = [], cityLabel = "" }: { text: str
                     <div style={{ display: "grid", gap: 4 }}>
                       {lines.map((line, li) => (
                         <p key={li} style={{ margin: 0, fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-2)" }}>
-                          {linkifyPlaces(line, places, cityLabel)}
+                          {linkifyPlaces(line, places, cityLabel, officialUrls)}
                         </p>
                       ))}
                     </div>
@@ -126,7 +126,7 @@ export function ItineraryView({ text, places = [], cityLabel = "" }: { text: str
               </span>
               <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{section.title}</p>
             </div>
-            <BulletLines lines={section.lines} places={places} cityLabel={cityLabel} />
+            <BulletLines lines={section.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} />
           </div>
         );
       })}
