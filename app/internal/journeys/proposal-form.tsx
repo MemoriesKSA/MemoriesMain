@@ -240,7 +240,12 @@ export function ProposalForm({
             </Section>
 
             <Section heading={t.sectionNotes} hint={t.notesHint} last>
-              <textarea id="notes" name="notes" defaultValue={v.notes} rows={3} style={{ ...inputStyle, marginBottom: 0 }} />
+              {/* Was rows=3, from when notes were a couple of hand-typed
+                  lines. The AI draft now fills this with the self-check plus
+                  the internal planning sections in both languages, which is
+                  the reviewer's main reading material, so it gets at least as
+                  much room as the itinerary fields above. */}
+              <textarea id="notes" name="notes" defaultValue={v.notes} rows={16} style={{ ...inputStyle, marginBottom: 0, fontSize: 13, lineHeight: 1.7, resize: "vertical" }} />
             </Section>
           </div>
 
