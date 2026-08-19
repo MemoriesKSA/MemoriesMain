@@ -57,7 +57,7 @@ function BulletLines({ lines, places, cityLabel, officialUrls }: { lines: string
 // unchanged if it doesn't match the expected shape (e.g. a reviewer typed
 // something free-form), so this never hides content it can't confidently
 // restructure.
-export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {} }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string> }) {
+export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, lockedTitles = [] }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; lockedTitles?: string[] }) {
   const parsed = parseItinerary(text);
   if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
@@ -73,6 +73,33 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
   // parsing succeeded but left nothing beyond internal-only sections, the
   // raw text IS that internal content, showing it would defeat the filter.
   if (!sections.length) return null;
+
+  // Locked days are rendered from their headings alone. Their contents were
+  // dropped on the server (see paywall.ts) and are not present in this
+  // component at all, so there is nothing here to reveal.
+  const lockedCards = lockedTitles.map((title, i) => (
+    <div key={`locked-${i}`} style={{ ...cardStyle, borderStyle: "dashed", background: "transparent", opacity: 0.75 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span
+          style={{
+            flexShrink: 0,
+            display: "grid",
+            placeItems: "center",
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            border: "1px dashed var(--line)",
+            color: "var(--muted)",
+            fontSize: 15,
+          }}
+          aria-hidden="true"
+        >
+          &#128274;
+        </span>
+        <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 18, color: "var(--muted)" }}>{title}</p>
+      </div>
+    </div>
+  ));
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -130,6 +157,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
           </div>
         );
       })}
+      {lockedCards}
     </div>
   );
 }

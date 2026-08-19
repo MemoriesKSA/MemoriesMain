@@ -3,6 +3,9 @@ import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity } from "./place-links";
+import { applyPaywall, shouldPaywall } from "./paywall";
+import type { PlanStop } from "./plan-stops";
+import { PlanUnlock } from "./plan-unlock";
 
 export async function JourneyPageContent({ token, locale }: { token: string; locale: JourneyLocale }) {
   const t = journeyStrings[locale];
@@ -26,6 +29,18 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // Verified official sites where we have them; everything else falls back
   // to a Maps search inside the linkifier.
   const officialUrls = officialUrlMapForCity(proposal.city);
+
+  // The split happens here, on the server. Locked days are removed from the
+  // text before it is ever serialised to the browser, so an unpaid reader
+  // cannot recover them from the page source or devtools. Only the headings
+  // of withheld days survive, which is what the teaser needs.
+  const locked = shouldPaywall(proposal);
+  const planStops = (proposal.stops as PlanStop[] | null) ?? null;
+  const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops) : { visibleText: proposal.itinerary_en ?? "", lockedTitles: [] };
+  const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops) : { visibleText: proposal.itinerary_ar ?? "", lockedTitles: [] };
+  // Price the unlock from how many stops the trip actually has.
+  const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
+  const unlockFee = { 1: 99, 2: 149, 3: 199 }[stopCount] ?? 99;
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>
@@ -53,21 +68,31 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           </div>
         )}
 
-        {proposal.itinerary_en && (
-          <section dir="ltr" style={{ marginBottom: proposal.itinerary_ar ? 32 : 0 }}>
+        {en.visibleText && (
+          <section dir="ltr" style={{ marginBottom: ar.visibleText ? 32 : 0 }}>
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={proposal.itinerary_en} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} />
+            <ItineraryView text={en.visibleText} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} lockedTitles={en.lockedTitles} />
           </section>
         )}
 
-        {proposal.itinerary_ar && (
+        {locked && (en.lockedTitles.length > 0 || ar.lockedTitles.length > 0) && (
+          <PlanUnlock
+            fee={unlockFee}
+            currency={proposal.currency || "SAR"}
+            lockedCount={Math.max(en.lockedTitles.length, ar.lockedTitles.length)}
+            stopCount={stopCount}
+            locale={locale}
+          />
+        )}
+
+        {ar.visibleText && (
           <section dir="rtl">
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={proposal.itinerary_ar} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} />
+            <ItineraryView text={ar.visibleText} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} lockedTitles={ar.lockedTitles} />
           </section>
         )}
 

@@ -20,6 +20,20 @@ const DAY_HEADING = /^(?:day|اليوم)\s*[\d٠-٩]+/i;
 const LEADING_BULLET = /^[-*•–—]\s+/;
 const LEADING_MARKDOWN_HEADING = /^#{1,6}\s+/;
 
+// The paywall needs to know which day a heading belongs to so it can serve
+// the free ones and withhold the rest, in either language. Returns null for
+// any line that isn't a day heading at all.
+export function dayNumberFromLine(rawLine: string): number | null {
+  const line = rawLine.trim().replace(LEADING_MARKDOWN_HEADING, "");
+  if (!DAY_HEADING.test(line)) return null;
+  const digits = line.match(/[\d٠-٩]+/)?.[0];
+  if (!digits) return null;
+  // Normalise Arabic-Indic digits (٠-٩) to Western before parsing.
+  const western = digits.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+  const value = Number(western);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
 // The draft is instructed to write plain text with no markdown, but the
 // model doesn't always hold to that. Strip a leading "## " before matching
 // or storing a line, otherwise "## Day 1" and "## Needs a decision before
