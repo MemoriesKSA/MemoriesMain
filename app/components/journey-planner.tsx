@@ -127,7 +127,9 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   // Multi-stop only where we hold researched city data, which is Saudi
   // Arabia. Elsewhere there is no plan to sell, so no reason to offer it.
   const multiStopAvailable = country === saudiArabia.value;
-  const canAddStop = multiStopAvailable && !!city && stops.length < MAX_STOPS;
+  // Counted on extraStops, not `stops`: `stops` is filtered, so a row whose
+  // city is still empty would not count and the cap could be clicked past.
+  const canAddStop = multiStopAvailable && !!city && extraStops.length < MAX_STOPS - 1;
   // Any stop being Makkah triggers the eligibility question, not just the
   // first: adding it as stop two carries exactly the same entry restriction.
   const isMakkah = stops.includes("makkah");

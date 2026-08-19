@@ -524,7 +524,8 @@ html[data-theme="dark"] .makkahBlocked{background:rgba(255,255,255,.03)}
    up to three places, so the extra stops sit directly under the primary
    city and read as a continuation of it rather than a separate section. */
 .stopsBlock{display:grid;gap:12px;margin-top:14px}
-.extraStop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;animation:study-reveal .42s cubic-bezier(.22,1,.36,1) both}
+.extraStop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;animation:study-reveal .42s cubic-bezier(.22,1,.36,1) backwards}
+.extraStop:has(.elasticSelect.open){position:relative;z-index:40}
 .removeStop{height:47px;padding:0 15px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--muted);font:inherit;font-size:.74rem;font-weight:700;cursor:pointer;transition:border-color .25s ease,color .25s ease}
 .removeStop:hover{border-color:#c0705f;color:#a8523f}
 .stopWarning{margin:0;padding:11px 14px;border:1px solid #f0c987;border-radius:10px;background:#fdf6e8;font-size:.83rem;line-height:1.6}
