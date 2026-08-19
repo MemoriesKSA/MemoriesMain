@@ -27,6 +27,8 @@ export type DraftGuideSubmission = {
   transport: string[];
   stays: string[];
   stayRating: string;
+  departureCity: string;
+  flightTiming: string;
   planIncludes: string[];
   packageNotes: string;
   currency: string;
@@ -157,6 +159,8 @@ Purpose / style: ${readable(submission.purpose)}
 Requested transport: ${submission.transport.map(readable).join(", ") || "not specified"}
 Requested stay type: ${submission.stays.map(readable).join(", ") || "not specified"}
 Preferred accommodation rating: ${submission.stayRating && submission.stayRating !== "flexible" ? readable(submission.stayRating) : "flexible, no preference stated"}
+Flying from: ${submission.departureCity || "not stated"}
+Preferred flight timing: ${submission.flightTiming && submission.flightTiming !== "flexible" ? readable(submission.flightTiming) : "flexible, no preference stated"}
 Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}
 Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}
 Customer notes: ${submission.packageNotes || "none"}

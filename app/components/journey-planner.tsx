@@ -86,6 +86,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [hasSpecificUniversity, setHasSpecificUniversity] = useState<"" | "yes" | "no">("");
   const [specificUniversity, setSpecificUniversity] = useState("");
   const [stayRating, setStayRating] = useState("");
+  // Flight planning is impossible without an origin, so this is required
+  // whenever they ask for flights. Free text rather than a picker because
+  // they could be flying from anywhere in the world.
+  const [departureCity, setDepartureCity] = useState("");
+  const [flightTiming, setFlightTiming] = useState("");
   // Entry to Makkah is restricted to Muslims under Saudi law and is checked
   // on the approaches to the city, so a non-Muslim customer's trip cannot go
   // ahead no matter how well it's planned. Ask before anything else is filled
@@ -121,6 +126,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // otherwise submit values the new path never showed. Reset to that path's
     // own defaults instead of carrying orphaned selections across.
     setPlanIncludes(next === "study" ? STUDY_PLAN_DEFAULTS : ["attractions", "restaurants"]);
+    setDepartureCity(""); setFlightTiming("");
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -140,6 +146,9 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     }
     const missing = [
       !country || !city || !purpose || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
+      // Asking for flights without saying where from leaves the team unable
+      // to look anything up, so it counts as an incomplete step 3.
+      transport.includes("flights") && !departureCity.trim() ? 3 : 0,
       !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
       !transport.length || !stays.length ? 3 : 0,
       !value("budget") ? 4 : 0,
@@ -232,6 +241,18 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
     <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
+      {/* Only meaningful once they've actually asked for flights. No flight
+          schedule or fare can be looked up without knowing where they're
+          departing from, so this is the field that makes flight planning
+          possible at all rather than a nice-to-have. */}
+      {transport.includes("flights") ? <div className="flightDetails">
+        <label className="studyReveal"><span>{text(ar, "Where are you flying from?", "من أين ستسافر؟")} *</span><input name="departureCity" value={departureCity} onChange={(event) => setDepartureCity(event.target.value)} placeholder={text(ar, "City or airport, for example Cairo or LHR", "المدينة أو المطار، مثلاً القاهرة أو LHR")} /></label>
+        <ElasticSelect label={text(ar, "Preferred flight timing", "توقيت الرحلة المفضل")} name="flightTiming" placeholder={text(ar, "Daytime, night, or flexible", "نهارية أو ليلية أو مرن")} options={localize(ar, [
+          { value: "flexible", en: "Flexible, whatever works best", ar: "مرن، ما يناسب أكثر" },
+          { value: "daytime", en: "Daytime flight", ar: "رحلة نهارية" },
+          { value: "nighttime", en: "Night flight", ar: "رحلة ليلية" },
+        ])} value={flightTiming} onChange={setFlightTiming} />
+      </div> : null}
       <MultiChoice legend={text(ar, "Where would you like to stay?", "ما نوع الإقامة التي تفضلها؟")} name="stays" options={localize(ar, stayChoices)} selected={stays} onChange={setStays} />
       {!stays.includes("none-stay") ? <ElasticSelect label={text(ar, "Preferred accommodation rating", "عدد نجوم الإقامة المفضلة")} name="stayRating" placeholder={text(ar, "Choose a rating or stay flexible", "اختر عدد النجوم أو اتركه مرنًا")} options={localize(ar,[{value:"flexible",en:"Flexible, show me the best fit",ar:"مرن، اقترح الأنسب"},{value:"1-star",en:"1 star",ar:"نجمة واحدة"},{value:"2-star",en:"2 stars",ar:"نجمتان"},{value:"3-star",en:"3 stars",ar:"3 نجوم"},{value:"4-star",en:"4 stars",ar:"4 نجوم"},{value:"5-star",en:"5 stars",ar:"5 نجوم"}])} value={stayRating} onChange={setStayRating} /> : null}
       <MultiChoice legend={path === "study" ? text(ar, "What should your student city plan cover?", "ماذا تريد أن تغطي خطة مدينتك الدراسية؟") : text(ar, "What should your city plan include?", "ماذا تريد أن تتضمن خطة المدينة؟")} name="planIncludes" options={localize(ar, path === "study" ? studyPlanChoices : planChoices)} selected={planIncludes} onChange={setPlanIncludes} />
