@@ -1,0 +1,31 @@
+// Every key in PLACE_URLS must exactly match a nameEn in the flagship data,
+// otherwise the URL silently never applies and the place quietly falls back
+// to a Maps search with nobody noticing.
+
+import { PLACE_URLS } from "../app/journey/place-urls";
+import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
+import { saudiArabia } from "../app/components/planner-data";
+
+const known = new Set<string>();
+for (const c of saudiArabia.cities) {
+  const g = flagshipCityGuideBySlug("saudi-arabia", c.value);
+  if (!g) continue;
+  g.attractions.forEach((a) => known.add(a.nameEn));
+  g.dining.forEach((d) => known.add(d.nameEn));
+  [...g.stay, ...(g.extendedStay ?? [])].forEach((s) => known.add(s.nameEn));
+  [...(g.trustedProviders ?? []), ...(g.extendedProviders ?? [])].forEach((p) => known.add(p.nameEn));
+}
+
+const orphans = Object.keys(PLACE_URLS).filter((k) => !known.has(k));
+
+console.log(`registry keys: ${Object.keys(PLACE_URLS).length}`);
+console.log(`known place names: ${known.size}`);
+if (!orphans.length) {
+  console.log("\nAll registry keys match a real place name.");
+} else {
+  console.log(`\nORPHANED KEYS (${orphans.length}) - these will never link:`);
+  for (const o of orphans) {
+    const near = [...known].filter((k) => k.toLowerCase().includes(o.toLowerCase().slice(0, 8)) || o.toLowerCase().includes(k.toLowerCase().slice(0, 8)));
+    console.log(`  "${o}"${near.length ? `\n     did you mean: ${near.map((n) => `"${n}"`).join(" | ")}` : ""}`);
+  }
+}

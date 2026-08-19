@@ -447,7 +447,12 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // the logs either way. Say why we stopped, every time.
     const guide = flagshipCityGuideBySlug("saudi-arabia", submission.city);
     if (!guide) {
+      // Usually the "Other" city option, or a destination we haven't built
+      // flagship data for yet. There's nothing to draft from, and inventing
+      // one would break every rule this file exists to enforce, so tell the
+      // team it needs planning by hand rather than leaving them to notice.
       console.error(`Draft skipped for ${submission.submissionId}: no flagship city data for "${submission.city}"`);
+      await notifyDraftFailed(submission, new Error("NO_CITY_DATA")).catch(() => {});
       return;
     }
 
@@ -587,16 +592,22 @@ async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknow
   const reference = submission.submissionId.slice(0, 8).toUpperCase();
   const cityLabel = saudiArabia.cities.find((c) => c.value === submission.city)?.en ?? readable(submission.city);
   const status = (error as { status?: number })?.status;
+  const message = String((error as Error)?.message ?? error);
+  const noCityData = message === "NO_CITY_DATA";
   const overloaded = status === 529 || status === 429;
-  const reason = overloaded
-    ? "Anthropic's API was overloaded and did not recover after retries. This is temporary and on their side, nothing is wrong with the request itself."
-    : `The draft step failed with: ${escapeHtml(String((error as Error)?.message ?? error)).slice(0, 300)}`;
+  const reason = noCityData
+    ? `We hold no researched city data for "${escapeHtml(readable(submission.city))}", so there was nothing to build a plan from. This is expected for the "Other" destination option and for cities we haven't researched yet. Nothing went wrong, it simply needs planning by hand.`
+    : overloaded
+      ? "Anthropic's API was overloaded and did not recover after retries. This is temporary and on their side, nothing is wrong with the request itself."
+      : `The draft step failed with: ${escapeHtml(message).slice(0, 300)}`;
 
   await new Resend(resendKey).emails.send({
     from: process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>",
     to: [process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com"],
-    subject: `[AI DRAFT FAILED] ${reference} | ${cityLabel} | plan this one by hand`,
-    html: `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:620px;margin:auto;border:1px solid #dce3de;border-radius:18px;background:#fff;overflow:hidden"><div style="padding:22px 26px;background:#7c2d20;color:#fff"><p style="margin:0 0 6px;color:#f3c9a6;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · AI DRAFT DID NOT GENERATE</p><h1 style="margin:0;font-family:Georgia,serif;font-size:22px;font-weight:600">${escapeHtml(submission.name)}'s ${escapeHtml(cityLabel)} request needs manual planning</h1></div><div style="padding:22px 26px;font-size:14px;line-height:1.7"><p style="margin:0 0 14px">Reference <strong>${escapeHtml(reference)}</strong>. The customer's confirmation was sent normally and they are not affected, but no AI draft or draft proposal was created for this one.</p><p style="margin:0 0 14px;padding:12px 14px;border-radius:9px;background:#fdf6e8;border:1px solid #f0c987">${reason}</p><p style="margin:0;color:#66736f;font-size:13px">The original request details are in the [NEW] email for ${escapeHtml(reference)}. Re-submitting the same form would generate a fresh draft if you want to try again.</p></div></div></div>`,
+    subject: noCityData
+      ? `[NO CITY DATA] ${reference} | ${cityLabel} | plan this one by hand`
+      : `[AI DRAFT FAILED] ${reference} | ${cityLabel} | plan this one by hand`,
+    html: `<div style="margin:0;background:#eef2ee;padding:24px;font-family:Arial,sans-serif;color:#123c35"><div style="max-width:620px;margin:auto;border:1px solid #dce3de;border-radius:18px;background:#fff;overflow:hidden"><div style="padding:22px 26px;background:#7c2d20;color:#fff"><p style="margin:0 0 6px;color:#f3c9a6;font-size:11px;font-weight:800;letter-spacing:2px">MEMORIES · ${noCityData ? "NO RESEARCHED DATA FOR THIS CITY" : "AI DRAFT DID NOT GENERATE"}</p><h1 style="margin:0;font-family:Georgia,serif;font-size:22px;font-weight:600">${escapeHtml(submission.name)}'s ${escapeHtml(cityLabel)} request needs manual planning</h1></div><div style="padding:22px 26px;font-size:14px;line-height:1.7"><p style="margin:0 0 14px">Reference <strong>${escapeHtml(reference)}</strong>. The customer's confirmation was sent normally and they are not affected, but no AI draft or draft proposal was created for this one.</p><p style="margin:0 0 14px;padding:12px 14px;border-radius:9px;background:#fdf6e8;border:1px solid #f0c987">${reason}</p><p style="margin:0;color:#66736f;font-size:13px">The original request details are in the [NEW] email for ${escapeHtml(reference)}. Re-submitting the same form would generate a fresh draft if you want to try again.</p></div></div></div>`,
     text: `AI DRAFT FAILED for ${reference} (${cityLabel}, ${submission.name}). No draft or proposal was created; plan this one by hand. The customer is unaffected. Reason: ${reason}`,
     tags: [{ name: "email_type", value: "draft_failed" }],
   }, { idempotencyKey: `draft-failed/${submission.submissionId}` });

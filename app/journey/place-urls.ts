@@ -53,6 +53,19 @@ export const PLACE_URLS: Record<string, string> = {
   "The Chedi Hegra": "https://www.experiencealula.com/en/hotels-and-stays/the-chedi-hegra",
   "Shaden Resort": "https://www.experiencealula.com/en/hotels-and-stays/shaden-resort",
   "Cloud7 Residence AlUla": "https://www.experiencealula.com/en/hotels-and-stays/cloud7-residence",
+  // ---- Makkah ----
+  // Most of the Haram-adjacent towers are Accor brands, and Accor runs a
+  // dedicated Makkah & Madinah portal which is the right booking surface.
+  "Fairmont Makkah Clock Royal Tower": "https://makkah-madinah.accor.com/hotels/makkah-clock-royal-tower-a-fairmont-hotel/",
+  "Raffles Makkah Palace": "https://makkah-madinah.accor.com/hotels/raffles-makkah-palace/",
+  "Swissôtel Al Maqam Makkah": "https://makkah-madinah.accor.com/hotels/swissotel-al-maqam-makkah/",
+  "Pullman ZamZam Makkah": "https://makkah-madinah.accor.com/hotels/pullman-zamzam-makkah/",
+  "Mövenpick Hajar Tower Makkah": "https://makkah-madinah.accor.com/hotels/movenpick-hotel-residence-makkah-hajar-tower/",
+
+  // ---- Madinah ----
+  "Pullman Zamzam Madinah": "https://makkah-madinah.accor.com/hotels/pullman-zamzam-madinah/",
+  "Anwar Al Madinah Mövenpick": "https://makkah-madinah.accor.com/hotels/anwar-al-madinah-movenpick-hotel/",
+  "InterContinental Dar Al Iman Madinah": "https://www.ihg.com/intercontinental/hotels/us/en/madinah/medha/hoteldetail",
 };
 
 export function officialUrlFor(placeName: string): string | null {

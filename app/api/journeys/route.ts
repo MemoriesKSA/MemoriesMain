@@ -250,7 +250,11 @@ export async function POST(request: Request) {
   // meant an identical Riyadh or AlUla trip silently got no draft just
   // because of which card was picked first. If we hold real grounded facts
   // for the city, the draft is worth generating however they arrived.
-  if (flagshipCityGuideBySlug("saudi-arabia", submission.city)) {
+  // Fire for any Saudi destination, including ones we hold no flagship data
+  // for (the "Other" city option). Those can't produce a draft, but running
+  // the generator anyway means it tells the team that plainly instead of the
+  // request vanishing into silence, which is what used to happen.
+  if (submission.country === "saudi-arabia" || flagshipCityGuideBySlug("saudi-arabia", submission.city)) {
     after(() => generateDraftGuide({
       submissionId: submission.submissionId,
       city: submission.city,
