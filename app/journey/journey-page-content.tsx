@@ -6,6 +6,7 @@ import { placeNamesForCity, officialUrlMapForCity } from "./place-links";
 import { applyPaywall, shouldPaywall } from "./paywall";
 import type { PlanStop } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
+import { RevisionRequest } from "./revision-request";
 
 export async function JourneyPageContent({ token, locale }: { token: string; locale: JourneyLocale }) {
   const t = journeyStrings[locale];
@@ -85,6 +86,10 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             stopCount={stopCount}
             locale={locale}
           />
+        )}
+
+        {!locked && proposal.revision_used !== true && (
+          <RevisionRequest token={token} locale={locale} />
         )}
 
         {ar.visibleText && (
