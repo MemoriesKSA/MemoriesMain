@@ -56,6 +56,9 @@ const studyPlanChoices: LocalChoice[] = [
   { value: "settling-in", en: "Settling-in essentials", ar: "أساسيات الاستقرار", detailEn: "SIM card, bank account, registration and paperwork", detailAr: "شريحة الاتصال والحساب البنكي والتسجيل والأوراق" },
   { value: "arabic-community", en: "Arab & Muslim student community", ar: "مجتمع الطلاب العرب والمسلمين", detailEn: "Finding people from home once you arrive", detailAr: "التعرف على أبناء بلدك بعد الوصول" },
 ];
+// One trip, up to three stops. See docs/paid-plans-spec.md.
+const MAX_STOPS = 3;
+const PLAN_FEES: Record<number, number> = { 1: 99, 2: 149, 3: 199 };
 const STUDY_PLAN_DEFAULTS = ["student-areas", "campus", "settling-in"];
 const deliveryChoices: LocalChoice[] = [
   { value: "email", en: "Email", ar: "البريد الإلكتروني", detailEn: "Receive the complete journey brief in your inbox", detailAr: "استلم تصور الرحلة الكامل في بريدك" },
@@ -91,6 +94,10 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   // they could be flying from anywhere in the world.
   const [departureCity, setDepartureCity] = useState("");
   const [flightTiming, setFlightTiming] = useState("");
+  // Extra stops beyond the primary city, so one trip can visit up to three
+  // places. The primary city stays in `city` on purpose: everything
+  // downstream already reads it, and stop one is simply that.
+  const [extraStops, setExtraStops] = useState<string[]>([]);
   // Entry to Makkah is restricted to Muslims under Saudi law and is checked
   // on the approaches to the city, so a non-Muslim customer's trip cannot go
   // ahead no matter how well it's planned. Ask before anything else is filled
@@ -115,8 +122,21 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
   const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
-  const isMakkah = city === "makkah";
+  // Stop one is the primary city; extras follow it in travel order.
+  const stops = [city, ...extraStops].filter(Boolean);
+  // Multi-stop only where we hold researched city data, which is Saudi
+  // Arabia. Elsewhere there is no plan to sell, so no reason to offer it.
+  const multiStopAvailable = country === saudiArabia.value;
+  const canAddStop = multiStopAvailable && !!city && stops.length < MAX_STOPS;
+  // Any stop being Makkah triggers the eligibility question, not just the
+  // first: adding it as stop two carries exactly the same entry restriction.
+  const isMakkah = stops.includes("makkah");
   const makkahBlocked = isMakkah && makkahEligible === "no";
+  // Riyadh then Riyadh is just a longer Riyadh stay, so it is rejected.
+  // Riyadh, Jeddah, Riyadh is a real shape (fly in, side trip, fly out) and
+  // is allowed, which is why only *consecutive* repeats are blocked.
+  const repeatedStopIndex = stops.findIndex((slug, i) => i > 0 && slug === stops[i - 1]);
+  const planFee = PLAN_FEES[Math.min(stops.length, MAX_STOPS)] ?? PLAN_FEES[1];
 
   function choosePath(next: PlannerPath) {
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
@@ -126,7 +146,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // otherwise submit values the new path never showed. Reset to that path's
     // own defaults instead of carrying orphaned selections across.
     setPlanIncludes(next === "study" ? STUDY_PLAN_DEFAULTS : ["attractions", "restaurants"]);
-    setDepartureCity(""); setFlightTiming("");
+    setDepartureCity(""); setFlightTiming(""); setExtraStops([]);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -144,8 +164,16 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
+    // A repeated consecutive stop is a hard stop, not a missing field: there
+    // is nothing to fill in, the itinerary itself doesn't make sense.
+    if (repeatedStopIndex > 0) {
+      setMissingSections([1]);
+      setFormError(text(ar, "You've chosen the same destination twice in a row. Extend your dates to stay longer in one place, or pick a different next stop.", "اخترت الوجهة نفسها مرتين متتاليتين. مدّد التواريخ للبقاء مدة أطول في مكان واحد، أو اختر وجهة تالية مختلفة."));
+      requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
+      return;
+    }
     const missing = [
-      !country || !city || !purpose || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
+      !country || !city || !purpose || extraStops.some((slug) => !slug) || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
       // Asking for flights without saying where from leaves the team unable
       // to look anything up, so it counts as an incomplete step 3.
       transport.includes("flights") && !departureCity.trim() ? 3 : 0,
@@ -204,11 +232,45 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(1)} data-step="1"><div className="plannerStep"><span>01</span><div><strong>{text(ar, "Choose the journey", "اختر الرحلة")}</strong><small>{text(ar, "Where do you want to go, and why?", "إلى أين تريد الذهاب، ولماذا؟")}</small>{requiredWarning(1)}</div></div>
       <div className="pathSelector" role="radiogroup" aria-label={text(ar, "Journey type", "نوع الرحلة")}>{pathOptions.map((option) => { const Icon = pathIcons[option.path]; return <button className={path === option.path ? "pathOption selected" : "pathOption"} type="button" role="radio" aria-checked={path === option.path} onClick={() => choosePath(option.path)} key={option.path}><Icon aria-hidden="true" /><span><strong>{ar ? option.ar : option.en}</strong><small>{ar ? option.descriptionAr : option.descriptionEn}</small></span></button>; })}<input type="hidden" name="journeyType" value={path} /></div>
       <div className="plannerFieldGrid destinationFields" key={path}>
-        <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); setMakkahEligible(""); }} />
+        <ElasticSelect label={text(ar, "Country", "الدولة")} name="country" required searchable searchPlaceholder={text(ar, "Search countries…", "ابحث عن دولة…")} emptyText={text(ar, "No matching countries", "لا توجد دول مطابقة")} placeholder={text(ar, path === "study" ? "Where would you like to study?" : "Choose or search a country", path === "study" ? "أين ترغب في الدراسة؟" : "اختر أو ابحث عن دولة")} options={localizedOptions(ar, countries)} value={country} onChange={(value) => { setCountry(value); setCity(""); setMakkahEligible(""); setExtraStops([]); }} />
         <ElasticSelect label={text(ar, path === "study" ? "Study city" : "City or destination", path === "study" ? "مدينة الدراسة" : "المدينة أو الوجهة")} name="city" required searchable disabled={!selectedCountry} searchPlaceholder={text(ar, "Search cities…", "ابحث عن مدينة…")} emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")} placeholder={text(ar, selectedCountry ? "Choose or search a city" : "Choose a country first", selectedCountry ? "اختر أو ابحث عن مدينة" : "اختر الدولة أولًا")} options={localizedOptions(ar, selectedCountry?.cities ?? [])} value={city} onChange={(value) => { setCity(value); setMakkahEligible(""); }} />
         <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
+      {multiStopAvailable ? <div className="stopsBlock">
+        {extraStops.map((slug, index) => (
+          <div className="extraStop" key={index}>
+            <ElasticSelect
+              label={text(ar, `Stop ${index + 2}`, `المحطة ${index + 2}`)}
+              name={`extraStop${index}`}
+              searchable
+              searchPlaceholder={text(ar, "Search cities…", "ابحث عن مدينة…")}
+              emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")}
+              placeholder={text(ar, "Choose the next destination", "اختر الوجهة التالية")}
+              options={localizedOptions(ar, selectedCountry?.cities ?? [])}
+              value={slug}
+              onChange={(value) => { setExtraStops(extraStops.map((s, i) => (i === index ? value : s))); setMakkahEligible(""); }}
+            />
+            <button type="button" className="removeStop" onClick={() => { setExtraStops(extraStops.filter((_, i) => i !== index)); setMakkahEligible(""); }}>
+              {text(ar, "Remove", "إزالة")}
+            </button>
+          </div>
+        ))}
+        {repeatedStopIndex > 0 ? <p className="stopWarning" role="alert">{text(ar,
+          "You've picked the same destination twice in a row. Staying longer in one place is better done by extending your dates, but you can return to a city after visiting another one.",
+          "اخترت الوجهة نفسها مرتين متتاليتين. إن أردت البقاء مدة أطول في مكان واحد فالأفضل تمديد التواريخ، لكن يمكنك العودة إلى مدينة بعد زيارة مدينة أخرى.")}</p> : null}
+        <div className="stopsFooter">
+          {canAddStop ? <button type="button" className="addStop" onClick={() => setExtraStops([...extraStops, ""])}>
+            + {text(ar, "Add another destination", "أضف وجهة أخرى")}
+          </button> : null}
+          {stops.length ? <p className="planFee">{text(ar,
+            `${stops.length} ${stops.length === 1 ? "destination" : "destinations"} · plan fee SAR ${planFee}`,
+            `${stops.length} ${stops.length === 1 ? "وجهة" : "وجهات"} · رسوم الخطة ${planFee} ريال`)}
+            <small>{text(ar, "This is our planning fee, separate from your travel budget below.", "هذه رسوم التخطيط لدينا، منفصلة عن ميزانية سفرك أدناه.")}</small>
+          </p> : null}
+        </div>
+        <input type="hidden" name="stops" value={stops.join(",")} />
+      </div> : null}
       {isMakkah ? <div className="makkahGate">
         <p className="makkahNote">{text(ar,
           "One thing to check first: entry to Makkah is reserved for Muslim visitors under Saudi law, and this is verified on the roads into the city. We ask now so we only plan a journey that can actually go ahead.",

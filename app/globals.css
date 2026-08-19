@@ -519,3 +519,20 @@ html[dir="rtl"] .exploreCarousel .carouselButtons svg{transform:rotate(180deg)}
 .plannerSubmit:disabled{opacity:.35;filter:grayscale(1);cursor:not-allowed}
 html[data-theme="dark"] .makkahNote{background:rgba(231,185,79,.09)}
 html[data-theme="dark"] .makkahBlocked{background:rgba(255,255,255,.03)}
+
+/* Multi-stop destinations (see docs/paid-plans-spec.md). One trip can visit
+   up to three places, so the extra stops sit directly under the primary
+   city and read as a continuation of it rather than a separate section. */
+.stopsBlock{display:grid;gap:12px;margin-top:14px}
+.extraStop{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;animation:study-reveal .42s cubic-bezier(.22,1,.36,1) both}
+.removeStop{height:47px;padding:0 15px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--muted);font:inherit;font-size:.74rem;font-weight:700;cursor:pointer;transition:border-color .25s ease,color .25s ease}
+.removeStop:hover{border-color:#c0705f;color:#a8523f}
+.stopWarning{margin:0;padding:11px 14px;border:1px solid #f0c987;border-radius:10px;background:#fdf6e8;font-size:.83rem;line-height:1.6}
+.stopsFooter{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.addStop{padding:11px 16px;border:1px dashed var(--gold);border-radius:10px;background:rgba(231,185,79,.09);color:var(--ink);font:inherit;font-size:.8rem;font-weight:800;cursor:pointer;transition:background .25s ease,transform .25s cubic-bezier(.22,1,.36,1)}
+.addStop:hover{background:rgba(231,185,79,.18);transform:translateY(-1px)}
+.planFee{margin:0;font-size:.82rem;font-weight:800;color:var(--ink);text-align:end}
+.planFee small{display:block;margin-top:3px;font-size:.72rem;font-weight:600;color:var(--muted)}
+html[data-theme="dark"] .stopWarning{background:rgba(231,185,79,.09)}
+html[data-theme="dark"] .removeStop{background:#17332d;color:#b9cbc6}
+@media(max-width:640px){.extraStop{grid-template-columns:1fr}.removeStop{height:42px}.stopsFooter{justify-content:flex-start}.planFee{text-align:start}}
