@@ -83,3 +83,29 @@ export async function deleteProposal(id: string) {
 
   redirect("/internal/journeys?deleted=1");
 }
+
+// Manual unlock, for the cases a payment provider will never cover: a
+// customer who paid by transfer or in person, a plan comped deliberately, a
+// webhook that fired but didn't land, or simply testing before payment
+// exists at all.
+//
+// It records payment_ref as "manual" rather than leaving it empty, so an
+// unlocked-by-hand plan stays distinguishable from one a customer actually
+// paid for. Without that the revenue figures quietly become fiction.
+export async function setPlanPaid(id: string, paid: boolean) {
+  await requireReviewer();
+  const supabase = createSupabaseAdminClient();
+
+  // Relocking leaves payment_ref untouched on purpose. If a customer really
+  // did pay, that reference is the only record tying this plan to the charge,
+  // and it should survive someone relocking the plan to redo a revision or
+  // after a refund.
+  const changes = paid
+    ? { paid: true, paid_at: new Date().toISOString(), payment_ref: "manual" }
+    : { paid: false, paid_at: null };
+
+  const { error } = await supabase.from("proposals").update(changes).eq("id", id);
+
+  if (error) redirect(`/internal/journeys/${id}?error=${encodeURIComponent(error.message)}`);
+  redirect(`/internal/journeys/${id}?${paid ? "unlocked=1" : "relocked=1"}`);
+}

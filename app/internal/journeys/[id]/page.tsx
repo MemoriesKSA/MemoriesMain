@@ -4,7 +4,7 @@ import { createSupabaseAdminClient } from "../../../supabase-admin";
 import { getReviewerLocale } from "../../get-locale";
 import { reviewerT } from "../../i18n";
 import { ProposalForm } from "../proposal-form";
-import { updateProposal, publishProposal } from "../actions";
+import { updateProposal, publishProposal, setPlanPaid } from "../actions";
 
 export default async function EditProposalPage({
   params,
@@ -34,6 +34,9 @@ export default async function EditProposalPage({
       publishAction={publishProposal.bind(null, id)}
       submitLabel={t.saveChanges}
       status={proposal.status}
+      paid={proposal.paid === true}
+      paidRef={proposal.payment_ref ?? null}
+      unlockAction={setPlanPaid.bind(null, id)}
       publicUrl={`${siteUrl}/journey/${proposal.public_token}`}
       error={search.error}
       justSaved={search.saved === "1"}

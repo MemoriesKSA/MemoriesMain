@@ -89,6 +89,9 @@ export function ProposalForm({
   justSaved,
   justPublished,
   locale,
+  paid,
+  paidRef,
+  unlockAction,
 }: {
   action: ProposalAction;
   defaultValues?: ProposalFormValues;
@@ -97,6 +100,9 @@ export function ProposalForm({
   publishAction?: ProposalAction;
   status?: string;
   error?: string;
+  paid?: boolean;
+  paidRef?: string | null;
+  unlockAction?: (paid: boolean) => Promise<void>;
   justSaved?: boolean;
   justPublished?: boolean;
   locale: ReviewerLocale;
@@ -154,6 +160,48 @@ export function ProposalForm({
         {justSaved && <Banner tone="success" text={t.changesSaved} />}
         {justPublished && <Banner tone="success" text={t.publishedBanner} />}
         {error && <Banner tone="error" text={decodeURIComponent(error)} />}
+
+        {status === "published" && unlockAction ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 12,
+              background: paid ? "rgba(47,122,92,.10)" : "rgba(106,116,111,.10)",
+              border: `1px solid ${paid ? "#8fbfa8" : "var(--line)"}`,
+              borderRadius: 10,
+              padding: "12px 16px",
+              marginBottom: 14,
+              fontSize: 13,
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>
+              {paid
+                ? paidRef === "manual"
+                  ? "Unlocked manually — customer sees the full plan"
+                  : "Paid — customer sees the full plan"
+                : "Locked — customer sees the overview and day one of each stop"}
+            </span>
+            <form action={unlockAction.bind(null, !paid)} style={{ marginInlineStart: "auto" }}>
+              <button
+                type="submit"
+                style={{
+                  padding: "8px 14px",
+                  border: "1px solid var(--line)",
+                  borderRadius: 8,
+                  background: "var(--paper)",
+                  color: "var(--ink)",
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {paid ? "Lock again" : "Unlock for this customer"}
+              </button>
+            </form>
+          </div>
+        ) : null}
 
         {status === "published" && publicUrl ? (
           <div
