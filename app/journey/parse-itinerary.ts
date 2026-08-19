@@ -11,7 +11,12 @@ export type ItinerarySection =
   | { kind: "decisions"; title: string; lines: string[] }
   | { kind: "notes"; title: string; lines: string[] };
 
-const DAY_HEADING = /^day\s*\d+\b/i;
+// Matches the English "Day 1" and the Arabic "اليوم 1" / "اليوم ١". The
+// Arabic draft is a customer-facing document, so it must not be forced to
+// carry English headers just to keep this regex simple, the regex learns
+// Arabic instead. Arabic-Indic digits (٠-٩) are accepted alongside Western
+// ones in case the translation localises the numerals too.
+const DAY_HEADING = /^(?:day|اليوم)\s*[\d٠-٩]+/i;
 const LEADING_BULLET = /^[-*•–—]\s+/;
 const LEADING_MARKDOWN_HEADING = /^#{1,6}\s+/;
 
