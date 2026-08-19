@@ -15,10 +15,17 @@ import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city
 import { saudiArabia } from "./components/planner-data";
 import { createSupabaseAdminClient } from "./supabase-admin";
 import { splitDraftForStorage } from "./journey/parse-itinerary";
+import { parseStopMarkers, stripStopMarkers } from "./journey/plan-stops";
 
 export type DraftGuideSubmission = {
   submissionId: string;
   city: string;
+  // Ordered stops for this one trip, stop one being `city`. A single-stop
+  // request may leave this empty and behaves exactly as it always did.
+  stops: string[];
+  // Purpose per stop, same order as `stops`. A trip can be Umrah in Makkah
+  // and leisure in Riyadh, so one trip-wide purpose isn't enough.
+  stopPurposes: string[];
   purpose: string;
   travellers: string;
   travellerCount: string;
@@ -124,6 +131,13 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
 - The day-by-day calendar given to you in the user message states the real, correct weekday for every date in this trip, computed exactly, not a guess. Use those exact weekdays in your Day headers and anywhere else you mention a day of the week (e.g. Friday prayer timing, weekend closures). Never compute or second-guess a weekday yourself, and never contradict the calendar elsewhere in the draft, e.g. don't write "if this falls on a Friday" about a date the calendar already states is a Saturday.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
+- Some trips visit more than one city. When the request lists several stops, this is ONE trip in that order, not several plans stapled together, and it must read that way. Number the days sequentially straight through, so a four-night Riyadh stop followed by Jeddah runs Day 1 to Day 4 in Riyadh and continues at Day 5 in Jeddah, never restarting at Day 1. Split the customer's overall dates between the stops sensibly given what there is to do in each, and say plainly which days belong to which city.
+- The travel between stops is part of what they are paying for, so plan it as its own moment in the day it happens: name the realistic way to get from one to the next from the grounded facts and research notes (the Haramain High-Speed Railway between Jeddah, Makkah and Madinah, a domestic flight elsewhere), say roughly how long it takes if the notes give that, and treat it as taking up real time rather than pretending they teleport. Never invent a schedule or a fare for it.
+- Each stop carries its own purpose, given in the request summary. Honour them separately: an Umrah stop in Makkah and a leisure stop in Riyadh on the same trip should feel like two different kinds of day, not one style applied to both.
+- Only use each stop's own grounded facts for that stop's days. The facts are labelled by city, and a Jeddah restaurant must never appear in a Riyadh day.
+- After the "For the planner" section, and only when the trip has more than one stop, end with a single machine-readable line in exactly this form, nothing else on it:
+  STOPS: Riyadh=1, Jeddah=5
+  Each entry is a stop's city name exactly as you used it, then "=", then the day number that stop begins on. It is read by our tooling, not by a person, so the format matters more than how it reads.
 - Get religious terminology exactly right, most of our customers are Muslim and a loose word here reads as not knowing the subject. The Friday midday congregational prayer is Jumu'ah, and on a Friday it replaces the ordinary Dhuhr prayer rather than sitting alongside it. So write "Friday prayer (Jumu'ah)" when you mean it, never "Friday midday prayer" or "Dhuhr on Friday", which is what someone unfamiliar with it would write and which translates badly into Arabic. The same care applies to any other religious term you use.
 - Weigh the stated budget, traveller count, trip length and the customer's preferred accommodation rating (if given) when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day. If the customer's preferred rating and the budget point in different directions (e.g. they asked for 5-star but the budget only supports budget-tier), say so plainly as something needing the customer's input, don't silently pick one over the other.
 - When the budget is what rules out a more expensive option, frame it as an upgrade they can choose, never as a limit they have hit. Lead with what their budget comfortably covers, then offer the step up as a real option with a rough figure attached so they can actually decide, e.g. "your budget covers this trip comfortably at [hotel]; if you'd rather be on the water at a five-star, that's roughly [X] more and we'll happily reprice it". Never list the specific expensive places they are not getting as things that would "consume" or "eat" their budget, that tells a paying customer they can't afford something and gives them nothing to act on.
@@ -149,14 +163,21 @@ Format, follow this closely, it should read as a warm, confident plan they can a
 - End with a short "For the planner" section, plain bullet lines, internal team notes only, flagging anything uncertain, missing, or worth double-checking before this goes anywhere near the customer. Anything hedged earlier in the draft stays hedged here too, per the rule above.`;
 }
 
-function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string) {
+function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string, stopLabels: string[] = []) {
+  // Spelled out as an ordered list with a purpose each, so the drafting pass
+  // never has to infer the travel order or apply one purpose to every city.
+  const stopsSummary = stopLabels.length > 1
+    ? `\nThis is ONE trip visiting ${stopLabels.length} stops, in this order:\n` +
+      stopLabels.map((label, i) => `  Stop ${i + 1}: ${label}${submission.stopPurposes?.[i] ? ` — purpose: ${readable(submission.stopPurposes[i])}` : ""}`).join("\n") +
+      `\nNumber the days straight through the whole trip and plan the travel between stops.`
+    : "";
   const researchSection = operationalResearch
     ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These may also include review scores or licensing signals for restaurants/rental cars, always keep whatever hedge the note itself uses (an attributed claim like "their website states..." stays attributed, it never becomes a flat "licensed" statement). If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
     : "";
   const calendar = dayByDayCalendar(submission.fromDate, submission.toDate);
   return `Customer request summary:
 Name: ${submission.name}
-Destination: ${cityLabel}, Saudi Arabia
+Destination: ${cityLabel}, Saudi Arabia${stopsSummary}
 Trip dates: ${submission.fromDate} to ${submission.toDate} (${tripLength(submission.fromDate, submission.toDate)})
 ${calendar ? `Day-by-day calendar (correct, computed weekdays, use these exactly): ${calendar}\n` : ""}Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}
 Purpose / style: ${readable(submission.purpose)}
@@ -248,7 +269,7 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
   }
 }
 
-async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string): Promise<string> {
+async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string, stopLabels: string[] = []): Promise<string> {
   const response = await anthropic.messages.create({
     model: "claude-opus-5",
     max_tokens: 6000,
@@ -259,7 +280,7 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     // speed/quality balance for the one drafting pass that remains).
     output_config: { effort: "medium" },
     system: cachedSystem(buildSystemPrompt()),
-    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch) }],
+    messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
   });
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
@@ -437,6 +458,7 @@ async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClie
   }
 }
 
+
 // Fire-and-forget: call from app/api/journeys/route.ts inside after(), never
 // awaited by the customer-facing response. Swallows its own errors, a
 // failed draft should never surface anywhere or block anything.
@@ -445,8 +467,15 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // These early returns used to be completely silent, which made a missing
     // key look identical to "the AI draft feature is broken", with nothing in
     // the logs either way. Say why we stopped, every time.
-    const guide = flagshipCityGuideBySlug("saudi-arabia", submission.city);
-    if (!guide) {
+    // Stop one is `city`; `stops` carries the full ordered trip when the
+    // customer added destinations. Deduplicated only where consecutive,
+    // matching the planner's own rule.
+    const stopSlugs = (submission.stops?.length ? submission.stops : [submission.city]).filter(Boolean);
+    const resolved = stopSlugs
+      .map((slug) => ({ slug, guide: flagshipCityGuideBySlug("saudi-arabia", slug), option: saudiArabia.cities.find((c) => c.value === slug) }))
+      .filter((s): s is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>>; option: typeof saudiArabia.cities[number] | undefined } => !!s.guide);
+    const guide = resolved[0]?.guide;
+    if (!guide || !resolved.length) {
       // Usually the "Other" city option, or a destination we haven't built
       // flagship data for yet. There's nothing to draft from, and inventing
       // one would break every rule this file exists to enforce, so tell the
@@ -463,9 +492,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       return;
     }
 
-    const cityOption = saudiArabia.cities.find((c) => c.value === submission.city);
-    const cityLabelEn = cityOption?.en ?? readable(submission.city);
-    const cityLabelAr = cityOption?.ar ?? cityLabelEn;
+    const stopLabelsEn = resolved.map((s) => s.option?.en ?? readable(s.slug));
+    const stopLabelsAr = resolved.map((s) => s.option?.ar ?? s.option?.en ?? readable(s.slug));
+    const multiStop = resolved.length > 1;
+    // Used for the email subject, the proposal row and anywhere a single
+    // human-readable destination is wanted.
+    const cityLabelEn = stopLabelsEn.join(" → ");
+    const cityLabelAr = stopLabelsAr.join(" ← ");
     const reference = submission.submissionId.slice(0, 8).toUpperCase();
 
     // The API genuinely returns 529 "Overloaded" from time to time, and it
@@ -475,8 +508,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // harder is free, and the whole thing runs in the background where
     // taking an extra minute costs nobody anything.
     const anthropic = new Anthropic({ apiKey: anthropicKey, maxRetries: 6 });
-    const groundedFactsEn = serializeGuideForDraft(guide, false);
-    const groundedFactsAr = serializeGuideForDraft(guide, true);
+    // Each stop's facts are labelled with its city so the drafting pass can
+    // never blend a Jeddah restaurant into a Riyadh day.
+    const groundedFactsEn = resolved.map((s, i) => `--- STOP ${i + 1}: ${stopLabelsEn[i]} ---\n${serializeGuideForDraft(s.guide, false)}`).join("\n\n");
+    const groundedFactsAr = resolved.map((s, i) => `--- المحطة ${i + 1}: ${stopLabelsAr[i]} ---\n${serializeGuideForDraft(s.guide, true)}`).join("\n\n");
 
     const supabaseReady = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
     const supabase = supabaseReady ? createSupabaseAdminClient() : null;
@@ -485,22 +520,28 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // translation only exists once English is final, self-check only
     // means something once both are final. Parallelizing English/Arabic
     // (the old approach) was exactly what let them disagree.
-    const cached = supabase ? await getCachedResearch(supabase, submission.city) : null;
-    let operationalResearch = cached && !cached.stale ? cached.notes : "";
-    if (!operationalResearch) {
-      const freshResearch = await researchOperationalFacts(anthropic, guide, submission, cityLabelEn);
-      if (freshResearch) {
-        operationalResearch = freshResearch;
-        if (supabase) await cacheResearch(supabase, submission.city, freshResearch);
-      } else if (cached) {
-        // Live research failed (API error, out of credits, timeout) and the
-        // cached copy is past its TTL. Use it anyway: slightly-dated real
-        // findings still beat drafting with none, which is what used to
-        // happen here, and the reviewer verifies hours/pricing regardless.
-        operationalResearch = cached.notes;
+    // One research blob per stop, each read from the per-city cache. Cached
+    // cities cost nothing here, so adding stops is cheap: the extra spend on
+    // a multi-stop trip is the longer draft, not the research.
+    const researchPerStop = await Promise.all(resolved.map(async (stop, i) => {
+      const cached = supabase ? await getCachedResearch(supabase, stop.slug) : null;
+      if (cached && !cached.stale) return { label: stopLabelsEn[i], notes: cached.notes };
+      const fresh = await researchOperationalFacts(anthropic, stop.guide, submission, stopLabelsEn[i]);
+      if (fresh) {
+        if (supabase) await cacheResearch(supabase, stop.slug, fresh);
+        return { label: stopLabelsEn[i], notes: fresh };
       }
-    }
-    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch);
+      // Live research failed (API error, out of credits, timeout) and the
+      // cached copy is past its TTL. Use it anyway: slightly-dated real
+      // findings still beat drafting with none, and the reviewer verifies
+      // hours and pricing regardless.
+      return { label: stopLabelsEn[i], notes: cached?.notes ?? "" };
+    }));
+    const operationalResearch = researchPerStop
+      .filter((r) => r.notes)
+      .map((r) => (multiStop ? `--- RESEARCH FOR ${r.label} ---\n${r.notes}` : r.notes))
+      .join("\n\n");
+    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn);
     if (!englishDraft) return;
     const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr);
     const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch);
@@ -523,6 +564,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         // internal half goes into notes instead, alongside the self-check.
         const englishSplit = splitDraftForStorage(englishDraft);
         const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+        // Read the machine stop line before anything strips it, so the customer's
+        // page knows which day each stop begins on and can show the first day
+        // of every stop for free.
+        const planStops = parseStopMarkers(englishSplit.internalOnly);
         const internalNotesParts = [
           selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
           englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
@@ -543,6 +588,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             from_date: submission.fromDate || null,
             to_date: submission.toDate || null,
             currency: submission.currency || "SAR",
+            stops: planStops ?? (resolved.length > 1 ? resolved.map((_stop, i) => ({ label: stopLabelsEn[i], firstDay: 0 })) : null),
             itinerary_en: englishSplit.customerFacing || englishDraft,
             itinerary_ar: arabicSplit?.customerFacing || arabicDraft || null,
             notes,

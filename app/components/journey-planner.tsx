@@ -97,7 +97,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   // Extra stops beyond the primary city, so one trip can visit up to three
   // places. The primary city stays in `city` on purpose: everything
   // downstream already reads it, and stop one is simply that.
-  const [extraStops, setExtraStops] = useState<string[]>([]);
+  const [extraStops, setExtraStops] = useState<{ city: string; purpose: string }[]>([]);
   // Entry to Makkah is restricted to Muslims under Saudi law and is checked
   // on the approaches to the city, so a non-Muslim customer's trip cannot go
   // ahead no matter how well it's planned. Ask before anything else is filled
@@ -123,7 +123,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
   // Stop one is the primary city; extras follow it in travel order.
-  const stops = [city, ...extraStops].filter(Boolean);
+  const stops = [city, ...extraStops.map((s) => s.city)].filter(Boolean);
   // Multi-stop only where we hold researched city data, which is Saudi
   // Arabia. Elsewhere there is no plan to sell, so no reason to offer it.
   const multiStopAvailable = country === saudiArabia.value;
@@ -173,7 +173,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       return;
     }
     const missing = [
-      !country || !city || !purpose || extraStops.some((slug) => !slug) || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
+      !country || !city || !purpose || extraStops.some((s) => !s.city || !s.purpose) || (isMakkah && !makkahEligible) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
       // Asking for flights without saying where from leaves the team unable
       // to look anything up, so it counts as an incomplete step 3.
       transport.includes("flights") && !departureCity.trim() ? 3 : 0,
@@ -238,7 +238,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
       {multiStopAvailable ? <div className="stopsBlock">
-        {extraStops.map((slug, index) => (
+        {extraStops.map((stop, index) => (
           <div className="extraStop" key={index}>
             <ElasticSelect
               label={text(ar, `Stop ${index + 2}`, `المحطة ${index + 2}`)}
@@ -248,8 +248,19 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
               emptyText={text(ar, "No matching cities", "لا توجد مدن مطابقة")}
               placeholder={text(ar, "Choose the next destination", "اختر الوجهة التالية")}
               options={localizedOptions(ar, selectedCountry?.cities ?? [])}
-              value={slug}
-              onChange={(value) => { setExtraStops(extraStops.map((s, i) => (i === index ? value : s))); setMakkahEligible(""); }}
+              value={stop.city}
+              onChange={(value) => { setExtraStops(extraStops.map((s, i) => (i === index ? { ...s, city: value } : s))); setMakkahEligible(""); }}
+            />
+            {/* Each stop earns its own purpose: a trip can be Umrah in
+                Makkah and leisure in Riyadh, and one trip-wide purpose
+                cannot express that. */}
+            <ElasticSelect
+              label={text(ar, "Purpose", "الغرض")}
+              name={`extraStopPurpose${index}`}
+              placeholder={text(ar, "Why this stop?", "لماذا هذه المحطة؟")}
+              options={localize(ar, saudiPurposes)}
+              value={stop.purpose}
+              onChange={(value) => setExtraStops(extraStops.map((s, i) => (i === index ? { ...s, purpose: value } : s)))}
             />
             <button type="button" className="removeStop" onClick={() => { setExtraStops(extraStops.filter((_, i) => i !== index)); setMakkahEligible(""); }}>
               {text(ar, "Remove", "إزالة")}
@@ -260,7 +271,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
           "You've picked the same destination twice in a row. Staying longer in one place is better done by extending your dates, but you can return to a city after visiting another one.",
           "اخترت الوجهة نفسها مرتين متتاليتين. إن أردت البقاء مدة أطول في مكان واحد فالأفضل تمديد التواريخ، لكن يمكنك العودة إلى مدينة بعد زيارة مدينة أخرى.")}</p> : null}
         <div className="stopsFooter">
-          {canAddStop ? <button type="button" className="addStop" onClick={() => setExtraStops([...extraStops, ""])}>
+          {canAddStop ? <button type="button" className="addStop" onClick={() => setExtraStops([...extraStops, { city: "", purpose: "" }])}>
             + {text(ar, "Add another destination", "أضف وجهة أخرى")}
           </button> : null}
           {stops.length ? <p className="planFee">{text(ar,
@@ -270,6 +281,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
           </p> : null}
         </div>
         <input type="hidden" name="stops" value={stops.join(",")} />
+        <input type="hidden" name="stopPurposes" value={[purpose, ...extraStops.map((s) => s.purpose)].join(",")} />
       </div> : null}
       {isMakkah ? <div className="makkahGate">
         <p className="makkahNote">{text(ar,
