@@ -26,7 +26,7 @@ export function CountryExplorer({ country, locale = "en" }: { country: CountryGu
     </section>
     <section className="container citySelector">
       <div className="citySelectorHeading">
-        <div><p className="kicker">{ar ? "اختر مدينتك" : "Choose your place"}</p><h2>{ar ? <>إلى أين ترغب<br /><em>أن تذهب؟</em></> : <>Where do you want<br /><em>to go?</em></>}</h2></div>
+        <div><p className="kicker">{ar ? "اختر مدينتك" : "Choose your place"}</p><h2>{ar ? <>وين ودك<br /><em>تروح؟</em></> : <>Where do you want<br /><em>to go?</em></>}</h2></div>
         <p>{ar ? `كل مدينة في ${country.nameAr} تحمل إيقاعًا مختلفًا. اختر المدينة التي تشبه حلمك، ثم اكتشف تفاصيلها قبل أن تبدأ خطتك.` : `Every place in ${country.nameEn} has a different rhythm. Choose the one that feels like your dream, then discover it before beginning your plan.`}</p>
       </div>
       <div className="cityGallery">

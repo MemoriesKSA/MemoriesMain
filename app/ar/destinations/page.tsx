@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "الوجهات", description: "اس�
 
 export default function DestinationsPageAr() {
   return <main className="innerPage destinationsPage">
-    <section className="pageHero destinationChoiceHero container"><p className="kicker">سؤال واحد قبل أن تبدأ الرحلة</p><h1>إلى أين ترغب<br /><em>أن تذهب؟</em></h1><p>اختر الدولة التي تدور في بالك. سنعرّفك على مدنها وروحها والاحتمالات التي تنتظرك داخلها.</p></section>
+    <section className="pageHero destinationChoiceHero container"><p className="kicker">سؤال واحد قبل أن تبدأ الرحلة</p><h1>وين ودك<br /><em>تروح؟</em></h1><p>اختر الدولة التي تدور في بالك. سنعرّفك على مدنها وروحها والاحتمالات التي تنتظرك داخلها.</p></section>
     <section className="container destinationCatalogue"><CountryCatalogue locale="ar" countries={countryGuides} /></section>
   </main>;
 }
