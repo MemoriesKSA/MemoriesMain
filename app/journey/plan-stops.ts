@@ -54,8 +54,16 @@ export function stripStopMarkers(text: string): string {
 /**
  * Which day numbers are free to read before paying: the first day of every
  * stop. With no markers this is just day one.
+ *
+ * `totalDays` closes a hole that opened when pricing moved to per night. A
+ * one-night trip is two days long, so handing over day one hands over most
+ * of the product for nothing. Under three days nothing is free but the
+ * overview, which still carries the hotel and driver picks and the reasoning
+ * behind them, so the proof of real work survives while the plan itself does
+ * not. Called without it, the old behaviour is unchanged.
  */
-export function freeDayNumbers(stops: PlanStop[] | null): number[] {
+export function freeDayNumbers(stops: PlanStop[] | null, totalDays?: number): number[] {
+  if (typeof totalDays === "number" && totalDays > 0 && totalDays < 3) return [];
   if (!stops?.length) return [1];
   return [...new Set(stops.map((s) => s.firstDay))].sort((a, b) => a - b);
 }

@@ -26,11 +26,14 @@ export type PaywalledPlan = {
  * picks, practical notes, getting there) is always visible. It is the proof
  * the plan is genuinely theirs, and withholding it would hide the very
  * evidence that makes it worth paying for.
+ *
+ * `totalDays` lets a very short trip withhold every day, since on a one or
+ * two day plan the free day would be the plan. See freeDayNumbers.
  */
-export function applyPaywall(text: string, stops: PlanStop[] | null): PaywalledPlan {
+export function applyPaywall(text: string, stops: PlanStop[] | null, totalDays?: number): PaywalledPlan {
   if (!text) return { visibleText: "", lockedTitles: [] };
 
-  const freeDays = new Set(freeDayNumbers(stops));
+  const freeDays = new Set(freeDayNumbers(stops, totalDays));
   const lines = text.split(/\r?\n/);
 
   const visible: string[] = [];

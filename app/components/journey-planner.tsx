@@ -6,6 +6,7 @@ import { ElasticSelect, MultiChoice } from "./form-controls";
 import type { SelectChoice } from "./form-controls";
 import { pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
+import { planFee, NIGHT_RATE, EXTRA_STOP_FEE } from "../journey/pricing";
 
 const pathIcons = { journey: Sparkles, saudi: Map, study: GraduationCap } as const;
 type LocalChoice = { value: string; en: string; ar: string; detailEn?: string; detailAr?: string };
@@ -58,7 +59,6 @@ const studyPlanChoices: LocalChoice[] = [
 ];
 // One trip, up to three stops. See docs/paid-plans-spec.md.
 const MAX_STOPS = 3;
-const PLAN_FEES: Record<number, number> = { 1: 99, 2: 149, 3: 199 };
 
 // We ask for nights per stop rather than a date range per stop on purpose.
 // Two ranges make the handover day ambiguous (if Riyadh is the 3rd to the
@@ -188,7 +188,6 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   // Riyadh, Jeddah, Riyadh is a real shape (fly in, side trip, fly out) and
   // is allowed, which is why only *consecutive* repeats are blocked.
   const repeatedStopIndex = stops.findIndex((slug, i) => i > 0 && slug === stops[i - 1]);
-  const planFee = PLAN_FEES[Math.min(stops.length, MAX_STOPS)] ?? PLAN_FEES[1];
 
   // Nights, not days: a trip from the 3rd to the 12th is nine nights and ten
   // days, and the day count is what the itinerary numbers, so the nights are
@@ -209,6 +208,10 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   // the trip can't support, and the day numbering has nowhere to put it.
   const nightsTooShort = tripNights > 0 && tripNights < stops.length;
   const nightsValid = tripNights > 0 && stopNights.length === stops.length && stopNights.every((n) => n >= 1) && nightsRemaining === 0;
+  // Priced per night plus each destination after the first, so it can only
+  // be shown once the dates are in. Until then the planner quotes the rate
+  // rather than a total it cannot yet know.
+  const fee = planFee(tripNights, stops.length);
   const cityOptionsForStops = localizedOptions(ar, selectedCountry?.cities ?? []);
   const stopLabel = (slug: string) => cityOptionsForStops.find((option) => option.value === slug)?.label ?? slug;
 
@@ -371,10 +374,25 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
           {canAddStop ? <button type="button" className="addStop" onClick={() => setExtraStops([...extraStops, { city: "", purpose: "" }])}>
             + {text(ar, "Add another destination", "أضف وجهة أخرى")}
           </button> : null}
-          {stops.length ? <p className="planFee">{text(ar,
-            `${stops.length} ${stops.length === 1 ? "destination" : "destinations"} · plan fee SAR ${planFee}`,
-            `${stops.length} ${stops.length === 1 ? "وجهة" : "وجهات"} · رسوم الخطة ${planFee} ريال`)}
-            <small>{text(ar, "This is our planning fee, separate from your travel budget below.", "هذه رسوم التخطيط لدينا، منفصلة عن ميزانية سفرك أدناه.")}</small>
+          {stops.length ? <p className="planFee">
+            {tripNights > 0
+              ? text(ar,
+                  `Plan fee SAR ${fee}`,
+                  `رسوم الخطة ${digits(fee, true)} ريال`)
+              : text(ar,
+                  `SAR ${NIGHT_RATE} per night`,
+                  `${digits(NIGHT_RATE, true)} ريال لكل ليلة`)}
+            <small>
+              {tripNights > 0
+                ? text(ar,
+                    // Spelled out rather than just totalled, so the number
+                    // never looks arbitrary at the moment they read it.
+                    `${nightsLabel(tripNights, false)} × SAR ${NIGHT_RATE}${stops.length > 1 ? ` + ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"} × SAR ${EXTRA_STOP_FEE}` : ""}. Separate from your travel budget below.`,
+                    `${nightsLabel(tripNights, true)} × ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? ` + ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"} × ${digits(EXTRA_STOP_FEE, true)} ريال` : ""}. منفصلة عن ميزانية سفرك أدناه.`)
+                : text(ar,
+                    `Add your dates below and we'll total it${stops.length > 1 ? `, plus SAR ${EXTRA_STOP_FEE} for each destination after the first` : ""}. Separate from your travel budget.`,
+                    `أضف تواريخك بالأسفل ونحسب لك الإجمالي${stops.length > 1 ? `، بالإضافة إلى ${digits(EXTRA_STOP_FEE, true)} ريال لكل وجهة بعد الأولى` : ""}. وهي منفصلة عن ميزانية سفرك.`)}
+            </small>
           </p> : null}
         </div>
         <input type="hidden" name="stops" value={stops.join(",")} />
@@ -468,6 +486,16 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
           follow exactly, or our even-split suggestion it may refine. */}
       <input type="hidden" name="stopNightsChosen" value={nightsTouched ? "yes" : "no"} />
     </div> : null}
+    {/* The fee is quoted in step one too, but it only becomes a real number
+        once the dates exist, and the dates are set here. Without this the
+        customer would never watch the price resolve. Both read the same
+        `fee`, so the two lines cannot disagree. */}
+    {multiStopAvailable && stops.length && tripNights > 0 ? <p className="datesFee">
+      {text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)}
+      <span>{text(ar,
+        `${nightsLabel(tripNights, false)} at SAR ${NIGHT_RATE}${stops.length > 1 ? `, plus ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"}` : ""}`,
+        `${nightsLabel(tripNights, true)} بـ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? `، بالإضافة إلى ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"}` : ""}`)}</span>
+    </p> : null}
     </section>
 
     <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>

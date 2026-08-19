@@ -4,6 +4,7 @@ import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity } from "./place-links";
 import { applyPaywall, shouldPaywall } from "./paywall";
+import { planFee, nightsBetween, daysFromNights } from "./pricing";
 import type { PlanStop } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
@@ -37,11 +38,14 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // of withheld days survive, which is what the teaser needs.
   const locked = shouldPaywall(proposal);
   const planStops = (proposal.stops as PlanStop[] | null) ?? null;
-  const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops) : { visibleText: proposal.itinerary_en ?? "", lockedTitles: [] };
-  const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops) : { visibleText: proposal.itinerary_ar ?? "", lockedTitles: [] };
-  // Price the unlock from how many stops the trip actually has.
+  // Trip length now drives both halves of this: what the unlock costs, and
+  // whether a free day can be spared at all on a very short trip.
+  const nights = nightsBetween(proposal.from_date, proposal.to_date);
+  const totalDays = daysFromNights(nights);
+  const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_en ?? "", lockedTitles: [] };
+  const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_ar ?? "", lockedTitles: [] };
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
-  const unlockFee = { 1: 99, 2: 149, 3: 199 }[stopCount] ?? 99;
+  const unlockFee = planFee(nights, stopCount);
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>

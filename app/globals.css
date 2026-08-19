@@ -553,3 +553,5 @@ html[data-theme="dark"] .removeStop{background:#17332d;color:#b9cbc6}
 .nightsHint{margin:0;color:var(--muted);font-size:.76rem}
 html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17332d;color:#eaf3ef}
 @media(max-width:640px){.nightsRow{grid-template-columns:1fr auto auto}.nightsDates{grid-column:1/-1;text-align:start}}
+.datesFee{display:grid;gap:3px;margin:16px 0 0;padding:13px 16px;border:1px solid var(--gold);border-radius:11px;background:rgba(231,185,79,.08);font-size:.86rem;font-weight:800}
+.datesFee span{color:var(--muted);font-size:.74rem;font-weight:600}

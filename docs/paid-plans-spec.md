@@ -13,11 +13,25 @@ A complete, personalised trip plan for **one trip with up to three stops**
 inside Saudi Arabia, written to the customer, with the directions to book it
 themselves.
 
-| Stops | Price |
+**SAR 20 per night, plus SAR 20 per destination after the first.**
+
+| Trip | Price |
 |---|---|
-| 1 | SAR 99 |
-| 2 | SAR 149 |
-| 3 | SAR 199 |
+| 3 nights, 1 city | SAR 60 |
+| 5 nights, 1 city | SAR 100 |
+| 7 nights, 2 cities | SAR 160 |
+| 9 nights, 3 cities | SAR 220 |
+| 14 nights, 1 city | SAR 280 |
+
+There is deliberately **no minimum**. Priced per night, a one-night trip is
+a small piece of work and costs SAR 20. What protects it from being bought
+for the free preview alone is the paywall, not a price floor: see section 3.
+
+Per night rather than per destination because it tracks what the customer
+receives, scales with the trip budget they already have, and reads far
+better against a hotel room at many times the rate. The per-destination
+component stays because a second city is a second set of research, another
+hotel chosen and a transition to plan, none of which the night count sees.
 
 Not sold: booking on the customer's behalf. We give the plan and the
 directions; they book. This must be unmistakable at checkout, or the
@@ -54,13 +68,18 @@ plan.
 **Free, before payment:**
 - The whole overview: hotel and driver picks with the reasoning, practical
   notes, getting-there guidance
-- **The first day of each stop**, in full
+- **The first day of each stop**, in full, on any trip of three days or more
 - The headings of every remaining day, e.g. "Day 2 · Friday 21 August", so
   they can see the shape of what they are buying
 
 **Paid:**
 - Every remaining day, in full
 - Permanent access, both languages
+
+On a trip shorter than three days, **no day is free** and only the
+overview is shown. Day one of a two-day plan is most of the plan, so the
+preview would be the product. This is what replaces a price floor: a very
+short trip is cheap to buy but is not given away.
 
 The overview is deliberately free. It is the strongest proof the plan is
 genuinely theirs: their name, their dates, a hotel chosen for their budget
