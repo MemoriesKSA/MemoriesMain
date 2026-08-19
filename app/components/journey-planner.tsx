@@ -59,6 +59,48 @@ const studyPlanChoices: LocalChoice[] = [
 // One trip, up to three stops. See docs/paid-plans-spec.md.
 const MAX_STOPS = 3;
 const PLAN_FEES: Record<number, number> = { 1: 99, 2: 149, 3: 199 };
+
+// We ask for nights per stop rather than a date range per stop on purpose.
+// Two ranges make the handover day ambiguous (if Riyadh is the 3rd to the
+// 5th and Jeddah is the 5th to the 8th, whose day is the 5th?) and let the
+// customer leave a gap in the middle of their own trip. Nights can do
+// neither, and "two nights here, three there" is how people describe a
+// multi-city trip anyway. The dates are derived and shown back to them.
+function evenSplit(totalNights: number, stopCount: number): number[] {
+  if (stopCount < 1) return [];
+  const base = Math.floor(totalNights / stopCount);
+  const extra = totalNights % stopCount;
+  return Array.from({ length: stopCount }, (_, i) => base + (i < extra ? 1 : 0));
+}
+
+function addDays(isoDate: string, days: number) {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date;
+}
+
+// ar-EG rather than ar-SA: ar-SA formats as Hijri in most runtimes, and
+// these are the customer's own Gregorian travel dates being read back.
+function shortDate(date: Date, ar: boolean) {
+  return date.toLocaleDateString(ar ? "ar-EG" : "en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
+// Arabic-Indic digits, so a count in the same sentence as a formatted date
+// doesn't sit next to it in a different numbering system.
+function digits(value: number, ar: boolean) {
+  return ar ? value.toLocaleString("ar-EG") : String(value);
+}
+
+// Arabic counts nouns by quantity: one and two have their own forms, three
+// to ten take the broken plural, and eleven upward returns to the singular.
+// "٥ ليلة" is what you get from ignoring that, and it reads as broken Arabic.
+function nightsLabel(count: number, ar: boolean) {
+  if (!ar) return `${count} ${count === 1 ? "night" : "nights"}`;
+  if (count === 1) return "ليلة واحدة";
+  if (count === 2) return "ليلتان";
+  if (count >= 3 && count <= 10) return `${digits(count, true)} ليالٍ`;
+  return `${digits(count, true)} ليلة`;
+}
 const STUDY_PLAN_DEFAULTS = ["student-areas", "campus", "settling-in"];
 const deliveryChoices: LocalChoice[] = [
   { value: "email", en: "Email", ar: "البريد الإلكتروني", detailEn: "Receive the complete journey brief in your inbox", detailAr: "استلم تصور الرحلة الكامل في بريدك" },
@@ -106,6 +148,14 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [travellers, setTravellers] = useState("");
   const [travellerCount, setTravellerCount] = useState("");
   const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  // How the trip's nights are divided between the stops. Held as an override
+  // rather than the source of truth: until the customer actually edits it we
+  // show an even split, so a two-city trip arrives pre-filled sensibly and
+  // nobody is made to do arithmetic they didn't ask for. Editing any row
+  // makes the whole split theirs, which the draft is then told to obey.
+  const [customNights, setCustomNights] = useState<number[]>([]);
+  const [nightsTouched, setNightsTouched] = useState(false);
   const [transport, setTransport] = useState<string[]>([]);
   const [stays, setStays] = useState<string[]>([]);
   const [planIncludes, setPlanIncludes] = useState<string[]>(initialPath === "study" ? STUDY_PLAN_DEFAULTS : fromCityGuide ? ["attractions", "restaurants", "experiences"] : ["attractions", "restaurants"]);
@@ -140,6 +190,35 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const repeatedStopIndex = stops.findIndex((slug, i) => i > 0 && slug === stops[i - 1]);
   const planFee = PLAN_FEES[Math.min(stops.length, MAX_STOPS)] ?? PLAN_FEES[1];
 
+  // Nights, not days: a trip from the 3rd to the 12th is nine nights and ten
+  // days, and the day count is what the itinerary numbers, so the nights are
+  // what there is to divide up.
+  const tripNights = fromDate && toDate
+    ? Math.round((new Date(`${toDate}T00:00:00Z`).getTime() - new Date(`${fromDate}T00:00:00Z`).getTime()) / 86_400_000)
+    : 0;
+  // The override only applies while it still describes this set of stops.
+  // Adding or removing a destination invalidates it and drops back to an
+  // even split, which is less surprising than silently keeping counts that
+  // belonged to a different trip shape.
+  const stopNights = nightsTouched && customNights.length === stops.length
+    ? customNights
+    : evenSplit(tripNights, stops.length);
+  const nightsAssigned = stopNights.reduce((sum, n) => sum + n, 0);
+  const nightsRemaining = tripNights - nightsAssigned;
+  // Every stop needs at least one night; a stop you don't sleep in is a stop
+  // the trip can't support, and the day numbering has nowhere to put it.
+  const nightsTooShort = tripNights > 0 && tripNights < stops.length;
+  const nightsValid = tripNights > 0 && stopNights.length === stops.length && stopNights.every((n) => n >= 1) && nightsRemaining === 0;
+  const cityOptionsForStops = localizedOptions(ar, selectedCountry?.cities ?? []);
+  const stopLabel = (slug: string) => cityOptionsForStops.find((option) => option.value === slug)?.label ?? slug;
+
+  function setNightsAt(index: number, value: number) {
+    const next = [...stopNights];
+    next[index] = value;
+    setCustomNights(next);
+    setNightsTouched(true);
+  }
+
   function choosePath(next: PlannerPath) {
     setPath(next); setCountry(next === "saudi" ? saudiArabia.value : ""); setCity(""); setPurpose(""); setStudySupport("");
     setHasSpecificField(""); setSpecificField(""); setHasSpecificUniversity(""); setSpecificUniversity(""); setStayRating(""); setMakkahEligible("");
@@ -172,6 +251,22 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       setMissingSections([1]);
       setFormError(text(ar, "You've chosen the same destination twice in a row. Extend your dates to stay longer in one place, or pick a different next stop.", "اخترت الوجهة نفسها مرتين متتاليتين. مدّد التواريخ للبقاء مدة أطول في مكان واحد، أو اختر وجهة تالية مختلفة."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
+      return;
+    }
+    // A split that doesn't add up is a hard stop rather than a missing
+    // field: the numbers are all there, they just describe a trip that
+    // can't exist. Only checked once dates are in, otherwise the ordinary
+    // step-2 check below is the one that should fire.
+    if (stops.length > 1 && tripNights > 0 && !nightsValid) {
+      setMissingSections([2]);
+      setFormError(nightsTooShort
+        ? text(ar,
+            `A ${stops.length}-destination trip needs at least ${nightsLabel(stops.length, false)}. Extend your dates or remove a stop.`,
+            `رحلة بـ${digits(stops.length, true)} وجهات تحتاج ${nightsLabel(stops.length, true)} على الأقل. مدّد تواريخك أو احذف محطة.`)
+        : text(ar,
+            "The nights in each destination need to add up to your trip length.",
+            "يجب أن يتطابق مجموع الليالي في الوجهات مع مدة رحلتك."));
+      requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="2"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
     const missing = [
@@ -312,8 +407,68 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       <ElasticSelect label={text(ar, "Travellers", "المسافرون")} name="travellers" required placeholder={text(ar, "Who is travelling?", "من سيسافر؟")} options={localize(ar, travellerTypes)} value={travellers} onChange={setTravellers} />
       <ElasticSelect label={text(ar, "Number of travellers", "عدد المسافرين")} name="travellerCount" required placeholder={text(ar, "Choose a number", "اختر العدد")} options={Array.from({length:12},(_,index)=>({value:String(index+1),label:ar?`${index+1} مسافر`:`${index+1} traveller${index ? "s" : ""}`})).concat([{value:"13+",label:ar?"١٣ مسافرًا أو أكثر":"13+ travellers"}])} value={travellerCount} onChange={setTravellerCount} />
       <label><span>{text(ar, "From", "من تاريخ")} *</span><input name="fromDate" type="date" required value={fromDate} onInput={(event) => setFromDate(event.currentTarget.value)} onChange={(event) => setFromDate(event.target.value)} /></label>
-      <label><span>{text(ar, "To", "إلى تاريخ")} *</span><input name="toDate" type="date" required min={fromDate || undefined} /></label>
-    </div></section>
+      <label><span>{text(ar, "To", "إلى تاريخ")} *</span><input name="toDate" type="date" required min={fromDate || undefined} value={toDate} onInput={(event) => setToDate(event.currentTarget.value)} onChange={(event) => setToDate(event.target.value)} /></label>
+    </div>
+    {/* Only a multi-stop trip has anything to divide. A single destination
+        gets the whole range and never sees this. */}
+    {stops.length > 1 ? <div className="nightsSplit">
+      <p className="nightsSplitHead">
+        <strong>{text(ar, "How long in each destination?", "كم ليلة في كل وجهة؟")}</strong>
+        <small>{text(ar,
+          "Count in nights. The day you move on is spent travelling, so it belongs to both cities.",
+          "العدّ بالليالي. يوم انتقالك يُقضى في السفر، لذلك يُحسب للمدينتين معًا.")}</small>
+      </p>
+      {tripNights > 0 ? <>
+        <div className="nightsRows">
+          {stops.map((slug, index) => {
+            const nights = stopNights[index] ?? 0;
+            const startsOn = stopNights.slice(0, index).reduce((sum, n) => sum + n, 0);
+            return (
+              <label className="nightsRow" key={`${slug}-${index}`}>
+                <span className="nightsCity">{stopLabel(slug)}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={Math.max(1, tripNights - (stops.length - 1))}
+                  step={1}
+                  value={nights || ""}
+                  onChange={(event) => setNightsAt(index, Math.max(0, Math.floor(Number(event.target.value) || 0)))}
+                  aria-label={text(ar, `Nights in ${stopLabel(slug)}`, `الليالي في ${stopLabel(slug)}`)}
+                />
+                <span className="nightsUnit">{text(ar, nights === 1 ? "night" : "nights", "ليلة")}</span>
+                <span className="nightsDates">
+                  {fromDate && nights >= 1
+                    ? `${shortDate(addDays(fromDate, startsOn), ar)} – ${shortDate(addDays(fromDate, startsOn + nights), ar)}`
+                    : ""}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        <p className={`nightsTally${nightsValid ? " ok" : ""}`} role="status" aria-live="polite">
+          {nightsTooShort
+            ? text(ar,
+                `${stops.length} destinations need at least ${nightsLabel(stops.length, false)}. Extend your dates or remove a stop.`,
+                `${digits(stops.length, true)} وجهات تحتاج ${nightsLabel(stops.length, true)} على الأقل. مدّد تواريخك أو احذف محطة.`)
+            : nightsValid
+              ? text(ar, `All ${nightsLabel(tripNights, false)} placed.`, `تم توزيع ${nightsLabel(tripNights, true)} بالكامل.`)
+              : nightsRemaining > 0
+                ? text(ar,
+                    `${digits(nightsRemaining, false)} of ${nightsLabel(tripNights, false)} still to place.`,
+                    `بقيت ${nightsLabel(nightsRemaining, true)} من ${nightsLabel(tripNights, true)} للتوزيع.`)
+                : text(ar,
+                    `That's ${digits(Math.abs(nightsRemaining), false)} more than your ${nightsLabel(tripNights, false)}.`,
+                    `هذا يزيد ${nightsLabel(Math.abs(nightsRemaining), true)} عن ${nightsLabel(tripNights, true)} المتاحة.`)}
+        </p>
+      </> : <p className="nightsHint">{text(ar,
+        "Choose your travel dates above and we'll help you divide them.",
+        "اختر تواريخ سفرك بالأعلى ثم نساعدك على توزيعها.")}</p>}
+      <input type="hidden" name="stopNights" value={nightsValid ? stopNights.join(",") : ""} />
+      {/* Tells the draft whether this split is the customer's decision to
+          follow exactly, or our even-split suggestion it may refine. */}
+      <input type="hidden" name="stopNightsChosen" value={nightsTouched ? "yes" : "no"} />
+    </div> : null}
+    </section>
 
     <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />

@@ -15,7 +15,7 @@ import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city
 import { saudiArabia } from "./components/planner-data";
 import { createSupabaseAdminClient } from "./supabase-admin";
 import { splitDraftForStorage } from "./journey/parse-itinerary";
-import { parseStopMarkers, stripStopMarkers } from "./journey/plan-stops";
+import { parseStopMarkers, stripStopMarkers, stopsFromNights } from "./journey/plan-stops";
 
 export type DraftGuideSubmission = {
   submissionId: string;
@@ -26,6 +26,13 @@ export type DraftGuideSubmission = {
   // Purpose per stop, same order as `stops`. A trip can be Umrah in Makkah
   // and leisure in Riyadh, so one trip-wide purpose isn't enough.
   stopPurposes: string[];
+  // Nights slept at each stop, same order as `stops`. Collected in the
+  // planner so the day each stop begins on is known here, rather than being
+  // read back out of the model's own output.
+  stopNights: number[];
+  // True when the customer set the split themselves, false when they kept
+  // our even-split suggestion and the draft may still refine it.
+  stopNightsChosen: boolean;
   purpose: string;
   travellers: string;
   travellerCount: string;
@@ -84,6 +91,26 @@ function tripLength(from: string, to: string) {
   return `${nights + 1} days / ${nights} nights`;
 }
 
+// Turns the customer's per-stop night counts into the day numbers the
+// itinerary must use. Day 1 is the arrival day and a stop's nights are the
+// nights slept there, so each stop begins on day `1 + every night before
+// it`, which lines up with the trip being `nights + 1` days long.
+//
+// Returns an empty array for anything that isn't a real multi-stop split, so
+// the caller silently falls back to the old behaviour of letting the draft
+// decide rather than emitting a half-computed instruction.
+function stopDayPlan(labels: string[], nights: number[]) {
+  if (labels.length < 2 || nights.length !== labels.length) return [];
+  if (!nights.every((n) => Number.isInteger(n) && n >= 1)) return [];
+  let day = 1;
+  return labels.map((label, i) => {
+    const firstDay = day;
+    const lastDay = day + nights[i];
+    day = lastDay;
+    return { label, nights: nights[i], firstDay, range: `Day ${firstDay} to Day ${lastDay}` };
+  });
+}
+
 // LLMs are unreliable at computing the day of the week for an arbitrary
 // date, and the draft model doing that math itself produced a real bug: a
 // day header flatly labelled "Saturday" while a note elsewhere hedged the
@@ -131,7 +158,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
 - The day-by-day calendar given to you in the user message states the real, correct weekday for every date in this trip, computed exactly, not a guess. Use those exact weekdays in your Day headers and anywhere else you mention a day of the week (e.g. Friday prayer timing, weekend closures). Never compute or second-guess a weekday yourself, and never contradict the calendar elsewhere in the draft, e.g. don't write "if this falls on a Friday" about a date the calendar already states is a Saturday.
 - Write a day-by-day sketch matching the trip length, pace it sensibly, don't over-pack days.
-- Some trips visit more than one city. When the request lists several stops, this is ONE trip in that order, not several plans stapled together, and it must read that way. Number the days sequentially straight through, so a four-night Riyadh stop followed by Jeddah runs Day 1 to Day 4 in Riyadh and continues at Day 5 in Jeddah, never restarting at Day 1. Split the customer's overall dates between the stops sensibly given what there is to do in each, and say plainly which days belong to which city.
+- Some trips visit more than one city. When the request lists several stops, this is ONE trip in that order, not several plans stapled together, and it must read that way. Number the days sequentially straight through, so a four-night Riyadh stop followed by Jeddah runs Day 1 to Day 4 in Riyadh and continues at Day 5 in Jeddah, never restarting at Day 1. The request states how many nights belong to each stop and the exact day numbers that produces, so use those and never reallocate them to suit the sights, and say plainly which days belong to which city. The day a stop ends on is the day they travel to the next one, so it carries that journey rather than a full day of either city.
 - The travel between stops is part of what they are paying for, so plan it as its own moment in the day it happens: name the realistic way to get from one to the next from the grounded facts and research notes (the Haramain High-Speed Railway between Jeddah, Makkah and Madinah, a domestic flight elsewhere), say roughly how long it takes if the notes give that, and treat it as taking up real time rather than pretending they teleport. Never invent a schedule or a fare for it.
 - Each stop carries its own purpose, given in the request summary. Honour them separately: an Umrah stop in Makkah and a leisure stop in Riyadh on the same trip should feel like two different kinds of day, not one style applied to both.
 - Only use each stop's own grounded facts for that stop's days. The facts are labelled by city, and a Jeddah restaurant must never appear in a Riyadh day.
@@ -166,10 +193,25 @@ Format, follow this closely, it should read as a warm, confident plan they can a
 function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, groundedFacts: string, operationalResearch: string, stopLabels: string[] = []) {
   // Spelled out as an ordered list with a purpose each, so the drafting pass
   // never has to infer the travel order or apply one purpose to every city.
+  const stopDayRanges = stopDayPlan(stopLabels, submission.stopNights);
+  // Built as lines and joined, rather than one template literal, so the day
+  // ranges stay readable next to the stop they describe.
   const stopsSummary = stopLabels.length > 1
-    ? `\nThis is ONE trip visiting ${stopLabels.length} stops, in this order:\n` +
-      stopLabels.map((label, i) => `  Stop ${i + 1}: ${label}${submission.stopPurposes?.[i] ? ` — purpose: ${readable(submission.stopPurposes[i])}` : ""}`).join("\n") +
-      `\nNumber the days straight through the whole trip and plan the travel between stops.`
+    ? "\n" + [
+        `This is ONE trip visiting ${stopLabels.length} stops, in this order:`,
+        ...stopLabels.map((label, i) => {
+          const purpose = submission.stopPurposes?.[i] ? ` — purpose: ${readable(submission.stopPurposes[i])}` : "";
+          const plan = stopDayRanges[i];
+          const span = plan ? ` — ${plan.nights} night${plan.nights === 1 ? "" : "s"}, ${plan.range}` : "";
+          return `  Stop ${i + 1}: ${label}${purpose}${span}`;
+        }),
+        stopDayRanges.length
+          ? submission.stopNightsChosen
+            ? "The customer chose this split themselves. Use these exact day numbers for each stop and do not redistribute them."
+            : "This split is our even-split suggestion rather than the customer’s decision. Keep it unless there is a real reason to move a night, and if you do, say so in the internal notes."
+          : "",
+        "Number the days straight through the whole trip and plan the travel between stops.",
+      ].filter(Boolean).join("\n")
     : "";
   const researchSection = operationalResearch
     ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These may also include review scores or licensing signals for restaurants/rental cars, always keep whatever hedge the note itself uses (an attributed claim like "their website states..." stays attributed, it never becomes a flat "licensed" statement). If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
@@ -567,7 +609,15 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         // Read the machine stop line before anything strips it, so the customer's
         // page knows which day each stop begins on and can show the first day
         // of every stop for free.
-        const planStops = parseStopMarkers(englishSplit.internalOnly);
+        // Prefer the mapping computed from the customer's own night counts.
+        // The model's STOPS line is only the fallback now, for older shapes
+        // and single-stop trips: it used to be the sole source, and when it
+        // came back missing the fallback below recorded firstDay 0 for every
+        // stop, which meant a paying multi-stop customer saw no free day at
+        // all. Anything the form already knows should not depend on
+        // generated text surviving intact.
+        const planStops = stopsFromNights(stopLabelsEn, submission.stopNights ?? [])
+          ?? parseStopMarkers(englishSplit.internalOnly);
         const internalNotesParts = [
           selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
           englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
@@ -588,7 +638,12 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             from_date: submission.fromDate || null,
             to_date: submission.toDate || null,
             currency: submission.currency || "SAR",
-            stops: planStops ?? (resolved.length > 1 ? resolved.map((_stop, i) => ({ label: stopLabelsEn[i], firstDay: 0 })) : null),
+            // Null rather than a labelled list with firstDay 0. This column
+            // feeds the paywall and nothing else, and freeDayNumbers reads
+            // those zeros as "day 0 is the free one", which matches no day
+            // and leaves the customer with nothing unlocked. Null falls back
+            // to day one being free, which is the safe direction to fail in.
+            stops: planStops,
             itinerary_en: englishSplit.customerFacing || englishDraft,
             itinerary_ar: arabicSplit?.customerFacing || arabicDraft || null,
             notes,

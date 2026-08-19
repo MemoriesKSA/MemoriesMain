@@ -59,3 +59,33 @@ export function freeDayNumbers(stops: PlanStop[] | null): number[] {
   if (!stops?.length) return [1];
   return [...new Set(stops.map((s) => s.firstDay))].sort((a, b) => a - b);
 }
+
+/**
+ * Builds the stop mapping from the per-stop night counts the customer chose
+ * in the planner, rather than reading it back out of the model's output.
+ *
+ * Day 1 is the arrival day, and a stop's nights are the nights slept there,
+ * so a stop begins on day `1 + (every night before it)`. Two nights in
+ * Riyadh then three in Jeddah gives Riyadh=1, Jeddah=3, which lines up with
+ * the trip being `nights + 1` days long.
+ *
+ * This exists because the STOPS line used to be the only source of that
+ * mapping, and it was written by the model. When it came back missing or
+ * malformed the customer's page fell back to treating firstDay as 0, and a
+ * paying multi-stop customer saw no free day at all. Anything we can know
+ * from the form should not be recovered from generated text.
+ *
+ * Returns null when the counts don't describe a real multi-stop trip, so the
+ * caller can fall back to reading the model's line instead.
+ */
+export function stopsFromNights(labels: string[], nights: number[]): PlanStop[] | null {
+  if (labels.length < 2 || nights.length !== labels.length) return null;
+  if (!nights.every((n) => Number.isInteger(n) && n >= 1)) return null;
+
+  let day = 1;
+  return labels.map((label, i) => {
+    const stop = { label, firstDay: day };
+    day += nights[i];
+    return stop;
+  });
+}
