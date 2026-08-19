@@ -22,7 +22,7 @@ export const journeyStrings = {
     }),
   },
   ar: {
-    kicker: "مموريز · رحلتك",
+    kicker: "MEMORIES · رحلتك",
     heroTitle: (name: string, city: string) => `رحلة ${name} إلى ${city}`,
     referenceLabel: (ref: string) => `المرجع ${ref}`,
     total: "الإجمالي",

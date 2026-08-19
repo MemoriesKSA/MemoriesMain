@@ -72,7 +72,7 @@ export const reviewerStrings = {
     langToggle: "العربية",
   },
   ar: {
-    reviewerKicker: "مموريز · المراجع",
+    reviewerKicker: "MEMORIES · المراجع",
     journeysTitle: "الرحلات",
     journeysSubtitle: (drafts: number, published: number) => `${drafts} مسودة · ${published} منشورة`,
     newProposal: "+ عرض جديد",
@@ -119,7 +119,7 @@ export const reviewerStrings = {
     deleteConfirmDraft: (label: string) => `حذف "${label}"؟ لا يمكن التراجع عن هذا.`,
     deleteAria: (label: string) => `حذف ${label}`,
     deleteTitle: "حذف هذه المسودة",
-    signInKicker: "مموريز · تسجيل دخول المراجع",
+    signInKicker: "MEMORIES · تسجيل دخول المراجع",
     internalAccess: "دخول داخلي",
     emailAddress: "البريد الإلكتروني",
     password: "كلمة المرور",
