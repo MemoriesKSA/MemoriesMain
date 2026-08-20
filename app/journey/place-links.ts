@@ -29,6 +29,39 @@ export function citySlugFromLabel(label: string): string | null {
   return hit?.value ?? null;
 }
 
+/**
+ * Every city in a stored label, because a multi-stop plan stores all of them
+ * in one string: "Riyadh → Jeddah → AlUla".
+ *
+ * That label matched no city at all, so a three-city plan came back with
+ * zero links in it, not even a map search, while every single-city plan
+ * linked normally. The unit tests missed it because they all passed one
+ * city name, which is the shape that always worked.
+ */
+export function citySlugsFromLabel(label: string): string[] {
+  const parts = label.split(/→|->|,/).map((p) => p.trim()).filter(Boolean);
+  const slugs = (parts.length ? parts : [label]).map(citySlugFromLabel).filter((s): s is string => !!s);
+  // A label like "Dammam & Al Khobar" is one city whose own name contains a
+  // separator we don't split on, so it still resolves through the whole
+  // string when the pieces don't resolve individually.
+  if (!slugs.length) {
+    const whole = citySlugFromLabel(label);
+    return whole ? [whole] : [];
+  }
+  return [...new Set(slugs)];
+}
+
+function guidesForLabel(label: string) {
+  return citySlugsFromLabel(label)
+    .map((slug) => ({ slug, guide: flagshipCityGuideBySlug("saudi-arabia", slug) }))
+    .filter((g): g is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>> } => !!g.guide);
+}
+
+/** The English city name for a slug, which is what a map search wants. */
+function cityLabelForSlug(slug: string): string {
+  return saudiArabia.cities.find((c) => c.value === slug)?.en ?? slug;
+}
+
 // Every real, named business or site we hold for this city, in the language
 // being rendered. Only these get linked: the list is finite and curated, so
 // we never guess at what is or isn't a place name in free prose.
@@ -73,16 +106,16 @@ export const PLATFORMS: { en: string; ar: string }[] = [
 ];
 
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
-  const slug = citySlugFromLabel(cityLabel);
-  if (!slug) return [];
-  const guide = flagshipCityGuideBySlug("saudi-arabia", slug);
-  if (!guide) return [];
+  const guides = guidesForLabel(cityLabel);
+  if (!guides.length) return [];
 
   const names = [
-    ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
-    ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
-    ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
-    ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
+    ...guides.flatMap(({ guide }) => [
+      ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
+      ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
+      ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
+      ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
+    ]),
     ...NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)),
     ...PLATFORMS.map((p) => (ar ? p.ar : p.en)),
   ];
@@ -92,13 +125,38 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
 }
 
+/**
+ * Which city each name belongs to, so a map search for a Jeddah restaurant
+ * says Jeddah. Without this a multi-stop plan would search every place in
+ * the whole trip label, and "Sura, Riyadh → Jeddah → AlUla, Saudi Arabia"
+ * finds nothing.
+ *
+ * Keyed lowercase, in both languages, pointing at the English city name
+ * because that is what a map search resolves most reliably.
+ */
+export function placeCityMapForCity(cityLabel: string): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const { slug, guide } of guidesForLabel(cityLabel)) {
+    const city = cityLabelForSlug(slug);
+    const add = (en: string, arName: string) => {
+      // First city wins, so a name shared by two stops keeps the earlier one
+      // rather than silently flipping to the later.
+      if (en && !(en.toLowerCase() in map)) map[en.toLowerCase()] = city;
+      if (arName && !(arName.toLowerCase() in map)) map[arName.toLowerCase()] = city;
+    };
+    guide.attractions.forEach((a) => add(a.nameEn, a.nameAr));
+    guide.dining.forEach((d) => add(d.nameEn, d.nameAr));
+    [...guide.stay, ...(guide.extendedStay ?? [])].forEach((s) => add(s.nameEn, s.nameAr));
+    [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].forEach((p) => add(p.nameEn, p.nameAr));
+  }
+  return map;
+}
+
 // English name -> official URL, for the names we hold in this city. The
 // itinerary is matched case-insensitively, so key the map that way too.
 export function officialUrlMapForCity(cityLabel: string): Record<string, string> {
-  const slug = citySlugFromLabel(cityLabel);
-  if (!slug) return {};
-  const guide = flagshipCityGuideBySlug("saudi-arabia", slug);
-  if (!guide) return {};
+  const guides = guidesForLabel(cityLabel);
+  if (!guides.length) return {};
 
   const map: Record<string, string> = {};
   const add = (nameEn: string, nameAr: string) => {
@@ -110,6 +168,7 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
     if (nameAr) map[nameAr.toLowerCase()] = url;
   };
 
+  for (const { guide } of guides) {
   guide.attractions.forEach((a) => add(a.nameEn, a.nameAr));
   [...guide.stay, ...(guide.extendedStay ?? [])].forEach((s) => add(s.nameEn, s.nameAr));
   [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].forEach((p) => add(p.nameEn, p.nameAr));
@@ -120,6 +179,7 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
   // menu and the booking page live there. add() only fires for names that
   // are actually in PLACE_URLS, so the rest are unaffected.
   guide.dining.forEach((d) => add(d.nameEn, d.nameAr));
+  }
   NATIONAL_CHAINS.forEach((c) => add(c.en, c.ar));
   PLATFORMS.forEach((p) => add(p.en, p.ar));
   return map;

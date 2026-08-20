@@ -3,8 +3,13 @@
 // chains now resolve everywhere, and that a restaurant with a real site gets
 // it rather than a map search.
 
-import { placeNamesForCity, officialUrlMapForCity, PLATFORMS } from "../app/journey/place-links";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, citySlugsFromLabel, PLATFORMS } from "../app/journey/place-links";
 import { officialUrlFor } from "../app/journey/place-urls";
+
+// A multi-stop plan stores every city in one label. Every test here used to
+// pass a single city name, which is the shape that always worked, so a real
+// three-city draft came back with zero links in it and nothing caught it.
+const MULTI = "Riyadh → Jeddah → AlUla";
 
 const madinahNames = placeNamesForCity("Madinah", false);
 const madinahNamesAr = placeNamesForCity("Madinah", true);
@@ -68,6 +73,21 @@ const cases: [string, unknown, unknown][] = [
   // A platform with no URL would fall through to a map search, which is
   // meaningless for a website. Every platform must carry a real link.
   ["every platform has a URL, never a map search", PLATFORMS.every((p) => !!officialUrlFor(p.en)), true],
+
+  // Multi-stop labels. A real three-city draft linked nothing at all.
+  ["a multi-stop label resolves every city", JSON.stringify(citySlugsFromLabel(MULTI)), '["riyadh","jeddah","alula"]'],
+  ["a single city label still resolves", JSON.stringify(citySlugsFromLabel("Riyadh")), '["riyadh"]'],
+  // This city's own name contains a separator, so it must not be split apart.
+  ["a city named with an ampersand survives", JSON.stringify(citySlugsFromLabel("Dammam & Al Khobar")), '["dammam"]'],
+  ["multi-stop links places from the first city", placeNamesForCity(MULTI, false).includes("Six Flags Qiddiya City"), true],
+  ["multi-stop links places from the last city", placeNamesForCity(MULTI, false).includes("Maraya Social"), true],
+  ["multi-stop carries official URLs too", officialUrlMapForCity(MULTI)["maraya social"], "https://marayasocial.com/"],
+  ["platforms resolve on a multi-stop plan", officialUrlMapForCity(MULTI)["nusuk"], "https://www.nusuk.sa"],
+  // Each place must map-search in its own city: "Sura, Riyadh → Jeddah →
+  // AlUla, Saudi Arabia" finds nothing.
+  ["a Jeddah place searches in Jeddah", placeCityMapForCity(MULTI)["sura"], "Jeddah"],
+  ["an AlUla place searches in AlUla", placeCityMapForCity(MULTI)["elephant rock"], "AlUla"],
+  ["a Riyadh place searches in Riyadh", placeCityMapForCity(MULTI)["six flags qiddiya city"], "Riyadh"],
 ];
 
 let pass = 0;

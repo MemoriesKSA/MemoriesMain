@@ -332,6 +332,16 @@ const DRAFT_MAX_TOKENS = 32_000;
  * storing none, so this refuses it rather than passing it on.
  */
 function assertNotTruncated(response: Anthropic.Message, label: string) {
+  // Logged on every call, not only on failure. The ceiling was raised from a
+  // number nobody had measured against a real long trip, and without this
+  // the next time it gets close there is again no warning until a customer
+  // reads a plan that stops mid-sentence.
+  const used = response.usage.output_tokens;
+  const share = Math.round((used / DRAFT_MAX_TOKENS) * 100);
+  console.log(`${label}: ${used} output tokens, ${share}% of the ${DRAFT_MAX_TOKENS} ceiling (stop_reason: ${response.stop_reason})`);
+  if (share >= 80) {
+    console.warn(`${label} used ${share}% of its token ceiling. Raise DRAFT_MAX_TOKENS before it starts truncating.`);
+  }
   if (response.stop_reason === "max_tokens") {
     throw new Error(`${label} hit the token ceiling and came back truncated, so it was discarded rather than saved half-finished.`);
   }

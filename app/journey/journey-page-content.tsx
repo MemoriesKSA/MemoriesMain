@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity, officialUrlMapForCity } from "./place-links";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity } from "./place-links";
 import { applyPaywall, shouldPaywall } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
 import type { PlanStop } from "./plan-stops";
@@ -31,6 +31,9 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // Verified official sites where we have them; everything else falls back
   // to a Maps search inside the linkifier.
   const officialUrls = officialUrlMapForCity(proposal.city);
+  // Which stop each place belongs to, so a map search for a Jeddah
+  // restaurant on a three-city plan says Jeddah and not the whole trip.
+  const placeCities = placeCityMapForCity(proposal.city);
 
   // The split happens here, on the server. Locked days are removed from the
   // text before it is ever serialised to the browser, so an unpaid reader
@@ -78,7 +81,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={en.visibleText} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} lockedTitles={en.lockedTitles} />
+            <ItineraryView text={en.visibleText} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedTitles={en.lockedTitles} />
           </section>
         )}
 
@@ -101,7 +104,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={ar.visibleText} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} lockedTitles={ar.lockedTitles} />
+            <ItineraryView text={ar.visibleText} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedTitles={ar.lockedTitles} />
           </section>
         )}
 
