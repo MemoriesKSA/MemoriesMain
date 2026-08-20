@@ -401,11 +401,57 @@ function assertNotTruncated(response: Anthropic.Message, label: string) {
   }
 }
 
+/**
+ * True for a failure of the connection rather than of the request: the socket
+ * dropped, the stream was cut, the read timed out. The SDK's own maxRetries
+ * covers a request that fails before the response starts, but a stream that
+ * dies mid-body is past that point, and finalMessage() simply rejects.
+ *
+ * A Malaysia draft was lost exactly that way, ECONNRESET twenty-five minutes
+ * in, after the research had been paid for. In production that costs the
+ * customer their draft and lands the team a "plan this one by hand" email
+ * over a blip that would have succeeded on a second attempt.
+ *
+ * Walks the cause chain, because the shape it arrives in is nested: an
+ * AnthropicError reading "terminated", caused by a TypeError, caused by the
+ * ECONNRESET itself.
+ */
+export function isDroppedConnection(error: unknown): boolean {
+  const seen = new Set<unknown>();
+  let current = error;
+  while (current && typeof current === "object" && !seen.has(current)) {
+    seen.add(current);
+    if (current instanceof Anthropic.APIConnectionError) return true;
+    const { message, code } = current as { message?: unknown; code?: unknown };
+    if (typeof code === "string" && ["ECONNRESET", "ETIMEDOUT", "EPIPE", "ECONNABORTED", "ENOTFOUND", "EAI_AGAIN"].includes(code)) return true;
+    if (typeof message === "string" && /\bterminated\b|ECONNRESET|socket hang up|network|timed? ?out|aborted/i.test(message)) return true;
+    current = (current as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
+/**
+ * Runs a streamed generation, and gives it exactly one more go if the
+ * connection dropped. Deliberately not a general retry: a truncation, a
+ * refusal, or anything the model actually said comes straight back out,
+ * because asking again would produce the same answer at twice the price.
+ * One extra attempt, not a loop, for the same reason.
+ */
+async function retryOnDroppedConnection<T>(label: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!isDroppedConnection(error)) throw error;
+    console.warn(`${label}: the connection dropped mid-stream (${error instanceof Error ? error.message : String(error)}). Trying once more.`);
+    return run();
+  }
+}
+
 async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string, stopLabels: string[] = []): Promise<string> {
   // Streamed, not because anything watches the stream, but because a
   // non-streaming request this size can outlive the SDK's own request
   // timeout. finalMessage() still gives the whole message back.
-  const response = await anthropic.messages.stream({
+  const response = await retryOnDroppedConnection("The English draft", () => anthropic.messages.stream({
     model: "claude-opus-5",
     max_tokens: DRAFT_MAX_TOKENS,
     thinking: { type: "adaptive" },
@@ -416,7 +462,7 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     output_config: { effort: "medium" },
     system: cachedSystem(buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
-  }).finalMessage();
+  }).finalMessage());
   assertNotTruncated(response, "The English draft");
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
@@ -453,7 +499,7 @@ Translate now.`;
 async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string, groundedFactsAr: string): Promise<string> {
   if (!englishDraft) return "";
   try {
-    const response = await anthropic.messages.stream({
+    const response = await retryOnDroppedConnection("The Arabic translation", () => anthropic.messages.stream({
       // KEEP THIS ON OPUS. Sonnet was measured on a real draft here and
       // failed twice in one sample. It translated the "Day 1" header into
       // "اليوم 1", which stops matching DAY_HEADING in
@@ -470,7 +516,7 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
       output_config: { effort: "medium" },
       system: cachedSystem(buildTranslationSystemPrompt()),
       messages: [{ role: "user", content: buildTranslationUserPrompt(englishDraft, groundedFactsAr) }],
-    }).finalMessage();
+    }).finalMessage());
     // Arabic is the half that runs out of room first, so this is the guard
     // that actually earns its keep. Returning nothing is deliberate: an
     // absent translation is obvious to the reviewer and harmless to the
