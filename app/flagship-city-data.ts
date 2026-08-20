@@ -4360,6 +4360,15 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Kempinski Hotel Barbaros Bay Bodrum",
+        "nameAr": "كمبينسكي باربروس باي بودروم",
+        "descriptionEn": "On the cliffs above Barbaros Bay at Yalıçiftlik, away from the town's noise, with a long private waterfront.",
+        "descriptionAr": "على الجروف المطلة على خليج باربروس في يالي تشيفتليك، بعيدًا عن ضجيج البلدة، مع واجهة بحرية خاصة طويلة.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -4447,6 +4456,21 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Renaissance Izmir Hotel",
+        "nameAr": "رينيسانس إزمير",
+        "descriptionEn": "On the waterfront in the city centre, steps from the Kordon promenade, with sea-facing rooms.",
+        "descriptionAr": "على الواجهة البحرية في وسط المدينة، على خطوات من كورنيش كوردون، وبغرف تطل على البحر.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Mövenpick Hotel Izmir",
+        "nameAr": "موفنبيك إزمير",
+        "descriptionEn": "185 rooms in the middle of town, walkable to both the business district and the shopping streets.",
+        "descriptionAr": "185 غرفة في وسط المدينة، على مسافة مشي من منطقة الأعمال وشوارع التسوق."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Early morning",
@@ -4522,6 +4546,15 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "هيل سايد بيتش كلوب",
         "descriptionEn": "A resort in its own private bay outside Fethiye, pine-covered, with a private beach and a kids' club.",
         "descriptionAr": "منتجع في خليج خاص به خارج فتحية، تحيط به أشجار الصنوبر، بشاطئ خاص ونادٍ للأطفال.",
+        "tier": "luxury"
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "D-Resort Göcek",
+        "nameAr": "دي ريزورت غوجيك",
+        "descriptionEn": "In Göcek by the marina rather than in Fethiye itself, open year-round, and the natural base if the trip is built around a boat.",
+        "descriptionAr": "في غوجيك عند المارينا لا في فتحية نفسها، مفتوح طوال العام، وهو القاعدة الطبيعية إن كانت الرحلة مبنية على قارب.",
         "tier": "luxury"
       }
     ],
@@ -4614,6 +4647,21 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "noteAr": "تذكر صفحتها الخاصة بتركيا مطار أنقرة إسنبوغا ضمن المطارات التي تغطيها، بسعر يُثبَّت عند الحجز. ويبعد إسنبوغا نحو 30 كم عن المركز، فالسيارة المحجوزة مسبقًا توفّر عليك المساومة عند الوصول."
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Ankara HiltonSA",
+        "nameAr": "أنقرة هيلتون إس إيه",
+        "descriptionEn": "In Kavaklıdere among the embassies, walking distance to Tunalı Hilmi, which is the part of Ankara worth being based in.",
+        "descriptionAr": "في كافاكليدره بين السفارات، على مسافة مشي من شارع تونالي حلمي، وهو الجزء من أنقرة الذي يستحق الإقامة فيه.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Hilton Garden Inn Ankara Çankaya",
+        "nameAr": "هيلتون غاردن إن أنقرة تشانكايا",
+        "descriptionEn": "A plainer option in Çankaya for putting the budget into the days rather than the room.",
+        "descriptionAr": "خيار أبسط في تشانكايا لمن يفضل إنفاق الميزانية على الأيام لا على الغرفة."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -4701,6 +4749,20 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Hilton Bursa Convention Center & Spa",
+        "nameAr": "هيلتون بورصة",
+        "descriptionEn": "A large modern hotel on İstanbul Caddesi with a spa, the straightforward choice if the thermal baths and the ski road are the point.",
+        "descriptionAr": "فندق حديث كبير في شارع إسطنبول مع سبا، وهو الخيار المباشر إن كانت الحمامات الحرارية وطريق التزلج هي المقصد."
+      },
+      {
+        "nameEn": "Sheraton Bursa Hotel",
+        "nameAr": "شيراتون بورصة",
+        "descriptionEn": "In Odunluk near the parks and malls on the newer side of the city, a short drive from the old centre.",
+        "descriptionAr": "في أودونلوك قرب المتنزهات والمولات في الجانب الأحدث من المدينة، على مسافة قيادة قصيرة من المركز القديم."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -4786,6 +4848,20 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionEn": "In the city centre, the established five-star and the usual base for Sümela and Uzungöl trips.",
         "descriptionAr": "في وسط المدينة، الفندق الخمس نجوم الراسخ والقاعدة المعتادة لرحلات سوميلا وأوزون غول.",
         "tier": "luxury"
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Radisson Blu Hotel, Trabzon",
+        "nameAr": "راديسون بلو طرابزون",
+        "descriptionEn": "162 rooms up in Boztepe with the view down over the city, about ten minutes from the airport.",
+        "descriptionAr": "162 غرفة في بوزتبه بإطلالة على المدينة من الأعلى، على نحو عشر دقائق من المطار."
+      },
+      {
+        "nameEn": "Novotel Trabzon",
+        "nameAr": "نوفوتيل طرابزون",
+        "descriptionEn": "A resort-style Accor property with an indoor pool and garden, six minutes from the airport, facing the Black Sea.",
+        "descriptionAr": "فندق من مجموعة أكور بطابع المنتجعات، بمسبح داخلي وحديقة، على ست دقائق من المطار ومقابل البحر الأسود."
       }
     ],
     "sampleDay": [
@@ -5191,6 +5267,22 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Banyan Tree Krabi",
+        "nameAr": "بانيان تري كرابي",
+        "descriptionEn": "All-villa beachfront resort on Tubkaek beach looking out at the karst islands, with the group's usual spa programme.",
+        "descriptionAr": "منتجع على شاطئ توبكيك مكوّن من فلل فقط يطل على الجزر الصخرية، مع برنامج السبا المعتاد للمجموعة.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Phulay Bay, a Ritz-Carlton Reserve",
+        "nameAr": "فولاي باي، ريتز كارلتون ريزيرف",
+        "descriptionEn": "The Reserve-brand property north of Ao Nang, pavilions and villas set against the limestone cliffs. The most expensive rooms in the province, and priced like it.",
+        "descriptionAr": "منشأة بعلامة ريزيرف شمال آو نانغ، أجنحة وفلل أمام الجروف الجيرية. أغلى الغرف في المحافظة وسعرها يعكس ذلك.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -5269,6 +5361,22 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Banyan Tree Samui",
+        "nameAr": "بانيان تري ساموي",
+        "descriptionEn": "Pool villas stacked up a hillside above Lamai on the quieter south-east coast, with all-inclusive rates available.",
+        "descriptionAr": "فلل بمسابح خاصة على منحدر فوق لاماي في الساحل الجنوبي الشرقي الأهدأ، مع أسعار شاملة متاحة.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Six Senses Samui",
+        "nameAr": "سيكس سينسز ساموي",
+        "descriptionEn": "Villas laid out like a Thai fishing village on the northern headland, most with their own pool and a view over the gulf.",
+        "descriptionAr": "فلل موزّعة على هيئة قرية صيد تايلاندية على الرأس الشمالي، معظمها بمسبح خاص وإطلالة على الخليج.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -5344,6 +5452,20 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "كيب دارا ريزورت",
         "descriptionEn": "On the headland north of the main beach, quieter than the centre with sea on two sides.",
         "descriptionAr": "على الرأس شمال الشاطئ الرئيسي، أهدأ من الوسط والبحر على جهتيه."
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Hilton Pattaya",
+        "nameAr": "هيلتون باتايا",
+        "descriptionEn": "A 34-storey tower on the bay, sitting directly on top of the Central Pattaya shopping centre, which makes it the easy pick for a first visit.",
+        "descriptionAr": "برج من 34 طابقًا على الخليج، فوق مركز سنترال باتايا التجاري مباشرة، ما يجعله الخيار الأسهل لزيارة أولى."
+      },
+      {
+        "nameEn": "InterContinental Pattaya Resort",
+        "nameAr": "إنتركونتيننتال باتايا ريزورت",
+        "descriptionEn": "A low-rise resort on its own bay south of the centre, with the quieter end of the coast on its doorstep.",
+        "descriptionAr": "منتجع منخفض الارتفاع على خليج خاص جنوب المركز، والطرف الأهدأ من الساحل عند بابه."
       }
     ],
     "sampleDay": [
@@ -5549,6 +5671,15 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Shangri-La Rasa Sayang",
+        "nameAr": "شانغريلا راسا سايانغ",
+        "descriptionEn": "Beachfront resort on Batu Ferringhi, about twenty minutes out of George Town. That is the trade-off: beach and grounds, but the heritage streets are a drive away rather than a walk.",
+        "descriptionAr": "منتجع على شاطئ باتو فيرينغي، على نحو عشرين دقيقة من جورج تاون. وهذه هي المفاضلة: شاطئ وحدائق، لكن شوارع التراث تُقصد بالسيارة لا مشيًا.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -5711,6 +5842,21 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "على النهر بجوار شارع جونكر، وأكثر القواعد راحة في البلدة القديمة."
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "The Majestic Malacca",
+        "nameAr": "ذا ماجستيك ملقا",
+        "descriptionEn": "A restored 1920s Straits Settlement mansion on Jalan Bunga Raya, inside the UNESCO heritage zone, with the original tilework kept.",
+        "descriptionAr": "قصر من عشرينيات القرن الماضي بطراز مستوطنات المضيق، مُرمَّم في شارع بونغا رايا داخل منطقة اليونسكو التراثية، مع الحفاظ على البلاط الأصلي.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Hatten Hotel",
+        "nameAr": "فندق هاتن",
+        "descriptionEn": "A large city-centre tower a short walk from the heritage streets and the malls, the practical mid-range option in Melaka.",
+        "descriptionAr": "برج كبير في وسط المدينة على مسافة مشي قصيرة من شوارع التراث والمولات، وهو الخيار المتوسط العملي في ملقا."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -5789,6 +5935,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Hyatt Regency Kinabalu",
+        "nameAr": "حياة ريجنسي كينابالو",
+        "descriptionEn": "In the middle of town rather than out at the beach, facing the islands of Tunku Abdul Rahman Marine Park, which is where the boats leave from.",
+        "descriptionAr": "في وسط المدينة لا على الشاطئ، مقابل جزر منتزه تنكو عبد الرحمن البحري، ومن هناك تنطلق القوارب."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -5865,6 +6019,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionEn": "A colonial-style resort beside the golf course, with a spa and tea-estate views.",
         "descriptionAr": "منتجع على الطراز الاستعماري بجوار ملعب الغولف، بمنتجع صحي وإطلالات على مزارع الشاي.",
         "tier": "luxury"
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "The Lakehouse Cameron Highlands",
+        "nameAr": "ذا لايك هاوس مرتفعات كاميرون",
+        "descriptionEn": "A nineteen-room Tudor-style house built in 1966 and open since 1970, small and old-fashioned in the way people come up here for.",
+        "descriptionAr": "بيت بطراز تيودور من تسع عشرة غرفة، بُني عام 1966 وافتُتح عام 1970، صغير وعتيق بالطريقة التي يصعد الناس إلى هنا من أجلها."
       }
     ],
     "sampleDay": [
@@ -6065,6 +6227,21 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "رومز أوتيل باتومي",
         "descriptionEn": "An 1890s hotel building carefully kept, a short walk from the boulevard.",
         "descriptionAr": "مبنى فندقي من تسعينيات القرن التاسع عشر محفوظ بعناية، على مسافة مشي قصيرة من البوليفارد."
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Hilton Batumi",
+        "nameAr": "هيلتون باتومي",
+        "descriptionEn": "On the seafront beside Seaside Park and the city beach, about a kilometre from the old town.",
+        "descriptionAr": "على الواجهة البحرية بجوار المنتزه الساحلي وشاطئ المدينة، على نحو كيلومتر من المدينة القديمة.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Radisson Blu Hotel, Batumi",
+        "nameAr": "راديسون بلو باتومي",
+        "descriptionEn": "168 rooms on Ninoshvili Street, a straightforward central base a short walk from the boulevard.",
+        "descriptionAr": "168 غرفة في شارع نينوشفيلي، قاعدة مركزية مباشرة على مسافة مشي قصيرة من الكورنيش."
       }
     ],
     "sampleDay": [
@@ -6310,6 +6487,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Golden Tulip Borjomi",
+        "nameAr": "غولدن توليب بورجومي",
+        "descriptionEn": "A four-star in an 1892 building right beside Borjomi Central Park, with a small spa, sauna and gym. Seventeen rooms, so it fills up.",
+        "descriptionAr": "فندق أربع نجوم في مبنى من عام 1892 بجوار منتزه بورجومي المركزي مباشرة، بسبا صغير وساونا وصالة رياضية. سبع عشرة غرفة فقط، لذا يمتلئ سريعًا."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -6474,6 +6659,15 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Radisson Collection Hotel, Moscow",
+        "nameAr": "راديسون كوليكشن موسكو",
+        "descriptionEn": "The Stalin-era Ukraina tower on the Moskva river, with a bar on the 31st floor and the river fleet moored below it.",
+        "descriptionAr": "برج أوكرانيا من الحقبة الستالينية على نهر موسكفا، وفيه بار في الطابق الحادي والثلاثين وأسطول النهر راسٍ تحته.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -6556,6 +6750,15 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Grand Hotel Moika 22",
+        "nameAr": "غراند هوتيل مويكا 22",
+        "descriptionEn": "An 1853 mansion on the Moika embankment, across from Palace Square and the Hermitage, five minutes on foot from Nevsky Prospekt.",
+        "descriptionAr": "قصر من عام 1853 على ضفة نهر مويكا، مقابل ساحة القصر والإرميتاج، وعلى خمس دقائق مشيًا من شارع نيفسكي.",
+        "tier": "luxury"
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -6631,6 +6834,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "منتجع كول غالي",
         "descriptionEn": "A spa resort outside the city, the comfortable option for a longer Tatarstan stay.",
         "descriptionAr": "منتجع صحي خارج المدينة، والخيار المريح لإقامة أطول في تتارستان."
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Korston Royal Kazan",
+        "nameAr": "كورستون رويال قازان",
+        "descriptionEn": "The five-star half of the Korston complex, a large business-and-leisure hotel with a pool and spa near the centre.",
+        "descriptionAr": "الشطر ذو الخمس نجوم من مجمع كورستون، فندق كبير للأعمال والترفيه بمسبح وسبا قرب المركز."
       }
     ],
     "sampleDay": [
@@ -6711,6 +6922,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "extendedStay": [
+      {
+        "nameEn": "Radisson Hotel, Rosa Khutor",
+        "nameAr": "راديسون روزا خوتور",
+        "descriptionEn": "181 rooms up at the Rosa Khutor mountain resort in Esto-Sadok, an hour inland from the coast, for the ski and hiking side of Sochi.",
+        "descriptionAr": "181 غرفة في منتجع روزا خوتور الجبلي في إستو-سادوك، على بُعد ساعة من الساحل نحو الداخل، لجانب التزلج والمشي في سوتشي."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -6786,6 +7005,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "راديسون بلو كالينينغراد",
         "descriptionEn": "On Victory Square in the centre, minutes from the cathedral.",
         "descriptionAr": "على ساحة النصر في المركز، على بعد دقائق من الكاتدرائية."
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Kaiserhof Hotel & Spa",
+        "nameAr": "فندق كايزرهوف آند سبا",
+        "descriptionEn": "A four-star of 119 rooms on the Pregolya river by Fish Village, in the historic centre, with a spa and pool included in the rate.",
+        "descriptionAr": "فندق أربع نجوم من 119 غرفة على نهر بريغوليا بجوار قرية الصيادين في المركز التاريخي، مع سبا ومسبح ضمن السعر."
       }
     ],
     "sampleDay": [

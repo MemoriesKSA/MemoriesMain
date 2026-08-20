@@ -38,6 +38,11 @@ type Case = {
   mapLabel: string;
   // A place in the first stop that has its own verified site.
   siteKey: string;
+  // The transfer or chauffeur company we hold for the first stop. Left out
+  // for a country where we hold none anywhere, Russia today, in which case
+  // the draft is relying entirely on the research pass for its driver and
+  // there is no name to assert.
+  drivers?: RegExp;
 };
 
 const CASES: Record<string, Case> = {
@@ -53,6 +58,7 @@ const CASES: Record<string, Case> = {
     mapKey: "hagia sophia",
     mapLabel: "Istanbul, Türkiye",
     siteKey: "pera palace hotel",
+    drivers: /Cab Istanbul|MyChauffeur/,
   },
   georgia: {
     countryName: "Georgia",
@@ -66,6 +72,7 @@ const CASES: Record<string, Case> = {
     mapKey: "narikala fortress",
     mapLabel: "Tbilisi, Georgia",
     siteKey: "stamba hotel",
+    drivers: /Transfeero/,
   },
   thailand: {
     countryName: "Thailand",
@@ -79,6 +86,7 @@ const CASES: Record<string, Case> = {
     mapKey: "wat pho",
     mapLabel: "Bangkok, Thailand",
     siteKey: "the siam",
+    drivers: /Blacklane/,
   },
   malaysia: {
     countryName: "Malaysia",
@@ -92,6 +100,7 @@ const CASES: Record<string, Case> = {
     mapKey: "batu caves",
     mapLabel: "Kuala Lumpur, Malaysia",
     siteKey: "mandarin oriental, kuala lumpur",
+    drivers: /Blacklane/,
   },
   russia: {
     countryName: "Russia",
@@ -203,6 +212,11 @@ async function main() {
     ["places from both stops are linkable", linked.length > 5, true],
     ["a place gets its own country's map search", placeCityMapForCity(data.city)[c.mapKey], c.mapLabel],
     ["a hotel carries its own site", !!urls[c.siteKey], true],
+
+    // The customer ticked private driver, so the plan has to name one. A
+    // Georgia draft passed every other check here while saying "your
+    // driver" throughout and never once saying whose.
+    ...(c.drivers ? [["the driver we hold is actually named", c.drivers.test(en), true] as [string, unknown, unknown]] : []),
 
     // Paywall behaves the same as it does for Saudi.
     ["the paywall withholds the rest", paywalled.lockedDays.length, totalDays - 2],

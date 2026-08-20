@@ -233,6 +233,18 @@ export const PLACE_URLS: Record<string, string> = {
   "Dewakan": "https://dewakan.my/",
   "Kebaya Dining Room": "https://kebaya.com.my/",
   "Twins Garden": "https://twinsgarden.ru/home-eng",
+
+  // ---- Hotels outside Saudi that were opened rather than assumed ----
+  // The wider hotel pass that added these cities' second and third
+  // properties verified the NAMES against each operator's own domain, which
+  // is a lower bar than this file asks of a URL. So only the four below are
+  // registered: their own pages were actually loaded and seen offering
+  // rooms. The rest carry no URL and fall through to a map search, which is
+  // the honest outcome, not a gap to be filled in from memory later.
+  "Golden Tulip Borjomi": "https://borjomi.goldentulip.com/en-us/",
+  "Grand Hotel Moika 22": "https://moika22-stpetersburg.com/en/",
+  "Korston Royal Kazan": "https://korston.ru/en/kazan/hotel/",
+  "Kaiserhof Hotel & Spa": "https://kaiserhof-hotel.com/",
 };
 
 export function officialUrlFor(placeName: string): string | null {
