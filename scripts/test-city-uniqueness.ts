@@ -9,7 +9,7 @@
 // which is the point: the fix is a country column, and this is what tells
 // you the day you need one.
 
-import { flagshipCityKeys, flagshipCountryForCity } from "../app/flagship-city-data";
+import { flagshipCityGuideBySlug, flagshipCityKeys, flagshipCountryForCity } from "../app/flagship-city-data";
 import { travelCountries } from "../app/components/planner-data";
 
 const keys = flagshipCityKeys();
@@ -31,10 +31,26 @@ for (const country of travelCountries) {
 }
 const plannerCollisions = [...plannerSlugs.entries()].filter(([, c]) => c.length > 1);
 
+// A country we hold any data for is a country we are telling customers we
+// can plan. Offering one of its cities in the planner with no data behind it
+// doesn't fail loudly: the draft stops and the team gets a "plan this one by
+// hand" email, which is a fine fallback for France and a broken promise for
+// a country whose other eight cities all work. Countries with no data at all
+// are skipped, since every one of their cities is meant to be planned by
+// hand.
+const supported = new Set(keys.map((k) => k.countrySlug));
+const gaps = travelCountries
+  .filter((country) => supported.has(country.value))
+  .flatMap((country) =>
+    country.cities
+      .filter((city) => !city.value.startsWith("other-") && !flagshipCityGuideBySlug(country.value, city.value))
+      .map((city) => `${country.value}/${city.value}`));
+
 const cases: [string, unknown, unknown][] = [
   ["no city slug is claimed by two countries in the deep data", collisions.length, 0],
   ["no city slug is claimed by two countries in the planner", plannerCollisions.length, 0],
   ["every deep-data city resolves to exactly one country", keys.every((k) => flagshipCountryForCity(k.citySlug) === k.countrySlug), true],
+  ["every city we offer in a supported country has data behind it", gaps.length, 0],
 ];
 
 let pass = 0;
@@ -45,4 +61,5 @@ for (const [name, got, want] of cases) {
 }
 if (collisions.length) console.log("\ndeep-data collisions:", JSON.stringify(collisions));
 if (plannerCollisions.length) console.log("\nplanner collisions:", JSON.stringify(plannerCollisions));
+if (gaps.length) console.log("\ncities offered with no data behind them:", gaps.join(", "));
 console.log(`\n${pass}/${cases.length} passed  ·  ${keys.length} cities with deep data`);
