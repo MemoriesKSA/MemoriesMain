@@ -896,11 +896,22 @@ async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknow
   const message = String((error as Error)?.message ?? error);
   const noCityData = message === "NO_CITY_DATA";
   const overloaded = status === 529 || status === 429;
+  // Two account-level failures that read as bugs if you only see the raw
+  // message. Both mean every draft fails until somebody acts, so they are
+  // worth saying in plain words rather than leaving as a wall of JSON: an
+  // exhausted balance cost a run and an hour of looking for a code fault
+  // before the 400 body was actually read.
+  const outOfCredit = /credit balance is too low|billing|insufficient (credit|quota)/i.test(message);
+  const badKey = status === 401 || /invalid x-api-key|authentication/i.test(message);
   const reason = noCityData
     ? `We hold no researched city data for "${escapeHtml(readable(submission.city))}", so there was nothing to build a plan from. This is expected for the "Other" destination option and for cities we haven't researched yet. Nothing went wrong, it simply needs planning by hand.`
-    : overloaded
-      ? "Anthropic's API was overloaded and did not recover after retries. This is temporary and on their side, nothing is wrong with the request itself."
-      : `The draft step failed with: ${escapeHtml(message).slice(0, 300)}`;
+    : outOfCredit
+      ? "The Anthropic account has run out of credit. Nothing is wrong with this request or with the site: every draft will fail the same way until the balance is topped up, and re-submitting won't help before then."
+      : badKey
+        ? "Anthropic rejected our API key. Every draft will fail until the key is corrected, so this needs fixing rather than re-submitting."
+        : overloaded
+          ? "Anthropic's API was overloaded and did not recover after retries. This is temporary and on their side, nothing is wrong with the request itself."
+          : `The draft step failed with: ${escapeHtml(message).slice(0, 300)}`;
 
   await new Resend(resendKey).emails.send({
     from: process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>",
