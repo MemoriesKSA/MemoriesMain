@@ -7,7 +7,7 @@ that are flagged `curated = true`.
 ## Why these are hand-written
 
 The AI draft generator can research a city itself (`researchOperationalFacts`
-in `app/draft-guide.ts`) and caches the result for 7 days. That works fine for
+in `app/draft-guide.ts`) and caches the result for 30 days. That works fine for
 low-traffic cities. For the big ones it's worth a human pass, because the
 judgement calls matter and a web search alone gets them wrong:
 
