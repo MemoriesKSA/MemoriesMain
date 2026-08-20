@@ -671,7 +671,16 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
 // reviewer already double-checks hours/season/pricing before anything
 // reaches a customer (see the "Team to confirm before booking" section),
 // research findings were never treated as gospel, just a strong first pass.
-const RESEARCH_CACHE_TTL_DAYS = 7;
+//
+// Habib moved this from 7 days to 30 on 2026-08-20. The argument for weekly
+// was never that a week is when these facts turn; it is that the reviewer is
+// the real freshness check, and that argument works just as well at a month.
+// Curated rows already never expire at all, which is a far larger staleness
+// exposure than thirty days and has been accepted from the start. What a
+// month genuinely risks is seasonal turns inside the window: Ramadan hours,
+// a summer-to-winter timetable, a restaurant that closed. Those are exactly
+// what the reviewer checks before anything is sent.
+const RESEARCH_CACHE_TTL_DAYS = 30;
 
 // The TTL only answers "is this too old". It doesn't answer "was this
 // gathered under the scope the drafting pass now expects", and that is a
