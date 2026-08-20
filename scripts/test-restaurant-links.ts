@@ -88,6 +88,19 @@ const cases: [string, unknown, unknown][] = [
   ["a Jeddah place searches in Jeddah", placeCityMapForCity(MULTI)["sura"], "Jeddah, Saudi Arabia"],
   ["an AlUla place searches in AlUla", placeCityMapForCity(MULTI)["elephant rock"], "AlUla, Saudi Arabia"],
   ["a Riyadh place searches in Riyadh", placeCityMapForCity(MULTI)["six flags qiddiya city"], "Riyadh, Saudi Arabia"],
+
+  // Outside Saudi. The Saudi chains and permit platforms used to attach to
+  // every city in the data, so an Istanbul plan linked Al Baik and offered a
+  // Rawdah permit.
+  ["Istanbul resolves its own country", JSON.stringify(citySlugsFromLabel("Istanbul")), '["istanbul"]'],
+  ["Istanbul links its own places", placeNamesForCity("Istanbul", false).includes("Hagia Sophia"), true],
+  ["a Saudi chain does not follow us to Turkey", placeNamesForCity("Istanbul", false).includes("Al Baik"), false],
+  ["nor does a Saudi permit platform", placeNamesForCity("Istanbul", false).includes("Nusuk"), false],
+  ["and Nusuk has no URL there either", officialUrlMapForCity("Istanbul")["nusuk"], undefined],
+  ["Saudi keeps its chains", placeNamesForCity("Riyadh", false).includes("Al Baik"), true],
+  ["Saudi keeps its platforms", placeNamesForCity("Riyadh", false).includes("Nusuk"), true],
+  ["an Istanbul map search names Türkiye", placeCityMapForCity("Istanbul")["hagia sophia"], "Istanbul, Türkiye"],
+  ["a Turkish restaurant carries its own site", officialUrlMapForCity("Istanbul")["mikla"], "https://www.miklarestaurant.com/"],
 ];
 
 let pass = 0;

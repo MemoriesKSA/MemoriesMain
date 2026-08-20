@@ -125,6 +125,21 @@ export const PLACE_URLS: Record<string, string> = {
   "Transfeero": "https://www.transfeero.com/en/country/saudi-arabia/",
   "Noorha Transport": "https://noorhatransport.com/",
 
+  // ---- Türkiye ----
+  // Istanbul. Hotels and restaurants checked against the operator's own site
+  // or the MICHELIN Guide before being written into the data.
+  "Çırağan Palace Kempinski Istanbul": "https://www.kempinski.com/en/ciragan-palace",
+  "Pera Palace Hotel": "https://www.perapalace.com/",
+  // Four Seasons refuses scripts like the other luxury brands, so this one
+  // was read in a browser rather than by status code.
+  "Four Seasons Hotel Istanbul at Sultanahmet": "https://www.fourseasons.com/istanbul/",
+  "Novotel Istanbul Bosphorus": "https://all.accor.com/hotel/8654/index.en.shtml",
+  "ibis Istanbul Sisli": "https://all.accor.com/hotel/C0D0/index.en.shtml",
+  "Mikla": "https://www.miklarestaurant.com/",
+  "Neolokal": "https://neolokal.com/",
+  "Karaköy Lokantası": "https://karakoylokantasi.com/",
+  "Cab Istanbul": "https://cabistanbul.com/",
+
   // ---- Booking platforms ----
   // The permit and ticket systems a plan sends the customer to. Nusuk is the
   // Ministry's own platform for Rawdah and Umrah permits; the Haramain train

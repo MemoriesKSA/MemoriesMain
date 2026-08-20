@@ -4038,6 +4038,45 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       },
     ],
   },
+  "turkey/istanbul": {
+    attractions: [
+      { nameEn: "Hagia Sophia", nameAr: "آيا صوفيا", categoryEn: "Landmark", categoryAr: "معلم", descriptionEn: "Cathedral, then mosque, then museum, now a mosque again, and still the building every other one in the city answers to.", descriptionAr: "كاتدرائية ثم مسجد ثم متحف، وعادت مسجدًا، وتبقى المبنى الذي تقيس عليه كل عمارة أخرى في المدينة." },
+      { nameEn: "Blue Mosque", nameAr: "المسجد الأزرق", categoryEn: "Mosque", categoryAr: "مسجد", descriptionEn: "Sultan Ahmed's mosque facing Hagia Sophia across a garden, still in daily use, so visits work around prayer times.", descriptionAr: "مسجد السلطان أحمد المقابل لآيا صوفيا عبر حديقة، ولا يزال يُصلى فيه يوميًا، فالزيارة تُنظَّم حول أوقات الصلاة." },
+      { nameEn: "Topkapi Palace", nameAr: "قصر توبكابي", categoryEn: "Palace", categoryAr: "قصر", descriptionEn: "Four centuries of Ottoman court life, the treasury and the sacred relics, on the headland above the Golden Horn.", descriptionAr: "أربعة قرون من حياة البلاط العثماني، والخزينة والأمانات المقدسة، على الرأس المطل على القرن الذهبي." },
+      { nameEn: "Grand Bazaar", nameAr: "البازار الكبير", categoryEn: "Market", categoryAr: "سوق", descriptionEn: "Sixty-odd covered streets of carpets, gold and lamps; go with time and no fixed shopping list.", descriptionAr: "أكثر من ستين شارعًا مسقوفًا من السجاد والذهب والفوانيس؛ اذهب بوقت مفتوح ودون قائمة مشتريات محددة." },
+      { nameEn: "Bosphorus ferry", nameAr: "عبّارة البوسفور", categoryEn: "On the water", categoryAr: "على الماء", descriptionEn: "The cheapest good hour in Istanbul: a public ferry between the European and Asian shores, past palaces and wooden mansions.", descriptionAr: "أرخص ساعة جميلة في إسطنبول: عبّارة عامة بين الضفتين الأوروبية والآسيوية، تمر بالقصور والبيوت الخشبية." },
+      { nameEn: "Galata Tower", nameAr: "برج غلطة", categoryEn: "Viewpoint", categoryAr: "إطلالة", descriptionEn: "A Genoese watchtower with the city's most complete rooftop view; queues are shortest early.", descriptionAr: "برج مراقبة جنوي بأشمل إطلالة على المدينة من الأعلى؛ والطوابير أقصر في الصباح الباكر." },
+    ],
+    dining: [
+      { nameEn: "Mikla", nameAr: "ميكلا", cuisineEn: "Modern Anatolian", cuisineAr: "أناضولي معاصر", descriptionEn: "On the roof of the Marmara Pera, a daily-changing menu built on Anatolian produce, with the city laid out below. Dinner only, closed Sundays.", descriptionAr: "على سطح فندق المرمرة بيرا، قائمة تتغير يوميًا مبنية على محاصيل الأناضول، والمدينة ممتدة تحتك. العشاء فقط، ومغلق أيام الأحد." },
+      { nameEn: "Neolokal", nameAr: "نيولوكال", cuisineEn: "Turkish", cuisineAr: "تركي", descriptionEn: "One MICHELIN star in the 2026 Türkiye guide, inside Salt Galata, taking Turkish culinary heritage somewhere new.", descriptionAr: "نجمة ميشلان واحدة في دليل تركيا 2026، داخل صالت غلطة، تأخذ التراث المطبخي التركي إلى مكان جديد." },
+      { nameEn: "Karaköy Lokantası", nameAr: "كاراكوي لوكانتاسي", cuisineEn: "Turkish meze", cuisineAr: "مقبلات تركية", descriptionEn: "A MICHELIN Bib Gourmand, tiled and busy, with a long meze list and prices that stay sensible. Book ahead for dinner.", descriptionAr: "حائز على بيب غورماند من ميشلان، مزيّن بالقيشاني ومزدحم، بقائمة مقبلات طويلة وأسعار معقولة. احجز مسبقًا للعشاء." },
+    ],
+    stay: [
+      { nameEn: "Four Seasons Hotel Istanbul at Sultanahmet", nameAr: "فورسيزونز إسطنبول في السلطان أحمد", descriptionEn: "A converted neoclassical building inside the old city, minutes on foot from Hagia Sophia and the Blue Mosque.", descriptionAr: "مبنى كلاسيكي محوّل داخل المدينة القديمة، على بعد دقائق مشيًا من آيا صوفيا والمسجد الأزرق.", tier: "luxury" },
+      { nameEn: "Çırağan Palace Kempinski Istanbul", nameAr: "قصر تشيراغان كمبينسكي إسطنبول", descriptionEn: "A former Ottoman palace on the Bosphorus with a waterside pool, for when the hotel is meant to be part of the trip.", descriptionAr: "قصر عثماني سابق على البوسفور بمسبح على الماء، حين يكون الفندق نفسه جزءًا من الرحلة.", tier: "luxury" },
+      { nameEn: "Pera Palace Hotel", nameAr: "فندق بيرا بالاس", descriptionEn: "Built for Orient Express passengers, in Beyoğlu within walking distance of İstiklal Street and Galata.", descriptionAr: "بُني لركاب قطار الشرق السريع، في بيه أوغلو على مسافة مشي من شارع الاستقلال وغلطة.", tier: "luxury" },
+    ],
+    extendedStay: [
+      { nameEn: "Novotel Istanbul Bosphorus", nameAr: "نوفوتيل إسطنبول البوسفور", descriptionEn: "In Karaköy on the water, a reliable mid-range base with a pool and hammam, walkable to Galata.", descriptionAr: "في كاراكوي على الماء، خيار متوسط موثوق بمسبح وحمام تركي، ويمكن المشي منه إلى غلطة." },
+      { nameEn: "ibis Istanbul Sisli", nameAr: "إيبيس إسطنبول شيشلي", descriptionEn: "Plain, clean and next to the metro in Şişli, for putting the budget into the days rather than the room.", descriptionAr: "بسيط ونظيف وبجوار المترو في شيشلي، لمن يفضل إنفاق الميزانية على الأيام لا على الغرفة.", tier: "budget" },
+    ],
+    trustedProviders: [
+      { nameEn: "Cab Istanbul", nameAr: "كاب إسطنبول", typeEn: "Private transfer & chauffeur service", typeAr: "خدمة نقل خاص وسائق", noteEn: "Operating since 2009 across both airports, and states it is registered with TURSAB (no. 11980) and holds a Ministry of Transport D2 licence; worth confirming current licensing and agreeing a fixed fare when you book.", noteAr: "تعمل منذ 2009 عبر المطارين، وتذكر أنها مسجّلة لدى اتحاد وكالات السفر التركية (رقم 11980) وتحمل رخصة D2 من وزارة النقل؛ ويُفضل تأكيد الترخيص الحالي والاتفاق على سعر ثابت عند الحجز." },
+      { nameEn: "MyChauffeur", nameAr: "ماي شوفير", typeEn: "Private chauffeur service", typeAr: "خدمة سائق خاص", noteEn: "The same chauffeur company we use in Saudi cities also covers Istanbul airport transfers, useful if you want one provider across a multi-country trip.", noteAr: "شركة السائقين نفسها التي نستعين بها في المدن السعودية تغطي أيضًا تنقلات مطار إسطنبول، وهو مفيد إن أردت مزوّدًا واحدًا في رحلة متعددة الدول." },
+    ],
+    sampleDay: [
+      { timeEn: "Early morning", timeAr: "الصباح الباكر", placeEn: "Hagia Sophia", placeAr: "آيا صوفيا", descriptionEn: "Go at opening, before the tour groups arrive.", descriptionAr: "اذهب عند الافتتاح قبل وصول المجموعات السياحية." },
+      { timeEn: "Midday", timeAr: "منتصف النهار", placeEn: "Grand Bazaar", placeAr: "البازار الكبير", descriptionEn: "Wander without a list, then lunch on meze nearby.", descriptionAr: "تجوّل دون قائمة، ثم تناول غداءً من المقبلات في الجوار." },
+      { timeEn: "Late afternoon", timeAr: "بعد العصر", placeEn: "Bosphorus ferry", placeAr: "عبّارة البوسفور", descriptionEn: "Cross to the Asian side and back as the light drops.", descriptionAr: "اعبر إلى الجانب الآسيوي وعُد مع مغيب الضوء." },
+      { timeEn: "Evening", timeAr: "المساء", placeEn: "Karaköy", placeAr: "كاراكوي", descriptionEn: "Dinner in Karaköy, then the walk up to Galata.", descriptionAr: "عشاء في كاراكوي، ثم المشي صعودًا إلى غلطة." },
+    ],
+    travelTips: [
+      { en: "Buy an İstanbulkart at any station: it covers the metro, trams, buses and the public ferries, and the ferries are the nicest way to cross.", ar: "اشترِ بطاقة إسطنبول كارت من أي محطة: تغطي المترو والترام والحافلات والعبّارات العامة، والعبّارات أجمل وسيلة للعبور." },
+      { en: "The historic peninsula and Beyoğlu are on opposite sides of the Golden Horn. Pick one for each day rather than crossing back and forth.", ar: "شبه الجزيرة التاريخية وبيه أوغلو على ضفتين متقابلتين من القرن الذهبي. خصّص يومًا لكل جهة بدل التنقل بينهما ذهابًا وإيابًا." },
+      { en: "Mosques close to visitors during prayer and for about half an hour after; Friday midday is the busiest and worth planning around.", ar: "تُغلق المساجد أمام الزوار أثناء الصلاة ولنحو نصف ساعة بعدها؛ وظهر الجمعة هو الأكثر ازدحامًا ويستحق التخطيط حوله." },
+    ],
+  },
 };
 
 export const flagshipCityGuideBySlug = (countrySlug: string, citySlug: string) =>

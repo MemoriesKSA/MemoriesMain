@@ -104,6 +104,11 @@ export function countryNameForSlug(countrySlug: string): string {
 // national. A per-city entry would be claiming "there is a branch here",
 // which we can't verify for every city; a chain's own site claims nothing
 // about a particular branch.
+// Scoped to Saudi Arabia, because that is what "national" means here. Left
+// unscoped these attached to every city in the data, so an Istanbul plan
+// would happily link Al Baik and a Rawdah permit platform.
+export const NATIONAL_CHAINS_COUNTRY = "saudi-arabia";
+
 export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
   { en: "Al Baik", ar: "البيك" },
   { en: "Kudu", ar: "كودو" },
@@ -126,6 +131,10 @@ export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
 //
 // Nationwide, so they match in any city, and listed under several of the
 // names a draft might reasonably use for the same thing.
+// Also Saudi: Nusuk is the Saudi Ministry of Hajj and Umrah's platform and
+// the Haramain line runs between Saudi cities.
+export const PLATFORMS_COUNTRY = "saudi-arabia";
+
 export const PLATFORMS: { en: string; ar: string }[] = [
   { en: "Nusuk", ar: "نسك" },
   { en: "Haramain High-Speed Railway", ar: "قطار الحرمين السريع" },
@@ -136,6 +145,7 @@ export const PLATFORMS: { en: string; ar: string }[] = [
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   const guides = guidesForLabel(cityLabel);
   if (!guides.length) return [];
+  const inSaudi = guides.some((g) => g.countrySlug === NATIONAL_CHAINS_COUNTRY);
 
   const names = [
     ...guides.flatMap(({ guide }) => [
@@ -144,8 +154,8 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
       ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
       ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
     ]),
-    ...NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)),
-    ...PLATFORMS.map((p) => (ar ? p.ar : p.en)),
+    ...(inSaudi ? NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)) : []),
+    ...(inSaudi ? PLATFORMS.map((p) => (ar ? p.ar : p.en)) : []),
   ];
 
   // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
@@ -225,7 +235,9 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
   // are actually in PLACE_URLS, so the rest are unaffected.
   guide.dining.forEach((d) => add(d.nameEn, d.nameAr));
   }
-  NATIONAL_CHAINS.forEach((c) => add(c.en, c.ar));
-  PLATFORMS.forEach((p) => add(p.en, p.ar));
+  if (guides.some((g) => g.countrySlug === NATIONAL_CHAINS_COUNTRY)) {
+    NATIONAL_CHAINS.forEach((c) => add(c.en, c.ar));
+    PLATFORMS.forEach((p) => add(p.en, p.ar));
+  }
   return map;
 }
