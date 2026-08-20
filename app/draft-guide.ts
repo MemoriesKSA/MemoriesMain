@@ -437,6 +437,26 @@ export function isDroppedConnection(error: unknown): boolean {
  * because asking again would produce the same answer at twice the price.
  * One extra attempt, not a loop, for the same reason.
  */
+/**
+ * Per-request limits for the two long streamed calls.
+ *
+ * A Malaysia run sat for 66 minutes with the process using 0.3 seconds of
+ * CPU: research cached five minutes in, then nothing. That is a stream that
+ * stopped delivering without ever failing, so nothing threw and nothing
+ * retried. The client's maxRetries of 6 made it worse rather than better,
+ * because each silent attempt had to reach the SDK's own generous streaming
+ * timeout before the next one started.
+ *
+ * A bounded timeout turns that hang into an error the retry above can act
+ * on. Ten minutes is roughly double the slowest real draft measured (the
+ * Thailand English pass, 16,777 output tokens), so a call that passes it has
+ * stopped making progress rather than merely being long. maxRetries drops to
+ * 2 here and stays at 6 on the client for the short calls: a 529 fails
+ * instantly and is cheap to retry, a hang costs ten minutes each time, and
+ * these are the only two calls where that difference is expensive.
+ */
+const STREAM_REQUEST_OPTIONS = { timeout: 10 * 60 * 1000, maxRetries: 2 };
+
 async function retryOnDroppedConnection<T>(label: string, run: () => Promise<T>): Promise<T> {
   try {
     return await run();
@@ -462,7 +482,7 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     output_config: { effort: "medium" },
     system: cachedSystem(buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
-  }).finalMessage());
+  }, STREAM_REQUEST_OPTIONS).finalMessage());
   assertNotTruncated(response, "The English draft");
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
@@ -516,7 +536,7 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
       output_config: { effort: "medium" },
       system: cachedSystem(buildTranslationSystemPrompt()),
       messages: [{ role: "user", content: buildTranslationUserPrompt(englishDraft, groundedFactsAr) }],
-    }).finalMessage());
+    }, STREAM_REQUEST_OPTIONS).finalMessage());
     // Arabic is the half that runs out of room first, so this is the guard
     // that actually earns its keep. Returning nothing is deliberate: an
     // absent translation is obvious to the reviewer and harmless to the
