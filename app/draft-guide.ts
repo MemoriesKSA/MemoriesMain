@@ -264,7 +264,7 @@ Draft the day-by-day sketch now.`;
 // flight times or prices, which a generic web search can't honestly
 // verify, that needs a real flight-search API and isn't in scope here, see
 // the flight rule below for why.
-export async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
+export async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string, onSpend?: (dollars: number) => void): Promise<string> {
   try {
     const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
     if (!attractionNames) return "";
@@ -351,7 +351,7 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
       }],
     });
 
-    logResearchSpend(cityLabelEn, response);
+    onSpend?.(logResearchSpend(cityLabelEn, response));
 
     // A web-search turn comes back as many short text blocks interleaved
     // with the search calls themselves (one burst of prose between each
@@ -422,7 +422,7 @@ const SEARCH_PER_K = 10;
  * Cached input is priced differently from fresh input, so it is printed
  * separately rather than folded into one number.
  */
-function logResearchSpend(cityLabelEn: string, response: Anthropic.Message) {
+function logResearchSpend(cityLabelEn: string, response: Anthropic.Message): number {
   const usage = response.usage as Anthropic.Usage & {
     server_tool_use?: { web_search_requests?: number };
     cache_read_input_tokens?: number | null;
@@ -440,6 +440,7 @@ function logResearchSpend(cityLabelEn: string, response: Anthropic.Message) {
     `Research for ${cityLabelEn}: ${searches} searches, ${fresh} input tokens` +
     `${cached ? ` (+${cached} cached)` : ""}, ${out} output. Roughly $${dollars.toFixed(2)}.`,
   );
+  return dollars;
 }
 
 /**
@@ -680,7 +681,7 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
 // month genuinely risks is seasonal turns inside the window: Ramadan hours,
 // a summer-to-winter timetable, a restaurant that closed. Those are exactly
 // what the reviewer checks before anything is sent.
-const RESEARCH_CACHE_TTL_DAYS = 30;
+export const RESEARCH_CACHE_TTL_DAYS = 30;
 
 // The TTL only answers "is this too old". It doesn't answer "was this
 // gathered under the scope the drafting pass now expects", and that is a
@@ -733,7 +734,7 @@ async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdmin
   }
 }
 
-async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string, notes: string): Promise<void> {
+export async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string, notes: string): Promise<void> {
   if (!notes) return;
   try {
     // Never let the automated pass overwrite a hand-verified entry. In the
