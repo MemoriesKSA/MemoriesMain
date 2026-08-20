@@ -121,7 +121,7 @@ export function FlagshipCityGuidePage({
         <Link className="flagshipSoftCta" href={planHref}>
           {isWorship
             ? (ar ? "جاهز نرتب لك رحلة؟" : "Ready to start arranging your visit?")
-            : (ar ? "تعرف بالفعل أن هذه رحلتك؟ ابدأ خطتك" : "Already know this is your trip? Start your plan")}
+            : (ar ? `حبيت ${cityName}؟ ودك تروح لها؟ خلينا نخطط لك باقة رحلة متكاملة تشبه أحلامك.` : "Already know this is your trip? Start your plan")}
           <ArrowRight className={ar ? "directionArrow" : ""} size={15} />
         </Link>
       </section>

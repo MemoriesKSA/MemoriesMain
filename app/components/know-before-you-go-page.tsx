@@ -8,7 +8,7 @@ import { HelpfulFeedback } from "./helpful-feedback";
 type Locale = "en" | "ar";
 
 const emergencyNumbers = [
-  { number: "999", labelEn: "Police (911 also works in Riyadh, Makkah and the Eastern Province)", labelAr: "الشرطة (911 يعمل أيضًا في الرياض ومكة والمنطقة الشرقية)" },
+  { number: "999", labelEn: "Police (911 works in Riyadh, Makkah and the Eastern Province only)", labelAr: "الشرطة (911 يعمل فقط في الرياض ومكة والمنطقة الشرقية)" },
   { number: "997", labelEn: "Ambulance, Saudi Red Crescent", labelAr: "الإسعاف، الهلال الأحمر السعودي" },
   { number: "998", labelEn: "Civil Defense, fire", labelAr: "الدفاع المدني، الحريق" },
   { number: "993", labelEn: "Traffic police", labelAr: "شرطة المرور" },
@@ -51,8 +51,8 @@ const moneyCards = [
   {
     titleEn: "Paying for things",
     titleAr: "طرق الدفع",
-    bodyEn: "Cards (Visa, Mastercard, American Express) and Apple Pay are widely accepted in cities. It's still worth carrying some cash for smaller towns, local markets and taxis.",
-    bodyAr: "البطاقات (فيزا وماستركارد وأمريكان إكسبريس) وآبل باي مقبولة على نطاق واسع في المدن. يُستحسن حمل بعض النقد للبلدات الصغيرة والأسواق المحلية وسيارات الأجرة.",
+    bodyEn: "Cards (Visa, Mastercard, American Express), Apple Pay and Samsung Wallet are widely accepted in cities. It's still worth carrying some cash for smaller towns, local markets and taxis.",
+    bodyAr: "البطاقات (فيزا وماستركارد وأمريكان إكسبريس) وآبل باي ومحفظة سامسونج مقبولة على نطاق واسع في المدن. يُستحسن حمل بعض النقد للبلدات الصغيرة والأسواق المحلية وسيارات الأجرة.",
   },
   {
     titleEn: "ATMs",
@@ -123,10 +123,10 @@ export function KnowBeforeYouGoPage({ locale = "en" }: { locale?: Locale }) {
 
       <section className="pageHero container">
         <p className="kicker">{ar ? "دليل عملي" : "Practical guide"}</p>
-        <h1>{ar ? "قبل أن تسافر" : "Know before you go"}</h1>
+        <h1>{ar ? "قبل ما تجهز نفسك للسفر لا زم تعرف" : "Know before you go"}</h1>
         <p className="knowIntro">
           {ar
-            ? "زيارة بلد جديد تأتي دائمًا ببعض التساؤلات، ما مدى الأمان فعليًا، وكيف تدفع، ومن تتصل به إذا احتجت مساعدة. جمعنا هنا الإجابات العملية الحقيقية، لتقضي وقتًا أقل في القلق ووقتًا أكبر في التطلع لرحلتك."
+            ? "زيارة بلد جديد تأتي دائمًا ببعض التساؤلات، ما مدى الأمان فعليًا، وكيف تدفع، ومن تتصل به إذا احتجت مساعدة. جمعنا هنا الإجابات العملية الحقيقية، عشان ما نخليك قلقان وتتفرغ للتجهيز للرحلة."
             : "Visiting a new country always comes with a few unknowns, what's actually safe, how to pay, who to call if something goes wrong. We've gathered the real, practical answers here so you can spend less time worrying and more time looking forward to the trip."}
         </p>
       </section>
@@ -224,10 +224,10 @@ export function KnowBeforeYouGoPage({ locale = "en" }: { locale?: Locale }) {
       <section className="container cityPlanCta">
         <div>
           <p className="kicker light">{ar ? "جاهز لتبدأ؟" : "Ready to start?"}</p>
-          <h2>{ar ? <>لنصمّم رحلتك<br /><em>إلى السعودية.</em></> : <>Let&rsquo;s shape your trip<br /><em>to Saudi Arabia.</em></>}</h2>
+          <h2>{ar ? <>متحمس تروح<br /><em>السعودية؟</em></> : <>Let&rsquo;s shape your trip<br /><em>to Saudi Arabia.</em></>}</h2>
           <p>
             {ar
-              ? "أخبرنا بتواريخك ومن سيرافقك وما تتطلع إليه، وسنتولى الباقي."
+              ? "عطني تواريخ رحلتك ومين بروح معاك ووين ودك تروح، وخلي علينا الباقي."
               : "Tell us your dates, who's travelling and what you're hoping for, and we'll take it from there."}
           </p>
         </div>
