@@ -153,6 +153,42 @@ export const PLACE_URLS: Record<string, string> = {
   "JW Marriott Hotel Ankara": "https://www.marriott.com/en-us/hotels/esbjw-jw-marriott-hotel-ankara/overview/",
   "Zorlu Grand Hotel Trabzon": "https://www.zorlugrand.com/EN/",
 
+  // ---- Thailand ----
+  "Mandarin Oriental, Bangkok": "https://www.mandarinoriental.com/en/bangkok/chao-phraya-river",
+  "The Peninsula Bangkok": "https://www.peninsula.com/en/bangkok/5-star-luxury-hotel-riverside",
+  "The Siam": "https://www.thesiamhotel.com/",
+  "Bo.lan": "https://bolan.co.th/",
+  "Rosewood Phuket": "https://www.rosewoodhotels.com/en/phuket",
+  "Trisara": "https://trisara.com/",
+  "137 Pillars House": "https://137pillarshotels.com/en/chiangmai/",
+  "Rayavadee": "https://www.rayavadee.com/",
+  // Four Seasons refuses scripts everywhere, so these two were read in a
+  // browser like the Istanbul one.
+  "Four Seasons Resort Chiang Mai": "https://www.fourseasons.com/chiangmai/",
+  "Four Seasons Resort Koh Samui": "https://www.fourseasons.com/kohsamui/",
+
+  // ---- Malaysia ----
+  "Mandarin Oriental, Kuala Lumpur": "https://www.mandarinoriental.com/en/kuala-lumpur/petronas-towers",
+  "The Ritz-Carlton, Kuala Lumpur": "https://www.ritzcarlton.com/en/hotels/kulrz-the-ritz-carlton-kuala-lumpur/overview/",
+  "Eastern & Oriental Hotel": "https://www.eohotels.com/",
+  "The Datai Langkawi": "https://www.thedatai.com/",
+  "The Ritz-Carlton, Langkawi": "https://www.ritzcarlton.com/en/hotels/lgkrz-the-ritz-carlton-langkawi/overview/",
+  "Casa del Rio Melaka": "https://casadelrio-melaka.com/",
+  "Shangri-La Tanjung Aru": "https://www.shangri-la.com/kotakinabalu/tanjungaruresort/",
+  "Cameron Highlands Resort": "https://www.cameronhighlandsresort.com/",
+
+  // ---- Georgia ----
+  "Stamba Hotel": "https://stambahotel.com/",
+  "Rooms Hotel Tbilisi": "https://roomshotels.com/tbilisi/",
+  "Rooms Hotel Batumi": "https://roomshotels.com/batumi/",
+  "Rooms Hotel Kazbegi": "https://roomshotels.com/kazbegi/",
+  "Crowne Plaza Borjomi": "https://www.ihg.com/crowneplaza/hotels/us/en/borjomi/bjrcp/hoteldetail",
+
+  // ---- Russia ----
+  "Hotel Metropol Moscow": "https://metropol-moscow.ru/en/",
+  "Hotel Astoria": "https://www.roccofortehotels.com/hotels-and-resorts/hotel-astoria/",
+  "Radisson Blu Hotel, Kaliningrad": "https://www.radissonhotels.com/en-us/hotels/radisson-blu-kaliningrad",
+
   // ---- Booking platforms ----
   // The permit and ticket systems a plan sends the customer to. Nusuk is the
   // Ministry's own platform for Rawdah and Umrah permits; the Haramain train

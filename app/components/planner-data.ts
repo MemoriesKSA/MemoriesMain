@@ -45,6 +45,13 @@ export const travelCountries: CountryOption[] = [
   { value: "canada", en: "Canada", ar: "كندا", cities: cities([["toronto","Toronto","تورونتو"],["vancouver","Vancouver","فانكوفر"],["montreal","Montréal","مونتريال"],["quebec-city","Québec City","مدينة كيبيك"],["banff","Banff","بانف"],["calgary","Calgary","كالغاري"],["ottawa","Ottawa","أوتاوا"],["victoria","Victoria","فيكتوريا"],["other-canada","Another Canadian city","مدينة كندية أخرى"]]) },
   { value: "austria", en: "Austria", ar: "النمسا", cities: cities([["vienna","Vienna","فيينا"],["salzburg","Salzburg","سالزبورغ"],["innsbruck","Innsbruck","إنسبروك"],["hallstatt","Hallstatt","هالشتات"],["graz","Graz","غراتس"],["other-austria","Another Austrian city","مدينة نمساوية أخرى"]]) },
   { value: "portugal", en: "Portugal", ar: "البرتغال", cities: cities([["lisbon","Lisbon","لشبونة"],["porto","Porto","بورتو"],["sintra","Sintra","سينترا"],["faro","Faro & the Algarve","فارو والغارف"],["madeira","Madeira","ماديرا"],["coimbra","Coimbra","كويمبرا"],["other-portugal","Another Portuguese city","مدينة برتغالية أخرى"]]) },
+  // Malaysia, Georgia and Russia join the list. Turkey and Thailand were
+  // already here. City slugs have to stay unique across every country in
+  // this file, because a stored plan works out its country from the city
+  // alone; scripts/test-city-uniqueness.ts fails the day two collide.
+  { value: "malaysia", en: "Malaysia", ar: "ماليزيا", cities: cities([["kuala-lumpur","Kuala Lumpur","كوالالمبور"],["penang","Penang","بينانغ"],["langkawi","Langkawi","لنكاوي"],["malacca","Malacca","ملقا"],["kota-kinabalu","Kota Kinabalu","كوتا كينابالو"],["cameron-highlands","Cameron Highlands","مرتفعات كاميرون"],["other-malaysia","Another Malaysian city","مدينة ماليزية أخرى"]]) },
+  { value: "georgia", en: "Georgia", ar: "جورجيا", cities: cities([["tbilisi","Tbilisi","تبليسي"],["batumi","Batumi","باتومي"],["kazbegi","Kazbegi","كازبيغي"],["kutaisi","Kutaisi","كوتايسي"],["borjomi","Borjomi","بورجومي"],["mtskheta","Mtskheta","متسخيتا"],["other-georgia","Another Georgian city","مدينة جورجية أخرى"]]) },
+  { value: "russia", en: "Russia", ar: "روسيا", cities: cities([["moscow","Moscow","موسكو"],["saint-petersburg","Saint Petersburg","سانت بطرسبرغ"],["kazan","Kazan","قازان"],["sochi","Sochi","سوتشي"],["kaliningrad","Kaliningrad","كالينينغراد"],["other-russia","Another Russian city","مدينة روسية أخرى"]]) },
 ];
 
 export const studyCountries: CountryOption[] = [

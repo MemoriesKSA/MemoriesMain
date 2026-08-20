@@ -4805,6 +4805,1900 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       }
     ]
   },
+  "thailand/bangkok": {
+    "attractions": [
+      {
+        "nameEn": "Grand Palace & Wat Phra Kaew",
+        "nameAr": "القصر الكبير ومعبد الزمرد",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "The royal complex and the Emerald Buddha. Strict dress code: shoulders and knees covered, no exceptions.",
+        "descriptionAr": "المجمع الملكي وبوذا الزمرد. قواعد لباس صارمة: تغطية الكتفين والركبتين دون استثناء."
+      },
+      {
+        "nameEn": "Wat Pho",
+        "nameAr": "معبد وات فو",
+        "categoryEn": "Temple",
+        "categoryAr": "معبد",
+        "descriptionEn": "The reclining Buddha, 46 metres of it, and the country's oldest school of Thai massage.",
+        "descriptionAr": "بوذا المستلقي بطول 46 مترًا، وأقدم مدرسة للتدليك التايلاندي في البلاد."
+      },
+      {
+        "nameEn": "Chao Phraya river boats",
+        "nameAr": "قوارب نهر تشاو فرايا",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "The public express boats are the fastest and cheapest way between the riverside sights.",
+        "descriptionAr": "قوارب النقل السريع العامة أسرع وأرخص وسيلة بين معالم ضفة النهر."
+      },
+      {
+        "nameEn": "Chatuchak Weekend Market",
+        "nameAr": "سوق تشاتوتشاك",
+        "categoryEn": "Market",
+        "categoryAr": "سوق",
+        "descriptionEn": "Thousands of stalls, weekends only. Go early; by midday it is very hot and very full.",
+        "descriptionAr": "آلاف الأكشاك، في عطلة نهاية الأسبوع فقط. اذهب مبكرًا؛ فبحلول الظهر يصبح حارًا ومزدحمًا جدًا."
+      },
+      {
+        "nameEn": "Jim Thompson House",
+        "nameAr": "بيت جيم طومسون",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "Six teak houses assembled by the American who revived Thai silk, and the best hour of shade in the city.",
+        "descriptionAr": "ستة بيوت من خشب الساج جمّعها الأمريكي الذي أحيا الحرير التايلاندي، وأجمل ساعة ظل في المدينة."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Bo.lan",
+        "nameAr": "بو لان",
+        "cuisineEn": "Traditional Thai",
+        "cuisineAr": "تايلاندي تقليدي",
+        "descriptionEn": "One MICHELIN star in the 2026 Thailand guide, cooking old recipes with rare local ingredients. Book well ahead.",
+        "descriptionAr": "نجمة ميشلان واحدة في دليل تايلاند 2026، تطبخ وصفات قديمة بمكونات محلية نادرة. احجز مبكرًا."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Mandarin Oriental, Bangkok",
+        "nameAr": "ماندارين أورينتال بانكوك",
+        "descriptionEn": "On the Chao Phraya since 1876 and the benchmark every other Bangkok hotel is measured against.",
+        "descriptionAr": "على نهر تشاو فرايا منذ 1876، والمعيار الذي تُقاس به كل فنادق بانكوك الأخرى.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "The Peninsula Bangkok",
+        "nameAr": "بينينسولا بانكوك",
+        "descriptionEn": "Across the river with a view back at the skyline, and its own boats to the far bank.",
+        "descriptionAr": "على الضفة المقابلة بإطلالة على أفق المدينة، وقوارب خاصة به إلى الضفة الأخرى.",
+        "tier": "luxury"
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "The Siam",
+        "nameAr": "ذا سيام",
+        "descriptionEn": "Thirty-eight suites on three riverside acres, quieter and more private than the big riverside names.",
+        "descriptionAr": "ثمانٍ وثلاثون جناحًا على ثلاثة أفدنة عند النهر، أهدأ وأكثر خصوصية من الأسماء الكبيرة على الضفة."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Early morning",
+        "timeAr": "الصباح الباكر",
+        "placeEn": "Grand Palace",
+        "placeAr": "القصر الكبير",
+        "descriptionEn": "At opening, before the heat and the crowds.",
+        "descriptionAr": "عند الافتتاح، قبل الحر والزحام."
+      },
+      {
+        "timeEn": "Midday",
+        "timeAr": "منتصف النهار",
+        "placeEn": "Wat Pho",
+        "placeAr": "وات فو",
+        "descriptionEn": "The reclining Buddha, then a Thai massage in the shade.",
+        "descriptionAr": "بوذا المستلقي، ثم تدليك تايلاندي في الظل."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Chao Phraya",
+        "placeAr": "تشاو فرايا",
+        "descriptionEn": "A river boat as the light goes, then dinner on the water.",
+        "descriptionAr": "قارب نهري مع مغيب الضوء، ثم عشاء على الماء."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Temples enforce a dress code: shoulders and knees covered for everyone. Carry a light scarf rather than renting one at the gate.",
+        "ar": "تفرض المعابد قواعد لباس: تغطية الكتفين والركبتين للجميع. احمل وشاحًا خفيفًا بدل استئجار واحد عند البوابة."
+      },
+      {
+        "en": "Bangkok traffic is genuinely bad. The BTS Skytrain, the MRT and the river boats will beat a taxi at almost any hour.",
+        "ar": "ازدحام بانكوك حقيقي. قطار BTS والمترو وقوارب النهر تتفوق على سيارة الأجرة في معظم الأوقات."
+      }
+    ]
+  },
+  "thailand/phuket": {
+    "attractions": [
+      {
+        "nameEn": "Phang Nga Bay",
+        "nameAr": "خليج فانغ نغا",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Limestone karsts straight out of the sea, reached by longtail or speedboat for the day.",
+        "descriptionAr": "صخور جيرية تنهض من البحر مباشرة، يُوصل إليها بقارب طويل أو سريع ليوم كامل."
+      },
+      {
+        "nameEn": "Old Phuket Town",
+        "nameAr": "بلدة فوكيت القديمة",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "Sino-Portuguese shophouses in sherbet colours, best walked late afternoon.",
+        "descriptionAr": "بيوت تجارية صينية برتغالية بألوان فاتحة، وأجمل وقت للمشي فيها بعد العصر."
+      },
+      {
+        "nameEn": "Big Buddha",
+        "nameAr": "بوذا الكبير",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "A 45-metre marble Buddha on a hill with the island laid out below it.",
+        "descriptionAr": "تمثال بوذا رخامي بارتفاع 45 مترًا على تل تمتد الجزيرة تحته."
+      },
+      {
+        "nameEn": "Similan Islands",
+        "nameAr": "جزر سيميلان",
+        "categoryEn": "Diving",
+        "categoryAr": "غوص",
+        "descriptionEn": "Some of the clearest water in Thailand, a day trip north. Closed to visitors roughly May to October.",
+        "descriptionAr": "من أصفى المياه في تايلاند، برحلة يوم إلى الشمال. مغلقة أمام الزوار تقريبًا من مايو إلى أكتوبر."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rosewood Phuket",
+        "nameAr": "روزوود فوكيت",
+        "descriptionEn": "On 600 metres of beach at Emerald Bay, with three restaurants and a lot of quiet.",
+        "descriptionAr": "على 600 متر من الشاطئ في خليج إميرالد، بثلاثة مطاعم وهدوء وافر.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Trisara",
+        "nameAr": "تريسارا",
+        "descriptionEn": "A private bay on the quieter northwest coast, villas with their own pools.",
+        "descriptionAr": "خليج خاص على الساحل الشمالي الغربي الأهدأ، وفلل بمسابح خاصة.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Phang Nga Bay",
+        "placeAr": "خليج فانغ نغا",
+        "descriptionEn": "Out early by boat, before the day tours.",
+        "descriptionAr": "الخروج مبكرًا بالقارب قبل الجولات النهارية."
+      },
+      {
+        "timeEn": "Late afternoon",
+        "timeAr": "بعد العصر",
+        "placeEn": "Old Phuket Town",
+        "placeAr": "بلدة فوكيت القديمة",
+        "descriptionEn": "The shophouse streets as it cools.",
+        "descriptionAr": "شوارع البيوت التجارية مع اعتدال الجو."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "West coast beach",
+        "placeAr": "شاطئ الساحل الغربي",
+        "descriptionEn": "Sunset on the west side, which is where it sets.",
+        "descriptionAr": "الغروب على الجهة الغربية، فهناك تغرب الشمس."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "The monsoon runs roughly May to October: the west-coast beaches get rough surf and red flags. November to April is the dry season.",
+        "ar": "يمتد موسم الرياح تقريبًا من مايو إلى أكتوبر: تصبح شواطئ الساحل الغربي هائجة وتُرفع الأعلام الحمراء. ونوفمبر إلى أبريل هو الموسم الجاف."
+      }
+    ]
+  },
+  "thailand/chiang-mai": {
+    "attractions": [
+      {
+        "nameEn": "Wat Phra That Doi Suthep",
+        "nameAr": "معبد دوي سوتيب",
+        "categoryEn": "Temple",
+        "categoryAr": "معبد",
+        "descriptionEn": "The temple on the mountain above the city, up 306 steps or the funicular.",
+        "descriptionAr": "المعبد على الجبل فوق المدينة، يُصعد إليه عبر 306 درجات أو بالقطار المائل."
+      },
+      {
+        "nameEn": "Old City temples",
+        "nameAr": "معابد المدينة القديمة",
+        "categoryEn": "Temples",
+        "categoryAr": "معابد",
+        "descriptionEn": "Wat Chedi Luang and Wat Phra Singh inside the old moat, walkable in a morning.",
+        "descriptionAr": "وات تشيدي لوانغ ووات فرا سينغ داخل الخندق القديم، ويمكن المشي بينها في صباح واحد."
+      },
+      {
+        "nameEn": "Elephant sanctuary visit",
+        "nameAr": "زيارة محمية الفيلة",
+        "categoryEn": "Wildlife",
+        "categoryAr": "حياة برية",
+        "descriptionEn": "Choose a genuine no-riding sanctuary; the difference between them matters a great deal here.",
+        "descriptionAr": "اختر محمية حقيقية لا يُركب فيها الفيل؛ فالفرق بين المحميات هنا مهم جدًا."
+      },
+      {
+        "nameEn": "Sunday Walking Street",
+        "nameAr": "شارع المشي يوم الأحد",
+        "categoryEn": "Market",
+        "categoryAr": "سوق",
+        "descriptionEn": "The old city closes to traffic and fills with craft stalls and food from late afternoon.",
+        "descriptionAr": "تُغلق المدينة القديمة أمام السيارات وتمتلئ بأكشاك الحرف والطعام من بعد العصر."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Four Seasons Resort Chiang Mai",
+        "nameAr": "فورسيزونز تشيانغ ماي",
+        "descriptionEn": "Pavilions set among working rice paddies outside the city, with three restaurants and a large spa.",
+        "descriptionAr": "أجنحة وسط حقول أرز عاملة خارج المدينة، بثلاثة مطاعم ومنتجع صحي كبير.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "137 Pillars House",
+        "nameAr": "137 بيلارز هاوس",
+        "descriptionEn": "Thirty suites built around an 1880s teak house, walking distance from the Ping River.",
+        "descriptionAr": "ثلاثون جناحًا حول بيت من خشب الساج يعود لثمانينيات القرن التاسع عشر، على مسافة مشي من نهر بينغ.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Doi Suthep",
+        "placeAr": "دوي سوتيب",
+        "descriptionEn": "Up the mountain early, while it is still cool.",
+        "descriptionAr": "صعود الجبل مبكرًا بينما الجو لا يزال باردًا."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Old City",
+        "placeAr": "المدينة القديمة",
+        "descriptionEn": "The temples inside the moat, on foot.",
+        "descriptionAr": "معابد داخل الخندق، مشيًا."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Night market",
+        "placeAr": "السوق الليلي",
+        "descriptionEn": "Dinner among the stalls.",
+        "descriptionAr": "العشاء بين الأكشاك."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Burning season runs roughly February to April and the air quality drops sharply. November to January is the best window.",
+        "ar": "يمتد موسم الحرائق الزراعية تقريبًا من فبراير إلى أبريل وتتدهور جودة الهواء بشدة. ونوفمبر إلى يناير هو أفضل نافذة."
+      }
+    ]
+  },
+  "thailand/krabi": {
+    "attractions": [
+      {
+        "nameEn": "Railay Beach",
+        "nameAr": "شاطئ رايلاي",
+        "categoryEn": "Beach",
+        "categoryAr": "شاطئ",
+        "descriptionEn": "Cut off by cliffs and reachable only by boat, which is exactly why it is worth the trip.",
+        "descriptionAr": "معزول بالجروف ولا يُوصل إليه إلا بالقارب، وهذا بالضبط ما يجعله يستحق الرحلة."
+      },
+      {
+        "nameEn": "Four Islands day trip",
+        "nameAr": "رحلة الجزر الأربع",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Chicken Island, Tup, Poda and Phra Nang by longtail, the standard and still the best day out.",
+        "descriptionAr": "جزر تشيكن وتوب وبودا وفرا نانغ بقارب طويل، الرحلة المعتادة ولا تزال الأفضل."
+      },
+      {
+        "nameEn": "Emerald Pool & Hot Springs",
+        "nameAr": "البركة الزمردية والينابيع الساخنة",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Inland in the rainforest, a natural pool and hot springs, usually done together.",
+        "descriptionAr": "في الداخل وسط الغابة المطيرة، بركة طبيعية وينابيع ساخنة، وتُزاران عادة معًا."
+      },
+      {
+        "nameEn": "Rock climbing at Railay",
+        "nameAr": "التسلق في رايلاي",
+        "categoryEn": "Adventure",
+        "categoryAr": "مغامرة",
+        "descriptionEn": "The limestone here is world-known, with routes and schools for complete beginners.",
+        "descriptionAr": "الصخور الجيرية هنا مشهورة عالميًا، وفيها مسارات ومدارس للمبتدئين تمامًا."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rayavadee",
+        "nameAr": "رايافادي",
+        "descriptionEn": "Free-standing pavilions on Railay, hemmed in by cliffs and the marine national park.",
+        "descriptionAr": "أجنحة منفصلة في رايلاي، تحيط بها الجروف والمحمية البحرية الوطنية.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Four Islands",
+        "placeAr": "الجزر الأربع",
+        "descriptionEn": "Longtail out before the day boats fill up.",
+        "descriptionAr": "قارب طويل مبكرًا قبل امتلاء قوارب النهار."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Railay",
+        "placeAr": "رايلاي",
+        "descriptionEn": "Swim, or watch the climbers on the wall.",
+        "descriptionAr": "السباحة، أو مشاهدة المتسلقين على الجدار."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Ao Nang",
+        "placeAr": "آو نانغ",
+        "descriptionEn": "Dinner back on the mainland strip.",
+        "descriptionAr": "العشاء على شريط اليابسة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Railay is not an island but you still cannot drive there. Everything arrives by longtail from Ao Nang or Krabi town.",
+        "ar": "رايلاي ليست جزيرة لكن لا يمكن الوصول إليها بالسيارة. كل شيء يصل بقارب طويل من آو نانغ أو بلدة كرابي."
+      }
+    ]
+  },
+  "thailand/koh-samui": {
+    "attractions": [
+      {
+        "nameEn": "Ang Thong Marine Park",
+        "nameAr": "محمية أنغ ثونغ البحرية",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Forty-two islands north-west of Samui, a full day out by boat.",
+        "descriptionAr": "اثنتان وأربعون جزيرة شمال غرب ساموي، رحلة يوم كامل بالقارب."
+      },
+      {
+        "nameEn": "Big Buddha (Wat Phra Yai)",
+        "nameAr": "بوذا الكبير",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "A twelve-metre gold Buddha on a causeway islet at the island's north-east corner.",
+        "descriptionAr": "تمثال بوذا ذهبي بارتفاع اثني عشر مترًا على جزيرة صغيرة في الركن الشمالي الشرقي."
+      },
+      {
+        "nameEn": "Na Muang Waterfalls",
+        "nameAr": "شلالات نا موانغ",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Two falls inland, the lower one an easy walk and the upper one a proper climb.",
+        "descriptionAr": "شلالان في الداخل، السفلي بمشية سهلة والعلوي بتسلق حقيقي."
+      },
+      {
+        "nameEn": "Fisherman's Village",
+        "nameAr": "قرية الصيادين",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "Wooden shophouses at Bophut with a Friday night market along the front.",
+        "descriptionAr": "بيوت خشبية في بوفوت وسوق ليلي كل جمعة على الواجهة."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Four Seasons Resort Koh Samui",
+        "nameAr": "فورسيزونز كوه ساموي",
+        "descriptionEn": "Villas with private infinity pools on Laem Yai Bay, on the quiet north-west tip.",
+        "descriptionAr": "فلل بمسابح لا متناهية خاصة على خليج لايم ياي، في الطرف الشمالي الغربي الهادئ.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Ang Thong",
+        "placeAr": "أنغ ثونغ",
+        "descriptionEn": "The marine park by boat, leaving early.",
+        "descriptionAr": "المحمية البحرية بالقارب، مع مغادرة مبكرة."
+      },
+      {
+        "timeEn": "Late afternoon",
+        "timeAr": "بعد العصر",
+        "placeEn": "Big Buddha",
+        "placeAr": "بوذا الكبير",
+        "descriptionEn": "The temple and the view over the strait.",
+        "descriptionAr": "المعبد والإطلالة على المضيق."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Fisherman's Village",
+        "placeAr": "قرية الصيادين",
+        "descriptionEn": "Dinner along the Bophut front.",
+        "descriptionAr": "العشاء على واجهة بوفوت."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Samui's weather runs opposite to Phuket's: its wettest months are October to December, when the Andaman side is at its best.",
+        "ar": "طقس ساموي معاكس لفوكيت: أمطر شهورها من أكتوبر إلى ديسمبر، وهي الفترة التي يكون فيها جانب أندامان في أفضل حال."
+      }
+    ]
+  },
+  "thailand/pattaya": {
+    "attractions": [
+      {
+        "nameEn": "Sanctuary of Truth",
+        "nameAr": "معبد الحقيقة",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "An all-teak carved temple on the shore, still unfinished after four decades.",
+        "descriptionAr": "معبد منحوت بالكامل من خشب الساج على الشاطئ، ولم يكتمل بعد أربعة عقود."
+      },
+      {
+        "nameEn": "Nong Nooch Tropical Garden",
+        "nameAr": "حديقة نونغ نوش الاستوائية",
+        "categoryEn": "Garden",
+        "categoryAr": "حديقة",
+        "descriptionEn": "Six hundred landscaped acres south of town, easily half a day.",
+        "descriptionAr": "ستمائة فدان مصممة جنوب البلدة، تستغرق نصف يوم بسهولة."
+      },
+      {
+        "nameEn": "Coral Island (Koh Larn)",
+        "nameAr": "جزيرة كوه لارن",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Forty minutes by ferry to clearer water than the town beaches.",
+        "descriptionAr": "أربعون دقيقة بالعبّارة إلى مياه أصفى من شواطئ البلدة."
+      },
+      {
+        "nameEn": "Pattaya Floating Market",
+        "nameAr": "سوق باتايا العائم",
+        "categoryEn": "Market",
+        "categoryAr": "سوق",
+        "descriptionEn": "Four regions of Thailand laid out over the water, touristy but genuinely enjoyable.",
+        "descriptionAr": "أربع مناطق من تايلاند ممتدة فوق الماء، سياحي لكنه ممتع فعلًا."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Cape Dara Resort",
+        "nameAr": "كيب دارا ريزورت",
+        "descriptionEn": "On the headland north of the main beach, quieter than the centre with sea on two sides.",
+        "descriptionAr": "على الرأس شمال الشاطئ الرئيسي، أهدأ من الوسط والبحر على جهتيه."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Koh Larn",
+        "placeAr": "كوه لارن",
+        "descriptionEn": "The ferry across for the clearer water.",
+        "descriptionAr": "العبّارة إلى الجهة الأخرى للمياه الأصفى."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Sanctuary of Truth",
+        "placeAr": "معبد الحقيقة",
+        "descriptionEn": "The carved temple on the way back.",
+        "descriptionAr": "المعبد المنحوت في طريق العودة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Beach Road",
+        "placeAr": "طريق الشاطئ",
+        "descriptionEn": "Dinner along the front.",
+        "descriptionAr": "العشاء على الواجهة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Pattaya is about two hours from Bangkok by road and works well as a short add-on rather than a base for the whole trip.",
+        "ar": "باتايا على بعد ساعتين تقريبًا من بانكوك برًا، وتناسب كإضافة قصيرة لا كقاعدة للرحلة كلها."
+      }
+    ]
+  },
+  "malaysia/kuala-lumpur": {
+    "attractions": [
+      {
+        "nameEn": "Petronas Twin Towers",
+        "nameAr": "برجا بتروناس التوأم",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "The skybridge and observation deck; tickets sell out, so book online before the day.",
+        "descriptionAr": "الجسر المعلق ومنصة المشاهدة؛ تنفد التذاكر، فاحجز عبر الإنترنت قبل اليوم نفسه."
+      },
+      {
+        "nameEn": "Batu Caves",
+        "nameAr": "كهوف باتو",
+        "categoryEn": "Temple",
+        "categoryAr": "معبد",
+        "descriptionEn": "A limestone cave temple up 272 painted steps, half an hour north of the centre.",
+        "descriptionAr": "معبد داخل كهف جيري عبر 272 درجة ملونة، على بعد نصف ساعة شمال المركز."
+      },
+      {
+        "nameEn": "Merdeka Square & old KL",
+        "nameAr": "ساحة مرديكا والمدينة القديمة",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "Colonial buildings, the old railway station and Masjid Jamek where the two rivers meet.",
+        "descriptionAr": "مبانٍ استعمارية ومحطة السكة القديمة ومسجد جامك عند التقاء النهرين."
+      },
+      {
+        "nameEn": "Islamic Arts Museum",
+        "nameAr": "متحف الفن الإسلامي",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "The largest Islamic art collection in Southeast Asia, and a genuinely calm couple of hours.",
+        "descriptionAr": "أكبر مجموعة فن إسلامي في جنوب شرق آسيا، وساعتان هادئتان بحق."
+      },
+      {
+        "nameEn": "Jalan Alor night food street",
+        "nameAr": "شارع جالان ألور الليلي",
+        "categoryEn": "Street food",
+        "categoryAr": "أكل شارع",
+        "descriptionEn": "The street the city eats on after dark, a short walk from Bukit Bintang.",
+        "descriptionAr": "الشارع الذي تأكل فيه المدينة بعد الغروب، على مسافة مشي قصيرة من بوكيت بينتانغ."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Mandarin Oriental, Kuala Lumpur",
+        "nameAr": "ماندارين أورينتال كوالالمبور",
+        "descriptionEn": "Next to the Petronas Towers and the park, with tower views from the pool deck.",
+        "descriptionAr": "بجوار برجي بتروناس والحديقة، بإطلالات على البرجين من سطح المسبح.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "The Ritz-Carlton, Kuala Lumpur",
+        "nameAr": "ريتز كارلتون كوالالمبور",
+        "descriptionEn": "In the Bukit Bintang shopping district, walkable to Jalan Alor and the malls.",
+        "descriptionAr": "في حي بوكيت بينتانغ التجاري، على مسافة مشي من جالان ألور والمولات.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Batu Caves",
+        "placeAr": "كهوف باتو",
+        "descriptionEn": "Early, before the heat on those steps.",
+        "descriptionAr": "مبكرًا، قبل أن يشتد الحر على تلك الدرجات."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Islamic Arts Museum",
+        "placeAr": "متحف الفن الإسلامي",
+        "descriptionEn": "Air-conditioned and worth the time.",
+        "descriptionAr": "مكيّف ويستحق الوقت."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Petronas Towers",
+        "placeAr": "برجا بتروناس",
+        "descriptionEn": "The towers lit up, then dinner on Jalan Alor.",
+        "descriptionAr": "البرجان مضاءان، ثم العشاء في جالان ألور."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Halal food is the default rather than the exception here, and prayer rooms (surau) are in every mall and station.",
+        "ar": "الطعام الحلال هو الأصل هنا لا الاستثناء، وتوجد مصليات في كل مول ومحطة."
+      },
+      {
+        "en": "Grab is the way to move around; metered taxis are worth avoiding and the MRT does not reach everything.",
+        "ar": "تطبيق غراب هو وسيلة التنقل؛ ويُفضل تجنب سيارات الأجرة بالعداد، فالمترو لا يصل إلى كل مكان."
+      }
+    ]
+  },
+  "malaysia/penang": {
+    "attractions": [
+      {
+        "nameEn": "George Town",
+        "nameAr": "جورج تاون",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "A UNESCO-listed old town of shophouses, clan jetties and street art, best on foot.",
+        "descriptionAr": "بلدة قديمة مدرجة في اليونسكو ببيوت تجارية وأرصفة العشائر وفن الشوارع، وأجمل استكشافها مشيًا."
+      },
+      {
+        "nameEn": "Penang Hill",
+        "nameAr": "تل بينانغ",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "A funicular up to cooler air and the whole island laid out below.",
+        "descriptionAr": "قطار مائل يصعد إلى هواء أبرد والجزيرة كلها ممتدة تحتك."
+      },
+      {
+        "nameEn": "Kek Lok Si Temple",
+        "nameAr": "معبد كيك لوك سي",
+        "categoryEn": "Temple",
+        "categoryAr": "معبد",
+        "descriptionEn": "The largest Buddhist temple in Malaysia, on the hillside at Air Itam.",
+        "descriptionAr": "أكبر معبد بوذي في ماليزيا، على سفح التل في آير إيتام."
+      },
+      {
+        "nameEn": "Penang street food",
+        "nameAr": "أكل شوارع بينانغ",
+        "categoryEn": "Street food",
+        "categoryAr": "أكل شارع",
+        "descriptionEn": "The reason many people come: char kway teow, assam laksa and cendol at the hawker centres.",
+        "descriptionAr": "السبب الذي يأتي من أجله كثيرون: تشار كواي تياو وأسام لاكسا وتشندول في مراكز الباعة."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Eastern & Oriental Hotel",
+        "nameAr": "فندق إيسترن آند أورينتال",
+        "descriptionEn": "The 1885 seafront grande dame at the edge of George Town, colonial and central.",
+        "descriptionAr": "سيدة الواجهة البحرية منذ 1885 على حافة جورج تاون، استعمارية الطراز وفي القلب.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "George Town",
+        "placeAr": "جورج تاون",
+        "descriptionEn": "The shophouse streets and the street art, on foot.",
+        "descriptionAr": "شوارع البيوت التجارية وفن الشوارع، مشيًا."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Penang Hill",
+        "placeAr": "تل بينانغ",
+        "descriptionEn": "The funicular up for cooler air.",
+        "descriptionAr": "الصعود بالقطار المائل إلى هواء أبرد."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Hawker centre",
+        "placeAr": "مركز الباعة",
+        "descriptionEn": "Dinner at a hawker centre, which is the point of Penang.",
+        "descriptionAr": "العشاء في مركز للباعة، وهو جوهر بينانغ."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Penang's hawker stalls each do one dish. Order across several stalls at one table rather than looking for a full menu.",
+        "ar": "كل كشك في بينانغ يتقن طبقًا واحدًا. اطلب من عدة أكشاك على طاولة واحدة بدل البحث عن قائمة كاملة."
+      }
+    ]
+  },
+  "malaysia/langkawi": {
+    "attractions": [
+      {
+        "nameEn": "Langkawi SkyCab & Sky Bridge",
+        "nameAr": "تلفريك لنكاوي والجسر المعلق",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "A steep cable car to a curved bridge slung between peaks, over the rainforest.",
+        "descriptionAr": "تلفريك شديد الانحدار إلى جسر منحنٍ معلق بين القمم فوق الغابة المطيرة."
+      },
+      {
+        "nameEn": "Island-hopping by boat",
+        "nameAr": "التنقل بين الجزر",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Dayang Bunting, Beras Basah and the eagle-feeding stop, the standard half day.",
+        "descriptionAr": "دايانغ بونتينغ وبيراس باساه ومحطة إطعام النسور، نصف اليوم المعتاد."
+      },
+      {
+        "nameEn": "Kilim Geoforest Park",
+        "nameAr": "منتزه كيليم الجيولوجي",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Mangrove channels through limestone, with eagles, monkeys and bat caves.",
+        "descriptionAr": "قنوات المنغروف بين الصخور الجيرية، وفيها نسور وقرود وكهوف خفافيش."
+      },
+      {
+        "nameEn": "Pantai Cenang",
+        "nameAr": "شاطئ تشينانغ",
+        "categoryEn": "Beach",
+        "categoryAr": "شاطئ",
+        "descriptionEn": "The main beach strip, where most of the island's eating and boat hire happens.",
+        "descriptionAr": "شريط الشاطئ الرئيسي، حيث معظم مطاعم الجزيرة وتأجير القوارب."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "The Datai Langkawi",
+        "nameAr": "ذا داتاي لنكاوي",
+        "descriptionEn": "Where old rainforest meets Datai Bay on the north-west coast, quiet and deeply green.",
+        "descriptionAr": "حيث تلتقي الغابة القديمة بخليج داتاي على الساحل الشمالي الغربي، هادئ وشديد الخضرة.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "The Ritz-Carlton, Langkawi",
+        "nameAr": "ريتز كارلتون لنكاوي",
+        "descriptionEn": "Villas between rainforest and the Andaman Sea, with a private bay.",
+        "descriptionAr": "فلل بين الغابة المطيرة وبحر أندامان، بخليج خاص.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Kilim Geoforest Park",
+        "placeAr": "منتزه كيليم",
+        "descriptionEn": "The mangroves by boat, early for the wildlife.",
+        "descriptionAr": "المنغروف بالقارب، مبكرًا لرؤية الحياة البرية."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "SkyCab",
+        "placeAr": "التلفريك",
+        "descriptionEn": "Up for the bridge and the view.",
+        "descriptionAr": "الصعود إلى الجسر والإطلالة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Pantai Cenang",
+        "placeAr": "شاطئ تشينانغ",
+        "descriptionEn": "Sunset and dinner on the beach strip.",
+        "descriptionAr": "الغروب والعشاء على شريط الشاطئ."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Langkawi is duty-free, which is why chocolate and household goods are noticeably cheap here.",
+        "ar": "لنكاوي منطقة معفاة من الرسوم، ولهذا تبدو الشوكولاتة والسلع المنزلية رخيصة بشكل ملحوظ."
+      }
+    ]
+  },
+  "malaysia/malacca": {
+    "attractions": [
+      {
+        "nameEn": "Jonker Street",
+        "nameAr": "شارع جونكر",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "The heart of the old Chinatown, with a night market on weekends.",
+        "descriptionAr": "قلب الحي الصيني القديم، وفيه سوق ليلي في عطلة نهاية الأسبوع."
+      },
+      {
+        "nameEn": "Dutch Square & Christ Church",
+        "nameAr": "الساحة الهولندية وكنيسة المسيح",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "The red buildings every photograph of Malacca is taken in front of.",
+        "descriptionAr": "المباني الحمراء التي تُلتقط أمامها كل صور ملقا."
+      },
+      {
+        "nameEn": "A Famosa & St Paul's Hill",
+        "nameAr": "أ فاموسا وتل القديس بولس",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "What is left of the Portuguese fort, and the ruined church on the hill above it.",
+        "descriptionAr": "ما تبقى من القلعة البرتغالية، والكنيسة المهدمة على التل فوقها."
+      },
+      {
+        "nameEn": "Malacca River cruise",
+        "nameAr": "جولة نهر ملقا",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Forty-five minutes through the painted riverfront, best after dark.",
+        "descriptionAr": "خمس وأربعون دقيقة عبر الواجهة النهرية المرسومة، وأجملها بعد المغيب."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Casa del Rio Melaka",
+        "nameAr": "كاسا ديل ريو ملقا",
+        "descriptionEn": "On the river beside Jonker Street, the most comfortable base in the old town.",
+        "descriptionAr": "على النهر بجوار شارع جونكر، وأكثر القواعد راحة في البلدة القديمة."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "St Paul's Hill",
+        "placeAr": "تل القديس بولس",
+        "descriptionEn": "The fort and the hill before it gets hot.",
+        "descriptionAr": "القلعة والتل قبل اشتداد الحر."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Jonker Street",
+        "placeAr": "شارع جونكر",
+        "descriptionEn": "Antique shops and Peranakan lunch.",
+        "descriptionAr": "محال التحف وغداء بيرانakan."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "River cruise",
+        "placeAr": "جولة النهر",
+        "descriptionEn": "The river after dark, when it is lit.",
+        "descriptionAr": "النهر بعد المغيب حين تُضاء أنواره."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Malacca is a two-hour drive from Kuala Lumpur and works best as an overnight rather than a rushed day trip.",
+        "ar": "ملقا على بعد ساعتين بالسيارة من كوالالمبور، وتناسب كمبيت ليلة لا كرحلة يوم مستعجلة."
+      }
+    ]
+  },
+  "malaysia/kota-kinabalu": {
+    "attractions": [
+      {
+        "nameEn": "Tunku Abdul Rahman Marine Park",
+        "nameAr": "محمية تنكو عبد الرحمن البحرية",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "Five islands fifteen minutes offshore, for snorkelling and an easy beach day.",
+        "descriptionAr": "خمس جزر على بعد خمس عشرة دقيقة من الشاطئ، للغطس ويوم شاطئ سهل."
+      },
+      {
+        "nameEn": "Mount Kinabalu",
+        "nameAr": "جبل كينابالو",
+        "categoryEn": "Mountain",
+        "categoryAr": "جبل",
+        "descriptionEn": "Southeast Asia's highest peak between Himalaya and New Guinea; the climb needs a permit booked well ahead.",
+        "descriptionAr": "أعلى قمة في جنوب شرق آسيا بين الهيمالايا وغينيا الجديدة؛ ويحتاج التسلق تصريحًا يُحجز مبكرًا."
+      },
+      {
+        "nameEn": "Kinabalu Park",
+        "nameAr": "منتزه كينابالو",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "A UNESCO site at the mountain's foot, walkable trails without any climbing.",
+        "descriptionAr": "موقع يونسكو عند سفح الجبل، بمسارات مشي دون أي تسلق."
+      },
+      {
+        "nameEn": "Sunset at Tanjung Aru",
+        "nameAr": "الغروب في تانجونغ آرو",
+        "categoryEn": "Beach",
+        "categoryAr": "شاطئ",
+        "descriptionEn": "The beach the city goes to in the evening, and one of Borneo's better sunsets.",
+        "descriptionAr": "الشاطئ الذي تقصده المدينة مساءً، وأحد أجمل غروبات بورنيو."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Shangri-La Tanjung Aru",
+        "nameAr": "شانغريلا تانجونغ آرو",
+        "descriptionEn": "On its own beach ten minutes from the airport, looking at Mount Kinabalu and the South China Sea.",
+        "descriptionAr": "على شاطئه الخاص على بعد عشر دقائق من المطار، بإطلالة على جبل كينابالو وبحر الصين الجنوبي.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Marine park",
+        "placeAr": "المحمية البحرية",
+        "descriptionEn": "Boat to the islands for snorkelling.",
+        "descriptionAr": "قارب إلى الجزر للغطس."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "City market",
+        "placeAr": "سوق المدينة",
+        "descriptionEn": "The waterfront market back in town.",
+        "descriptionAr": "سوق الواجهة البحرية في البلدة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Tanjung Aru",
+        "placeAr": "تانجونغ آرو",
+        "descriptionEn": "Sunset from the beach.",
+        "descriptionAr": "الغروب من الشاطئ."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Sabah is a two-and-a-half hour flight from Kuala Lumpur, so treat Borneo as its own trip rather than a side trip.",
+        "ar": "صباح على بعد ساعتين ونصف بالطائرة من كوالالمبور، فتعامل مع بورنيو كرحلة قائمة بذاتها لا كرحلة جانبية."
+      }
+    ]
+  },
+  "malaysia/cameron-highlands": {
+    "attractions": [
+      {
+        "nameEn": "Tea plantations",
+        "nameAr": "مزارع الشاي",
+        "categoryEn": "Landscape",
+        "categoryAr": "مناظر",
+        "descriptionEn": "Terraced green hills you can walk into, with tea rooms looking over them.",
+        "descriptionAr": "تلال خضراء مدرجة يمكنك المشي فيها، وغرف شاي تطل عليها."
+      },
+      {
+        "nameEn": "Mossy Forest",
+        "nameAr": "الغابة الطحلبية",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "A cloud forest on a boardwalk at 2,000 metres, cold and often in mist.",
+        "descriptionAr": "غابة سحابية على ممر خشبي عند ارتفاع 2000 متر، باردة وكثيرًا ما تغمرها الضبابة."
+      },
+      {
+        "nameEn": "Strawberry and butterfly farms",
+        "nameAr": "مزارع الفراولة والفراشات",
+        "categoryEn": "Family",
+        "categoryAr": "عائلي",
+        "descriptionEn": "The highlands' cool climate crop, and the standard stop with children.",
+        "descriptionAr": "محصول المرتفعات في مناخها البارد، والمحطة المعتادة مع الأطفال."
+      },
+      {
+        "nameEn": "Time Tunnel Museum",
+        "nameAr": "متحف نفق الزمن",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "A small local-history museum, more charming than it sounds on a wet afternoon.",
+        "descriptionAr": "متحف صغير للتاريخ المحلي، ألطف مما يبدو في أصيل ممطر."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Cameron Highlands Resort",
+        "nameAr": "منتجع مرتفعات كاميرون",
+        "descriptionEn": "A colonial-style resort beside the golf course, with a spa and tea-estate views.",
+        "descriptionAr": "منتجع على الطراز الاستعماري بجوار ملعب الغولف، بمنتجع صحي وإطلالات على مزارع الشاي.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Early morning",
+        "timeAr": "الصباح الباكر",
+        "placeEn": "Mossy Forest",
+        "placeAr": "الغابة الطحلبية",
+        "descriptionEn": "Before the cloud closes in for the day.",
+        "descriptionAr": "قبل أن تنغلق السحب على المكان طوال اليوم."
+      },
+      {
+        "timeEn": "Midday",
+        "timeAr": "منتصف النهار",
+        "placeEn": "Tea plantation",
+        "placeAr": "مزرعة الشاي",
+        "descriptionEn": "Lunch and tea looking over the terraces.",
+        "descriptionAr": "الغداء والشاي بإطلالة على المدرجات."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Strawberry farms",
+        "placeAr": "مزارع الفراولة",
+        "descriptionEn": "An easy stop on the way back down.",
+        "descriptionAr": "محطة سهلة في طريق النزول."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "It is genuinely cold at night up here, around 10-15°C. Pack a jacket even coming from the coast.",
+        "ar": "الجو بارد فعلًا ليلًا هنا، نحو 10 إلى 15 درجة. احمل معطفًا حتى لو كنت قادمًا من الساحل."
+      }
+    ]
+  },
+  "georgia/tbilisi": {
+    "attractions": [
+      {
+        "nameEn": "Old Tbilisi & Abanotubani",
+        "nameAr": "تبليسي القديمة وحي الحمامات",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "Balconied houses and the brick domes of the sulphur baths, all walkable from one another.",
+        "descriptionAr": "بيوت بشرفات خشبية والقباب الآجرية لحمامات الكبريت، وكلها على مسافة مشي من بعضها."
+      },
+      {
+        "nameEn": "Narikala Fortress",
+        "nameAr": "قلعة ناريكالا",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "The fourth-century fortress above the old town, reached by cable car from Rike Park.",
+        "descriptionAr": "قلعة من القرن الرابع فوق البلدة القديمة، يُوصل إليها بالتلفريك من حديقة ريكه."
+      },
+      {
+        "nameEn": "Sulphur baths",
+        "nameAr": "الحمامات الكبريتية",
+        "categoryEn": "Thermal",
+        "categoryAr": "حمامات معدنية",
+        "descriptionEn": "The reason the city is here at all; private rooms are rented by the hour.",
+        "descriptionAr": "السبب الذي قامت المدينة لأجله؛ وتُستأجر الغرف الخاصة بالساعة."
+      },
+      {
+        "nameEn": "Rustaveli Avenue",
+        "nameAr": "شارع روستافيلي",
+        "categoryEn": "Boulevard",
+        "categoryAr": "شارع رئيسي",
+        "descriptionEn": "The main avenue, with the opera house, the national museum and the parliament along it.",
+        "descriptionAr": "الشارع الرئيسي، وعليه دار الأوبرا والمتحف الوطني والبرلمان."
+      },
+      {
+        "nameEn": "Mtatsminda",
+        "nameAr": "متاتسميندا",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "The hill above the city with a funicular, a park and the whole valley below.",
+        "descriptionAr": "التل المطل على المدينة بقطار مائل وحديقة والوادي كله تحته."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Shavi Lomi",
+        "nameAr": "شافي لومي",
+        "cuisineEn": "Georgian",
+        "cuisineAr": "جورجي",
+        "descriptionEn": "A long-standing Tbilisi kitchen doing seasonal Georgian cooking in a courtyard house.",
+        "descriptionAr": "مطبخ عريق في تبليسي يقدم مطبخًا جورجيًا موسميًا في بيت بفناء."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Stamba Hotel",
+        "nameAr": "فندق ستامبا",
+        "descriptionEn": "A 1950s publishing house turned design hotel, with the city's most photographed lobby.",
+        "descriptionAr": "دار نشر من خمسينيات القرن الماضي تحولت إلى فندق تصميم، وفيه أكثر ردهة تُصوَّر في المدينة.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Rooms Hotel Tbilisi",
+        "nameAr": "رومز أوتيل تبليسي",
+        "descriptionEn": "Stamba's sister in Vera, a converted publishing building with a well-used terrace.",
+        "descriptionAr": "شقيق ستامبا في حي فيرا، مبنى نشر محوّل بشرفة كثيرة الاستخدام."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Old Tbilisi",
+        "placeAr": "تبليسي القديمة",
+        "descriptionEn": "The old town on foot, up to Narikala by cable car.",
+        "descriptionAr": "البلدة القديمة مشيًا، وصعودًا إلى ناريكالا بالتلفريك."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Sulphur baths",
+        "placeAr": "الحمامات الكبريتية",
+        "descriptionEn": "A private room in Abanotubani.",
+        "descriptionAr": "غرفة خاصة في حي الحمامات."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Vera or Sololaki",
+        "placeAr": "فيرا أو سولولاكي",
+        "descriptionEn": "Dinner in one of the old residential quarters.",
+        "descriptionAr": "العشاء في أحد الأحياء السكنية القديمة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Georgian food is built around cheese, bread and walnuts, and vegetarian dishes are everywhere; pork appears often, so ask when it matters.",
+        "ar": "المطبخ الجورجي مبني على الجبن والخبز والجوز، والأطباق النباتية منتشرة؛ ويظهر لحم الخنزير كثيرًا، فاسأل حين يهمك ذلك."
+      },
+      {
+        "en": "Saudi and most Gulf passports enter visa-free for up to a year, which makes a short trip genuinely easy to arrange.",
+        "ar": "يدخل حاملو الجوازات السعودية ومعظم الخليجية دون تأشيرة لمدة تصل إلى سنة، ما يجعل ترتيب رحلة قصيرة سهلًا فعلًا."
+      }
+    ]
+  },
+  "georgia/batumi": {
+    "attractions": [
+      {
+        "nameEn": "Batumi Boulevard",
+        "nameAr": "بوليفارد باتومي",
+        "categoryEn": "Waterfront",
+        "categoryAr": "واجهة بحرية",
+        "descriptionEn": "Seven kilometres of seafront park along the Black Sea, the spine of the city.",
+        "descriptionAr": "سبعة كيلومترات من حديقة الواجهة على البحر الأسود، وهي عمود المدينة."
+      },
+      {
+        "nameEn": "Old Batumi",
+        "nameAr": "باتومي القديمة",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "Piazza square and the streets around it, a mix of Ottoman, Georgian and Belle Époque.",
+        "descriptionAr": "ساحة بياتزا والشوارع حولها، مزيج عثماني وجورجي وبيل إيبوك."
+      },
+      {
+        "nameEn": "Botanical Garden",
+        "nameAr": "الحديقة النباتية",
+        "categoryEn": "Garden",
+        "categoryAr": "حديقة",
+        "descriptionEn": "On a headland north of the city, terraces of subtropical planting above the sea.",
+        "descriptionAr": "على رأس شمال المدينة، مدرجات من النباتات شبه الاستوائية فوق البحر."
+      },
+      {
+        "nameEn": "Ali and Nino statue",
+        "nameAr": "تمثال علي ونينو",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "Two moving steel figures on the boulevard that pass through each other every evening.",
+        "descriptionAr": "تمثالان فولاذيان متحركان على البوليفارد يمر كل منهما عبر الآخر كل مساء."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rooms Hotel Batumi",
+        "nameAr": "رومز أوتيل باتومي",
+        "descriptionEn": "An 1890s hotel building carefully kept, a short walk from the boulevard.",
+        "descriptionAr": "مبنى فندقي من تسعينيات القرن التاسع عشر محفوظ بعناية، على مسافة مشي قصيرة من البوليفارد."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Botanical Garden",
+        "placeAr": "الحديقة النباتية",
+        "descriptionEn": "The terraces above the sea, early.",
+        "descriptionAr": "المدرجات فوق البحر، مبكرًا."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Old Batumi",
+        "placeAr": "باتومي القديمة",
+        "descriptionEn": "Piazza and the old streets.",
+        "descriptionAr": "بياتزا والشوارع القديمة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Batumi Boulevard",
+        "placeAr": "بوليفارد باتومي",
+        "descriptionEn": "The seafront walk at sunset.",
+        "descriptionAr": "المشي على الواجهة عند الغروب."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Batumi is a summer city. Out of season much of the seafront closes, so pair it with Tbilisi rather than making it the whole trip.",
+        "ar": "باتومي مدينة صيفية. خارج الموسم يُغلق كثير من الواجهة، فادمجها مع تبليسي بدل أن تكون الرحلة كلها."
+      }
+    ]
+  },
+  "georgia/kazbegi": {
+    "attractions": [
+      {
+        "nameEn": "Gergeti Trinity Church",
+        "nameAr": "كنيسة جيرجتي الثالوث",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "A fourteenth-century church at 2,170 metres under Mount Kazbek, the image of Georgia.",
+        "descriptionAr": "كنيسة من القرن الرابع عشر على ارتفاع 2170 مترًا تحت جبل كازبك، وهي صورة جورجيا."
+      },
+      {
+        "nameEn": "Georgian Military Highway",
+        "nameAr": "الطريق العسكري الجورجي",
+        "categoryEn": "Drive",
+        "categoryAr": "طريق",
+        "descriptionEn": "The road up from Tbilisi through the Caucasus, a sight in itself.",
+        "descriptionAr": "الطريق الصاعد من تبليسي عبر القوقاز، وهو مشهد بحد ذاته."
+      },
+      {
+        "nameEn": "Gveleti Waterfall",
+        "nameAr": "شلال غفيليتي",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "A short walk off the highway near the Russian border, easy for most people.",
+        "descriptionAr": "مشية قصيرة من الطريق قرب الحدود الروسية، سهلة لمعظم الناس."
+      },
+      {
+        "nameEn": "Truso Valley",
+        "nameAr": "وادي تروسو",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Mineral springs and abandoned towers along a wide green valley.",
+        "descriptionAr": "ينابيع معدنية وأبراج مهجورة على امتداد وادٍ أخضر واسع."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rooms Hotel Kazbegi",
+        "nameAr": "رومز أوتيل كازبيغي",
+        "descriptionEn": "A converted Soviet-era building facing Mount Kazbek, with the view the whole trip is for.",
+        "descriptionAr": "مبنى من الحقبة السوفيتية محوّل يواجه جبل كازبك، بالإطلالة التي تُقام الرحلة لأجلها.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Drive up",
+        "placeAr": "الصعود بالسيارة",
+        "descriptionEn": "The Military Highway from Tbilisi, stopping as you go.",
+        "descriptionAr": "الطريق العسكري من تبليسي، مع التوقف على طول الطريق."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Gergeti Trinity",
+        "placeAr": "جيرجتي الثالوث",
+        "descriptionEn": "Up to the church by 4x4 or on foot.",
+        "descriptionAr": "الصعود إلى الكنيسة بسيارة دفع رباعي أو مشيًا."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Stepantsminda",
+        "placeAr": "ستيبانتسميندا",
+        "descriptionEn": "Dinner with the mountain in the window.",
+        "descriptionAr": "العشاء والجبل في النافذة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "It is roughly three hours from Tbilisi and the weather turns fast. Go with a driver rather than a hire car in winter.",
+        "ar": "تبعد نحو ثلاث ساعات عن تبليسي والطقس يتغير بسرعة. اذهب مع سائق لا بسيارة مستأجرة في الشتاء."
+      }
+    ]
+  },
+  "georgia/kutaisi": {
+    "attractions": [
+      {
+        "nameEn": "Bagrati Cathedral",
+        "nameAr": "كاتدرائية باغراتي",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "An eleventh-century cathedral on the hill above the city.",
+        "descriptionAr": "كاتدرائية من القرن الحادي عشر على التل فوق المدينة."
+      },
+      {
+        "nameEn": "Gelati Monastery",
+        "nameAr": "دير جيلاتي",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A UNESCO-listed monastery and medieval academy just outside town, with original mosaics.",
+        "descriptionAr": "دير مدرج في اليونسكو وأكاديمية من العصور الوسطى خارج البلدة، بفسيفساء أصلية."
+      },
+      {
+        "nameEn": "Prometheus Cave",
+        "nameAr": "كهف بروميثيوس",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Lit limestone chambers with an underground boat ride at the end.",
+        "descriptionAr": "قاعات جيرية مضاءة مع جولة بقارب تحت الأرض في نهايتها."
+      },
+      {
+        "nameEn": "Martvili Canyon",
+        "nameAr": "أخدود مارتفيلي",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "A turquoise canyon you float through on a rubber boat, an hour from the city.",
+        "descriptionAr": "أخدود فيروزي تعبره بقارب مطاطي، على بعد ساعة من المدينة."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Best Western Plus Kutaisi",
+        "nameAr": "بست ويسترن بلس كوتايسي",
+        "descriptionEn": "A dependable central base for the canyons and the monasteries.",
+        "descriptionAr": "قاعة مركزية موثوقة للانطلاق إلى الأخاديد والأديرة."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Gelati Monastery",
+        "placeAr": "دير جيلاتي",
+        "descriptionEn": "The mosaics before the coaches arrive.",
+        "descriptionAr": "الفسيفساء قبل وصول الحافلات."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Martvili Canyon",
+        "placeAr": "أخدود مارتفيلي",
+        "descriptionEn": "The boat through the canyon.",
+        "descriptionAr": "القارب عبر الأخدود."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Kutaisi centre",
+        "placeAr": "وسط كوتايسي",
+        "descriptionEn": "Dinner by the river.",
+        "descriptionAr": "العشاء بجانب النهر."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Kutaisi's airport is the budget gateway to Georgia, so it is often the cheapest way in even if Tbilisi is the destination.",
+        "ar": "مطار كوتايسي هو البوابة الاقتصادية إلى جورجيا، وغالبًا أرخص طريقة للدخول حتى لو كانت تبليسي هي الوجهة."
+      }
+    ]
+  },
+  "georgia/borjomi": {
+    "attractions": [
+      {
+        "nameEn": "Borjomi Central Park",
+        "nameAr": "حديقة بورجومي المركزية",
+        "categoryEn": "Park",
+        "categoryAr": "حديقة",
+        "descriptionEn": "Where the mineral water comes out of the ground, and you can drink it warm at the source.",
+        "descriptionAr": "حيث يخرج الماء المعدني من الأرض، ويمكنك شربه دافئًا من المنبع."
+      },
+      {
+        "nameEn": "Borjomi-Kharagauli National Park",
+        "nameAr": "منتزه بورجومي خاراغاولي",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "One of Europe's largest national parks, with marked trails from a day to a week.",
+        "descriptionAr": "أحد أكبر المنتزهات الوطنية في أوروبا، بمسارات معلّمة من يوم إلى أسبوع."
+      },
+      {
+        "nameEn": "Cable car to the plateau",
+        "nameAr": "التلفريك إلى الهضبة",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "Up from the park to a ferris wheel on the ridge above the valley.",
+        "descriptionAr": "الصعود من الحديقة إلى عجلة دوارة على الحافة فوق الوادي."
+      },
+      {
+        "nameEn": "Rabati Castle, Akhaltsikhe",
+        "nameAr": "قلعة راباتي في أخالتسيخي",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A restored castle complex an hour away, with a mosque, church and synagogue inside one wall.",
+        "descriptionAr": "مجمع قلعة مرمم على بعد ساعة، وفيه مسجد وكنيسة وكنيس داخل سور واحد."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Crowne Plaza Borjomi",
+        "nameAr": "كراون بلازا بورجومي",
+        "descriptionEn": "A spa hotel in the valley, the most comfortable base for the park and the springs.",
+        "descriptionAr": "فندق منتجع صحي في الوادي، وأكثر القواعد راحة للمنتزه والينابيع.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Central Park",
+        "placeAr": "الحديقة المركزية",
+        "descriptionEn": "The springs and the walk up the valley.",
+        "descriptionAr": "الينابيع والمشي صعودًا في الوادي."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Cable car",
+        "placeAr": "التلفريك",
+        "descriptionEn": "Up to the ridge for the view.",
+        "descriptionAr": "الصعود إلى الحافة للإطلالة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Borjomi town",
+        "placeAr": "بلدة بورجومي",
+        "descriptionEn": "A quiet dinner; this is a spa town, not a nightlife one.",
+        "descriptionAr": "عشاء هادئ؛ فهذه بلدة استشفاء لا بلدة سهر."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Borjomi is on the way between Tbilisi and the Vardzia cave city, so it slots naturally into a wider loop.",
+        "ar": "بورجومي تقع في الطريق بين تبليسي ومدينة فاردزيا الكهفية، فتندرج طبيعيًا ضمن جولة أوسع."
+      }
+    ]
+  },
+  "georgia/mtskheta": {
+    "attractions": [
+      {
+        "nameEn": "Svetitskhoveli Cathedral",
+        "nameAr": "كاتدرائية سفيتيتسخوفيلي",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "An eleventh-century cathedral at the heart of the old capital, UNESCO-listed.",
+        "descriptionAr": "كاتدرائية من القرن الحادي عشر في قلب العاصمة القديمة، مدرجة في اليونسكو."
+      },
+      {
+        "nameEn": "Jvari Monastery",
+        "nameAr": "دير جفاري",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A sixth-century monastery on the ridge above the meeting of two rivers.",
+        "descriptionAr": "دير من القرن السادس على الحافة فوق ملتقى النهرين."
+      },
+      {
+        "nameEn": "Old Mtskheta",
+        "nameAr": "متسخيتا القديمة",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "A small walkable centre of stone lanes and craft stalls around the cathedral.",
+        "descriptionAr": "مركز صغير يُمشى فيه من أزقة حجرية وأكشاك حرف حول الكاتدرائية."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rooms Hotel Tbilisi",
+        "nameAr": "رومز أوتيل تبليسي",
+        "descriptionEn": "Most visitors stay in Tbilisi, twenty minutes away, rather than in Mtskheta itself.",
+        "descriptionAr": "يقيم معظم الزوار في تبليسي على بعد عشرين دقيقة بدل الإقامة في متسخيتا نفسها."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Jvari Monastery",
+        "placeAr": "دير جفاري",
+        "descriptionEn": "The ridge first, for the view down onto the town.",
+        "descriptionAr": "الحافة أولًا، للإطلالة على البلدة من فوق."
+      },
+      {
+        "timeEn": "Midday",
+        "timeAr": "منتصف النهار",
+        "placeEn": "Svetitskhoveli",
+        "placeAr": "سفيتيتسخوفيلي",
+        "descriptionEn": "The cathedral and the lanes around it.",
+        "descriptionAr": "الكاتدرائية والأزقة حولها."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Back to Tbilisi",
+        "placeAr": "العودة إلى تبليسي",
+        "descriptionEn": "It is a half-day trip rather than an overnight.",
+        "descriptionAr": "إنها رحلة نصف يوم لا مبيت."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Mtskheta is twenty minutes from Tbilisi and pairs naturally with a Jvari stop on the way to Kazbegi.",
+        "ar": "متسخيتا على بعد عشرين دقيقة من تبليسي وتُدمج طبيعيًا مع وقفة في جفاري في الطريق إلى كازبيغي."
+      }
+    ]
+  },
+  "russia/moscow": {
+    "attractions": [
+      {
+        "nameEn": "Red Square & the Kremlin",
+        "nameAr": "الساحة الحمراء والكرملين",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "St Basil's, the walls and the Armoury; the Kremlin's museums are ticketed separately.",
+        "descriptionAr": "كاتدرائية القديس باسيل والأسوار ومتحف الأسلحة؛ ومتاحف الكرملين تُحجز تذاكرها منفصلة."
+      },
+      {
+        "nameEn": "Moscow Metro",
+        "nameAr": "مترو موسكو",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "The 1930s stations are decorated like halls; Komsomolskaya and Mayakovskaya are the ones to see.",
+        "descriptionAr": "محطات الثلاثينيات مزخرفة كالقاعات؛ وكومسومولسكايا ومايakovskaya أبرزها."
+      },
+      {
+        "nameEn": "Tretyakov Gallery",
+        "nameAr": "معرض تريتياكوف",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "The national collection of Russian art, from icons to the nineteenth century.",
+        "descriptionAr": "المجموعة الوطنية للفن الروسي، من الأيقونات إلى القرن التاسع عشر."
+      },
+      {
+        "nameEn": "Bolshoi Theatre",
+        "nameAr": "مسرح البولشوي",
+        "categoryEn": "Performance",
+        "categoryAr": "عروض",
+        "descriptionEn": "Ballet and opera in the 1825 house; tickets go on sale months ahead and sell out.",
+        "descriptionAr": "باليه وأوبرا في دار عام 1825؛ وتُطرح التذاكر قبل شهور وتنفد."
+      },
+      {
+        "nameEn": "Gorky Park",
+        "nameAr": "حديقة غوركي",
+        "categoryEn": "Park",
+        "categoryAr": "حديقة",
+        "descriptionEn": "The riverside park the city actually uses, with the Garage museum inside it.",
+        "descriptionAr": "حديقة النهر التي تستخدمها المدينة فعلًا، وبداخلها متحف غراج."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Hotel Metropol Moscow",
+        "nameAr": "فندق ميتروبول موسكو",
+        "descriptionEn": "The 1905 Art Nouveau hotel opposite the Bolshoi, minutes from Red Square.",
+        "descriptionAr": "فندق آرت نوفو من عام 1905 مقابل البولشوي، على بعد دقائق من الساحة الحمراء.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Red Square",
+        "placeAr": "الساحة الحمراء",
+        "descriptionEn": "The square and the Kremlin grounds early.",
+        "descriptionAr": "الساحة وساحات الكرملين مبكرًا."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Tretyakov Gallery",
+        "placeAr": "معرض تريتياكوف",
+        "descriptionEn": "The Russian collection.",
+        "descriptionAr": "المجموعة الروسية."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Moscow Metro",
+        "placeAr": "مترو موسكو",
+        "descriptionEn": "Ride the decorated stations, then dinner in the centre.",
+        "descriptionAr": "تجوّل بين المحطات المزخرفة، ثم العشاء في المركز."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Check visa requirements and the current banking situation before booking: foreign cards do not reliably work in Russia, so plan cash.",
+        "ar": "تحقق من متطلبات التأشيرة ووضع البنوك الحالي قبل الحجز: البطاقات الأجنبية لا تعمل بشكل موثوق في روسيا، فخطط للنقد."
+      },
+      {
+        "en": "Moscow is genuinely cold from November to March, often well below freezing. May to September is the comfortable window.",
+        "ar": "موسكو باردة فعلًا من نوفمبر إلى مارس، وغالبًا تحت الصفر بكثير. ومايو إلى سبتمبر هي النافذة المريحة."
+      }
+    ]
+  },
+  "russia/saint-petersburg": {
+    "attractions": [
+      {
+        "nameEn": "State Hermitage Museum",
+        "nameAr": "متحف الأرميتاج",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "The Winter Palace and one of the largest art collections on earth; a full day, not an afternoon.",
+        "descriptionAr": "قصر الشتاء وإحدى أكبر مجموعات الفن في العالم؛ يحتاج يومًا كاملًا لا أصيلًا."
+      },
+      {
+        "nameEn": "Church of the Savior on Spilled Blood",
+        "nameAr": "كنيسة المخلص على الدم المهراق",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "Onion domes outside, and the walls covered in mosaic inside.",
+        "descriptionAr": "قباب بصلية من الخارج، وجدران مغطاة بالفسيفساء من الداخل."
+      },
+      {
+        "nameEn": "Peterhof",
+        "nameAr": "بيترهوف",
+        "categoryEn": "Palace",
+        "categoryAr": "قصر",
+        "descriptionEn": "The palace and its gravity-fed fountains on the gulf, reached by hydrofoil in summer.",
+        "descriptionAr": "القصر ونوافيره التي تعمل بالجاذبية على الخليج، ويُوصل إليه بالقارب السريع صيفًا."
+      },
+      {
+        "nameEn": "Nevsky Prospekt",
+        "nameAr": "شارع نيفسكي",
+        "categoryEn": "Boulevard",
+        "categoryAr": "شارع رئيسي",
+        "descriptionEn": "The main avenue, and the spine of any walk through the city.",
+        "descriptionAr": "الشارع الرئيسي، وعمود أي جولة مشي في المدينة."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Hotel Astoria",
+        "nameAr": "فندق أستوريا",
+        "descriptionEn": "A Rocco Forte hotel on St Isaac's Square, central and quiet.",
+        "descriptionAr": "فندق من مجموعة روكو فورتي على ساحة القديس إسحاق، مركزي وهادئ.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Hermitage",
+        "placeAr": "الأرميتاج",
+        "descriptionEn": "Book the first slot; the queues build fast.",
+        "descriptionAr": "احجز أول موعد؛ فالطوابير تتراكم بسرعة."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Church on Spilled Blood",
+        "placeAr": "كنيسة الدم المهراق",
+        "descriptionEn": "The mosaics, a short walk from the palace.",
+        "descriptionAr": "الفسيفساء، على مسافة مشي قصيرة من القصر."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Nevsky Prospekt",
+        "placeAr": "شارع نيفسكي",
+        "descriptionEn": "The avenue and dinner off it.",
+        "descriptionAr": "الشارع والعشاء في أحد فروعه."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "The White Nights in June mean it barely gets dark, which is the best and busiest time to come.",
+        "ar": "الليالي البيضاء في يونيو تعني أن الظلام يكاد لا يحل، وهو أفضل وقت للزيارة وأكثرها ازدحامًا."
+      }
+    ]
+  },
+  "russia/kazan": {
+    "attractions": [
+      {
+        "nameEn": "Kazan Kremlin",
+        "nameAr": "كرملين قازان",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A UNESCO citadel where the Qol Sharif Mosque and the Annunciation Cathedral stand inside one wall.",
+        "descriptionAr": "قلعة مدرجة في اليونسكو يقف فيها مسجد قول شريف وكاتدرائية البشارة داخل سور واحد."
+      },
+      {
+        "nameEn": "Qol Sharif Mosque",
+        "nameAr": "مسجد قول شريف",
+        "categoryEn": "Mosque",
+        "categoryAr": "مسجد",
+        "descriptionEn": "Rebuilt in 2005 on the site of the sixteenth-century original, inside the Kremlin walls.",
+        "descriptionAr": "أُعيد بناؤه عام 2005 في موقع المسجد الأصلي من القرن السادس عشر، داخل أسوار الكرملين."
+      },
+      {
+        "nameEn": "Bauman Street",
+        "nameAr": "شارع باومان",
+        "categoryEn": "Boulevard",
+        "categoryAr": "شارع رئيسي",
+        "descriptionEn": "The pedestrian spine of the old centre, with cafés and Tatar bakeries.",
+        "descriptionAr": "العمود المشاة للمركز القديم، وفيه مقاهٍ ومخابز تتارية."
+      },
+      {
+        "nameEn": "Temple of All Religions",
+        "nameAr": "معبد كل الأديان",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "An eccentric building outside the city combining the forms of many faiths.",
+        "descriptionAr": "مبنى غريب خارج المدينة يجمع أشكال أديان عدة."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Kol Gali Resort & Spa",
+        "nameAr": "منتجع كول غالي",
+        "descriptionEn": "A spa resort outside the city, the comfortable option for a longer Tatarstan stay.",
+        "descriptionAr": "منتجع صحي خارج المدينة، والخيار المريح لإقامة أطول في تتارستان."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Kazan Kremlin",
+        "placeAr": "كرملين قازان",
+        "descriptionEn": "The mosque and cathedral inside the same walls.",
+        "descriptionAr": "المسجد والكاتدرائية داخل الأسوار نفسها."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Bauman Street",
+        "placeAr": "شارع باومان",
+        "descriptionEn": "Lunch and the old centre on foot.",
+        "descriptionAr": "الغداء والمركز القديم مشيًا."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Kremlin embankment",
+        "placeAr": "كورنيش الكرملين",
+        "descriptionEn": "The waterfront as the Kremlin lights come on.",
+        "descriptionAr": "الواجهة المائية مع إضاءة الكرملين."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Kazan is the capital of Tatarstan and a majority-Muslim republic, so halal food is easy to find here in a way it is not elsewhere in Russia.",
+        "ar": "قازان عاصمة تتارستان وجمهورية ذات أغلبية مسلمة، فالطعام الحلال متوفر هنا بسهولة لا تجدها في بقية روسيا."
+      }
+    ]
+  },
+  "russia/sochi": {
+    "attractions": [
+      {
+        "nameEn": "Sochi seafront",
+        "nameAr": "واجهة سوتشي البحرية",
+        "categoryEn": "Waterfront",
+        "categoryAr": "واجهة بحرية",
+        "descriptionEn": "The Black Sea promenade the whole city walks in the evening.",
+        "descriptionAr": "كورنيش البحر الأسود الذي تمشي فيه المدينة كلها مساءً."
+      },
+      {
+        "nameEn": "Rosa Khutor",
+        "nameAr": "روزا خوتور",
+        "categoryEn": "Mountain",
+        "categoryAr": "جبل",
+        "descriptionEn": "The 2014 Olympic resort up in the Krasnaya Polyana valley, skiing in winter and hiking in summer.",
+        "descriptionAr": "المنتجع الأولمبي لعام 2014 في وادي كراسنايا بوليانا، للتزلج شتاءً والمشي صيفًا."
+      },
+      {
+        "nameEn": "Sochi Arboretum",
+        "nameAr": "حديقة سوتشي النباتية",
+        "categoryEn": "Garden",
+        "categoryAr": "حديقة",
+        "descriptionEn": "Terraced subtropical gardens on the hillside with a cable car through them.",
+        "descriptionAr": "حدائق شبه استوائية مدرجة على سفح التل يمر بها تلفريك."
+      },
+      {
+        "nameEn": "Olympic Park",
+        "nameAr": "الحديقة الأولمبية",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "The 2014 venues and the Formula 1 circuit down on the coast at Adler.",
+        "descriptionAr": "منشآت 2014 وحلبة الفورمولا 1 على الساحل في أدلر."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Rodina Grand Hotel & Spa",
+        "nameAr": "فندق رودينا غراند",
+        "descriptionEn": "A garden hotel above the seafront, three kilometres from the centre.",
+        "descriptionAr": "فندق وسط حدائق فوق الواجهة البحرية، على بعد ثلاثة كيلومترات من المركز.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Rosa Khutor",
+        "placeAr": "روزا خوتور",
+        "descriptionEn": "Up the valley, by cable car above the treeline.",
+        "descriptionAr": "صعود الوادي بالتلفريك فوق خط الأشجار."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Arboretum",
+        "placeAr": "الحديقة النباتية",
+        "descriptionEn": "The terraced gardens back in the city.",
+        "descriptionAr": "الحدائق المدرجة في المدينة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Seafront",
+        "placeAr": "الواجهة البحرية",
+        "descriptionEn": "The promenade at sunset.",
+        "descriptionAr": "الكورنيش عند الغروب."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Sochi is subtropical and mild, which is why it has both a beach season and a ski season in the same year.",
+        "ar": "سوتشي شبه استوائية ومعتدلة، ولهذا فيها موسم شاطئ وموسم تزلج في العام نفسه."
+      }
+    ]
+  },
+  "russia/kaliningrad": {
+    "attractions": [
+      {
+        "nameEn": "Königsberg Cathedral",
+        "nameAr": "كاتدرائية كونيغسبرغ",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "The fourteenth-century cathedral on Kant Island, with the philosopher's tomb outside it.",
+        "descriptionAr": "كاتدرائية من القرن الرابع عشر على جزيرة كانط، وقبر الفيلسوف خارجها."
+      },
+      {
+        "nameEn": "Curonian Spit",
+        "nameAr": "لسان كورونيان",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "A UNESCO sand spit of dunes and pine forest running out into the Baltic.",
+        "descriptionAr": "لسان رملي مدرج في اليونسكو من الكثبان وغابات الصنوبر يمتد في بحر البلطيق."
+      },
+      {
+        "nameEn": "Fish Village",
+        "nameAr": "قرية السمك",
+        "categoryEn": "Waterfront",
+        "categoryAr": "واجهة بحرية",
+        "descriptionEn": "A rebuilt German-style quarter on the river, the city's most photographed corner.",
+        "descriptionAr": "حي أعيد بناؤه على الطراز الألماني عند النهر، وأكثر أركان المدينة تصويرًا."
+      },
+      {
+        "nameEn": "Amber Museum",
+        "nameAr": "متحف الكهرمان",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "The region produces most of the world's amber, and the museum sits in a Prussian tower.",
+        "descriptionAr": "تنتج المنطقة معظم كهرمان العالم، والمتحف داخل برج بروسي."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Radisson Blu Hotel, Kaliningrad",
+        "nameAr": "راديسون بلو كالينينغراد",
+        "descriptionEn": "On Victory Square in the centre, minutes from the cathedral.",
+        "descriptionAr": "على ساحة النصر في المركز، على بعد دقائق من الكاتدرائية."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Kant Island",
+        "placeAr": "جزيرة كانط",
+        "descriptionEn": "The cathedral and the river quarter.",
+        "descriptionAr": "الكاتدرائية وحي النهر."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Curonian Spit",
+        "placeAr": "لسان كورونيان",
+        "descriptionEn": "The dunes and the pine forest.",
+        "descriptionAr": "الكثبان وغابة الصنوبر."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Fish Village",
+        "placeAr": "قرية السمك",
+        "descriptionEn": "Dinner on the waterfront.",
+        "descriptionAr": "العشاء على الواجهة المائية."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Kaliningrad is an exclave between Poland and Lithuania with no land border to the rest of Russia, so it is reached by air.",
+        "ar": "كالينينغراد جيب بين بولندا وليتوانيا ولا حدود برية له مع بقية روسيا، فيُوصل إليه جوًا."
+      }
+    ]
+  },
 };
 
 export const flagshipCityGuideBySlug = (countrySlug: string, citySlug: string) =>
