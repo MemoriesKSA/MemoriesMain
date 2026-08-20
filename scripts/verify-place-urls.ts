@@ -1,5 +1,5 @@
-// Checks every URL in the registry actually resolves. A 403 usually means
-// bot-blocking rather than a dead page, so it's reported separately from a
+// Checks every URL in the registry actually resolves. A 403 or 406 usually
+// means bot-blocking rather than a dead page, so it's reported separately from a
 // genuine 404.
 
 import { PLACE_URLS } from "../app/journey/place-urls";
@@ -24,9 +24,10 @@ async function main() {
     const r = await check(url);
     const ok = r.status >= 200 && r.status < 400;
     const redirected = r.finalUrl && r.finalUrl.replace(/\/$/, "") !== url.replace(/\/$/, "");
-    let tag = ok ? "OK  " : r.status === 403 ? "BLOCK" : "FAIL";
-    if (!ok && r.status !== 403) bad.push(`${name} -> ${url} (${r.status || r.error})`);
-    if (r.status === 403) blocked.push(`${name} -> ${url}`);
+    const blockedStatus = r.status === 403 || r.status === 406;
+    let tag = ok ? "OK  " : blockedStatus ? "BLOCK" : "FAIL";
+    if (!ok && !blockedStatus) bad.push(`${name} -> ${url} (${r.status || r.error})`);
+    if (blockedStatus) blocked.push(`${name} -> ${url}`);
     console.log(`${tag} ${String(r.status).padStart(3)}  ${name}`);
     if (ok && redirected) console.log(`        redirects to: ${r.finalUrl}`);
   }

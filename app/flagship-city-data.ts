@@ -2648,7 +2648,32 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "بحيرة صفراء اللون طبيعيًا، يمنحها لونها الحجر الجيري وينابيع الكبريت المحيطة، وتحيط بها الكثبان الرملية.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Flavors Restaurant",
+        nameAr: "مطعم فليفرز",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "The culinary heart of InterContinental Al Ahsa, an international buffet with theme nights alongside an a la carte menu.",
+        descriptionAr: "قلب المطبخ في إنتركونتيننتال الأحساء، بوفيه عالمي مع أمسيات مخصصة إلى جانب قائمة الطعام.",
+      },
+      {
+        nameEn: "Al Bustan",
+        nameAr: "مطعم البستان",
+        cuisineEn: "Middle Eastern",
+        cuisineAr: "شرق أوسطي",
+        descriptionEn: "Middle Eastern cooking at InterContinental Al Ahsa, the better choice when you want the region's own dishes.",
+        descriptionAr: "مطبخ شرق أوسطي في إنتركونتيننتال الأحساء، والخيار الأفضل حين تريد أطباق المنطقة نفسها.",
+      },
+      {
+        nameEn: "Bateel Boutique",
+        nameAr: "بوتيك باتيل",
+        cuisineEn: "Cafe",
+        cuisineAr: "مقهى",
+        descriptionEn: "The lobby coffee shop at InterContinental Al Ahsa, for coffee, tea and cakes between the oasis and the souq.",
+        descriptionAr: "مقهى الردهة في إنتركونتيننتال الأحساء، للقهوة والشاي والحلويات بين الواحة والسوق.",
+      },
+    ],
     stay: [
       {
         nameEn: "Al Ahsa InterContinental",
@@ -2883,7 +2908,32 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "ممشى الواجهة البحرية في البر الرئيسي، قاعدة هادئة بين رحلات الجزر والجبال.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Ocean Basket Jazan",
+        nameAr: "أوشن باسكت جازان",
+        cuisineEn: "Seafood",
+        cuisineAr: "مأكولات بحرية",
+        descriptionEn: "The Corniche branch of the seafood chain, prawns, calamari and grilled fish, reliable with children.",
+        descriptionAr: "فرع الكورنيش من سلسلة المأكولات البحرية، روبيان وكاليماري وسمك مشوي، ومناسب للأطفال.",
+      },
+      {
+        nameEn: "Alsafina Restaurant",
+        nameAr: "مطعم السفينة",
+        cuisineEn: "Seafood",
+        cuisineAr: "مأكولات بحرية",
+        descriptionEn: "The seafood specialty room at Grand Millennium Jazan, eastern and western dishes side by side.",
+        descriptionAr: "مطعم المأكولات البحرية المتخصص في جراند ميلينيوم جازان، أطباق شرقية وغربية جنبًا إلى جنب.",
+      },
+      {
+        nameEn: "Turquoise Restaurant",
+        nameAr: "مطعم تركواز",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "All-day dining at Grand Millennium Jazan, the easy option when the group wants different things.",
+        descriptionAr: "مطعم اليوم الكامل في جراند ميلينيوم جازان، الخيار السهل حين يريد كل فرد شيئًا مختلفًا.",
+      },
+    ],
     stay: [
       {
         nameEn: "Novotel Jazan",
@@ -3109,7 +3159,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "أعمدة حجرية منتصبة من عصور ما قبل التاريخ، من بين أقدم المنشآت البشرية في الجزيرة العربية.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Al Jouf Heritage Restaurant",
+        nameAr: "مطعم تراث الجوف",
+        cuisineEn: "Saudi traditional",
+        cuisineAr: "شعبي سعودي",
+        descriptionEn: "Local Al-Jouf cooking, rice dishes done the Saudi way, with room set aside for larger family groups.",
+        descriptionAr: "أكلات الجوف الشعبية وأطباق الأرز على الطريقة السعودية، مع أماكن مخصصة للعائلات الكبيرة.",
+      },
+    ],
     stay: [
       {
         nameEn: "Olive Land Hotel",
@@ -3597,7 +3656,32 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "مياه صافية وشواطئ هادئة على طول امتداد المنطقة الساحلي.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Al Maksoura Restaurant",
+        nameAr: "مطعم المقصورة",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "The all-day dining room at Grand Millennium Tabuk, buffet and a la carte.",
+        descriptionAr: "مطعم اليوم الكامل في جراند ميلينيوم تبوك، بوفيه وقائمة طعام.",
+      },
+      {
+        nameEn: "Juzurna Restaurant",
+        nameAr: "مطعم جزرنا",
+        cuisineEn: "Seafood",
+        cuisineAr: "مأكولات بحرية",
+        descriptionEn: "The seafood room at Grand Millennium Tabuk, worth booking ahead on a weekend evening.",
+        descriptionAr: "مطعم المأكولات البحرية في جراند ميلينيوم تبوك، يستحق الحجز المسبق في أمسيات نهاية الأسبوع.",
+      },
+      {
+        nameEn: "Al Walima Restaurant",
+        nameAr: "مطعم الوليمة",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "Holiday Inn Tabuk's restaurant, with a family section and a straightforward all-day menu.",
+        descriptionAr: "مطعم هوليداي إن تبوك، فيه قسم للعائلات وقائمة بسيطة على مدار اليوم.",
+      },
+    ],
     stay: [
       {
         nameEn: "Hilton Garden Inn Tabuk",
@@ -3823,7 +3907,24 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "موقع غوص نابض بالحياة وغير مزدحم، نادرًا ما يزوره السياح الدوليون.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Trio",
+        nameAr: "تريو",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "The restaurant at Novotel Yanbu on the Corniche, world cuisine in a calm room, easy after a day on the water.",
+        descriptionAr: "مطعم نوفوتيل ينبع على الكورنيش، مطبخ عالمي في أجواء هادئة، مناسب بعد يوم في البحر.",
+      },
+      {
+        nameEn: "Jasmine Restaurant",
+        nameAr: "مطعم جاسمين",
+        cuisineEn: "International",
+        cuisineAr: "عالمي",
+        descriptionEn: "All-day dining at Holiday Inn Yanbu overlooking the pool, with a seafood night midweek.",
+        descriptionAr: "مطعم يفتح طوال اليوم في هوليداي إن ينبع ويطل على المسبح، مع ليلة مأكولات بحرية في منتصف الأسبوع.",
+      },
+    ],
     stay: [
       {
         nameEn: "Novotel Yanbu",

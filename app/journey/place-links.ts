@@ -57,6 +57,21 @@ export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
   { en: "Shawarmer", ar: "شاورمر" },
 ];
 
+// Booking platforms and operators a plan tells the customer to go and use.
+// A plan that says "book your Rawdah permit through Nusuk" and then leaves
+// them to find Nusuk themselves has stopped short of the thing being sold,
+// which is the directions. Anything we instruct someone to use should be one
+// tap away, exactly like a hotel or a restaurant.
+//
+// Nationwide, so they match in any city, and listed under several of the
+// names a draft might reasonably use for the same thing.
+export const PLATFORMS: { en: string; ar: string }[] = [
+  { en: "Nusuk", ar: "نسك" },
+  { en: "Haramain High-Speed Railway", ar: "قطار الحرمين السريع" },
+  { en: "Haramain High Speed Railway", ar: "قطار الحرمين عالي السرعة" },
+  { en: "Haramain High-Speed Train", ar: "قطار الحرمين" },
+];
+
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   const slug = citySlugFromLabel(cityLabel);
   if (!slug) return [];
@@ -69,6 +84,7 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
     ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
     ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
     ...NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)),
+    ...PLATFORMS.map((p) => (ar ? p.ar : p.en)),
   ];
 
   // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
@@ -105,5 +121,6 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
   // are actually in PLACE_URLS, so the rest are unaffected.
   guide.dining.forEach((d) => add(d.nameEn, d.nameAr));
   NATIONAL_CHAINS.forEach((c) => add(c.en, c.ar));
+  PLATFORMS.forEach((p) => add(p.en, p.ar));
   return map;
 }

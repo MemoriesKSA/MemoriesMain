@@ -3,7 +3,8 @@
 // chains now resolve everywhere, and that a restaurant with a real site gets
 // it rather than a map search.
 
-import { placeNamesForCity, officialUrlMapForCity } from "../app/journey/place-links";
+import { placeNamesForCity, officialUrlMapForCity, PLATFORMS } from "../app/journey/place-links";
+import { officialUrlFor } from "../app/journey/place-urls";
 
 const madinahNames = placeNamesForCity("Madinah", false);
 const madinahNamesAr = placeNamesForCity("Madinah", true);
@@ -51,6 +52,22 @@ const cases: [string, unknown, unknown][] = [
   ["Al Romansiah works in Jazan", placeNamesForCity("Jazan", false).includes("Al Romansiah"), true],
   ["Al Romansiah works in Yanbu", placeNamesForCity("Yanbu", false).includes("Al Romansiah"), true],
   ["Al Romansiah has its own site", officialUrlMapForCity("Tabuk")["al romansiah"], "https://alromansiah.com"],
+
+  // The five cities researched one by one, each previously unlinkable.
+  ["Al-Ahsa names Flavors Restaurant", placeNamesForCity("Al-Ahsa", false).includes("Flavors Restaurant"), true],
+  ["Jazan names Ocean Basket Jazan", placeNamesForCity("Jazan", false).includes("Ocean Basket Jazan"), true],
+  ["Tabuk names Juzurna Restaurant", placeNamesForCity("Tabuk", false).includes("Juzurna Restaurant"), true],
+  ["Yanbu names Trio", placeNamesForCity("Yanbu", false).includes("Trio"), true],
+  ["Al-Jouf names its heritage restaurant", placeNamesForCity("Al-Jouf", false).includes("Al Jouf Heritage Restaurant"), true],
+
+  // Platforms a plan tells the customer to go and use.
+  ["Nusuk is linkable in Madinah", madinahNames.includes("Nusuk"), true],
+  ["Nusuk points at the platform", madinahUrls["nusuk"], "https://www.nusuk.sa"],
+  ["Nusuk works in Arabic", madinahUrls["نسك"], "https://www.nusuk.sa"],
+  ["Haramain points at the operator", madinahUrls["haramain high-speed railway"], "https://www.sar.com.sa/haramain"],
+  // A platform with no URL would fall through to a map search, which is
+  // meaningless for a website. Every platform must carry a real link.
+  ["every platform has a URL, never a map search", PLATFORMS.every((p) => !!officialUrlFor(p.en)), true],
 ];
 
 let pass = 0;

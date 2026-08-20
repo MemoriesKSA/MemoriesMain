@@ -5,7 +5,7 @@
 import { PLACE_URLS } from "../app/journey/place-urls";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 import { saudiArabia } from "../app/components/planner-data";
-import { NATIONAL_CHAINS } from "../app/journey/place-links";
+import { NATIONAL_CHAINS, PLATFORMS } from "../app/journey/place-links";
 
 const known = new Set<string>();
 for (const c of saudiArabia.cities) {
@@ -20,6 +20,7 @@ for (const c of saudiArabia.cities) {
 // Chains are matched in every city rather than held in any one city's
 // data, so they are legitimate keys and are not orphans.
 NATIONAL_CHAINS.forEach((c) => known.add(c.en));
+PLATFORMS.forEach((p) => known.add(p.en));
 
 const orphans = Object.keys(PLACE_URLS).filter((k) => !known.has(k));
 

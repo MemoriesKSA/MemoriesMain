@@ -91,6 +91,15 @@ export const PLACE_URLS: Record<string, string> = {
   "Herfy": "https://herfy.com",
   "Shawarmer": "https://www.shawarmer.com",
 
+  // ---- Booking platforms ----
+  // The permit and ticket systems a plan sends the customer to. Nusuk is the
+  // Ministry's own platform for Rawdah and Umrah permits; the Haramain train
+  // is booked through Saudi Arabia Railways, which is why the link is theirs.
+  "Nusuk": "https://www.nusuk.sa",
+  "Haramain High-Speed Railway": "https://www.sar.com.sa/haramain",
+  "Haramain High Speed Railway": "https://www.sar.com.sa/haramain",
+  "Haramain High-Speed Train": "https://www.sar.com.sa/haramain",
+
   // City restaurants with their own sites.
   // The brand's own Riyadh page, not the group index, so the link lands on
   // the right restaurant in the right city.
