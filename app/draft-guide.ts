@@ -254,10 +254,10 @@ Draft the day-by-day sketch now.`;
 // Runs once, before the draft is written, so the draft can cite live
 // findings instead of guessing. Covers hours/season/pricing for named
 // attractions, which airlines/routes exist, real restaurants when our own
-// curated dining list is thin, and real rental car companies when the
-// customer asked for one, all of which a plain web search can genuinely
-// confirm, plus review-site and official-registry trust signals for
-// restaurants/rental cars (always attributed, never asserted as a verified
+// curated dining list is thin, real private drivers when we hold none for
+// the city, and real rental car companies, all of which a plain web search
+// can genuinely confirm, plus review-site and official-registry trust
+// signals for restaurants/drivers/rental cars (always attributed, never asserted as a verified
 // fact, a web search can't independently confirm real regulatory status,
 // only report what a genuine source actually says). Stays away from live
 // flight times or prices, which a generic web search can't honestly
@@ -278,6 +278,16 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
     const wantsFlights = true;
     const wantsRentalCar = true;
     const needsDining = guide.dining.length < 3;
+    // Private drivers only ever came from our own curated provider list,
+    // which held while every city was Saudi and hand-researched. Of the 47
+    // cities here, 30 now have no provider at all, and "private driver" is
+    // one of the most-picked transport options on the form. A customer who
+    // ticks it for Tbilisi would otherwise get days that talk around the
+    // driver without naming one, or a name the drafting pass reached for
+    // because the grounding had none. Researched like rental cars, on the
+    // same always-on basis: the result is cached per city and reused by
+    // customers who did tick it.
+    const needsDrivers = ![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
 
     const flightScope = wantsFlights
       ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub airports first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
@@ -288,25 +298,32 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
     const rentalScope = wantsRentalCar
       ? `\n- A genuinely price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: aim for at least one budget/cheap option, one normal/mid-range option, and one upscale/premium option if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo, etc., wherever they actually operate there) and real local operators, international chains are generally easier to verify as legitimate so don't skip them in favor of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor review scores and counts, how long they've operated, whether an official Saudi tourism or transport-authority source lists them). The customer asked for a rental car and we have no rental providers in our own data. Run multiple differently-worded searches, e.g. "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${submission.countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" / "[company name] trustpilot" for whichever names come up, before concluding a tier or a reputation signal isn't findable.`
       : "";
+    const driverScope = needsDrivers
+      ? `\n- Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, or full-day hire with a driver, or both), roughly how they price it if that's published (per transfer, per hour, per day), and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor scores and counts, how long they've operated, any national tourism or transport-authority registration they're listed under). We have no drivers of our own for this city, so this is the only source the plan will have. Run multiple differently-worded searches, e.g. "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${submission.countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for whichever names come up. A hotel concierge arrangement or a well-reviewed local tour operator that provides a car and driver counts, say which it is.`
+      : "";
 
     const response = await anthropic.messages.create({
       model: "claude-opus-5",
-      max_tokens: 6000,
+      // Raised from 6000 when private drivers became a fourth researched
+      // category. Nothing checks this call for truncation the way the draft
+      // does, so hitting the ceiling here would quietly drop whichever
+      // category came last rather than failing loudly.
+      max_tokens: 9000,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 35 }],
-      system: `You are a research assistant checking current, real-world facts for an internal trip-planning team, for ${cityLabelEn}, ${submission.countryName}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 45 }],
+      system: `You are a research assistant checking current, real-world facts for an internal trip-planning team, for ${cityLabelEn}, ${submission.countryName}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants, private drivers and rental cars in particular are extremely findable in any real city with an ordinary web search, so a "nothing found" report on any of them is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
 
-Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${rentalScope}
+Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${driverScope}${rentalScope}
 - Opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below. If a place turns out to be a free, unticketed public site with no formal opening hours (a public trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best done in early morning before the heat", that IS a real, useful finding, don't leave it as "unconfirmed" just because there's no ticket office to look up.${flightScope}
-- For restaurants and rental cars specifically, also look for real third-party trust signals: review sites (Google reviews, Trustpilot, TripAdvisor - report the score and how many ratings it's based on), and any official government source (Saudi Ministry of Tourism, Ministry of Transport / general transport authority licensed-operator listings, municipal directories). A company genuinely appearing on an official government registry is a verifiable finding, report it plainly with the source named, e.g. "listed on [authority]'s registered operator directory". A company's own website or marketing merely claiming to be "licensed" or "certified" is NOT independently verified by that, report that only as an attributed, hedged claim, e.g. "their website states they're licensed by [X]", never as a confirmed fact and never as your own assessment, you cannot personally verify regulatory status, only report what a genuine source actually says. If you find nothing on licensing or reviews for a company after a real attempt, don't guess or imply anything, just leave that part out for that company, an unknown quantity is not the same as "unsafe", say only what you actually found.
+- For restaurants, private drivers and rental cars specifically, also look for real third-party trust signals: review sites (Google reviews, Trustpilot, TripAdvisor - report the score and how many ratings it's based on), and any official government source (Saudi Ministry of Tourism, Ministry of Transport / general transport authority licensed-operator listings, municipal directories). A company genuinely appearing on an official government registry is a verifiable finding, report it plainly with the source named, e.g. "listed on [authority]'s registered operator directory". A company's own website or marketing merely claiming to be "licensed" or "certified" is NOT independently verified by that, report that only as an attributed, hedged claim, e.g. "their website states they're licensed by [X]", never as a confirmed fact and never as your own assessment, you cannot personally verify regulatory status, only report what a genuine source actually says. If you find nothing on licensing or reviews for a company after a real attempt, don't guess or imply anything, just leave that part out for that company, an unknown quantity is not the same as "unsafe", say only what you actually found.
 - For the attractions: only spend search budget where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing everything.
 - Report only what you actually find, with enough detail a planner could act on. If search genuinely turns up nothing conclusive after a real attempt for a place, say so plainly in one line for that place, don't guess or extrapolate, but don't give up after a single search either, try more than one query before concluding something isn't findable.
 - If you run out of search budget partway through, report everything you DID find for what you finished checking, then list the rest as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
-- Output short plain-text lines, no markdown, no preamble, no closing summary. Group under short plain headers if that helps (e.g. "Attractions:", "Restaurants:", "Rental cars:").`,
+- Output short plain-text lines, no markdown, no preamble, no closing summary. Group under short plain headers if that helps (e.g. "Attractions:", "Restaurants:", "Private drivers:", "Rental cars:").`,
       messages: [{
         role: "user",
-        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
+        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${needsDrivers ? `\nAlso find real private-driver, chauffeur and airport-transfer companies, we hold none of our own for this city.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
       }],
     });
 
@@ -525,6 +542,27 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
 // research findings were never treated as gospel, just a strong first pass.
 const RESEARCH_CACHE_TTL_DAYS = 7;
 
+// The TTL only answers "is this too old". It doesn't answer "was this
+// gathered under the scope the drafting pass now expects", and that is a
+// different question: when private drivers became a researched category,
+// every already-cached city kept serving notes with no drivers in them for
+// the rest of its week, and the draft went out naming no driver at all.
+//
+// Bump this whenever the research scope changes. It rides inside the notes
+// themselves rather than in a new column, so it needs no migration, and a
+// mismatch counts as staleness rather than as a reason to bin the entry,
+// matching how the TTL already behaves: old real findings still beat none.
+export const RESEARCH_SCOPE_VERSION = 2;
+const SCOPE_MARKER = /^#scope:v(\d+)\n/;
+
+export function readScopeVersion(notes: string): { version: number; notes: string } {
+  const match = notes.match(SCOPE_MARKER);
+  // No marker means it was cached before versioning existed, which is
+  // exactly the generation that predates the driver category.
+  if (!match) return { version: 0, notes };
+  return { version: Number(match[1]), notes: notes.slice(match[0].length) };
+}
+
 // Returns whatever is cached along with whether it's past the TTL, rather
 // than throwing away an expired entry outright. An expired entry is still
 // real research that a human reviewer will verify anyway, so it beats
@@ -540,9 +578,14 @@ async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdmin
   try {
     const { data } = await supabase.from("city_research_cache").select("research_notes, updated_at, curated").eq("city_slug", citySlug).single();
     if (!data?.research_notes) return null;
-    if (data.curated) return { notes: data.research_notes, stale: false };
+    const { version, notes } = readScopeVersion(data.research_notes);
+    // A curated entry is somebody's hand-written research, and the automated
+    // pass is forbidden from overwriting it, so marking it stale would only
+    // buy a live search whose result gets thrown away. It stays fresh, and a
+    // scope change to a curated city is a job for a person.
+    if (data.curated) return { notes, stale: false };
     const ageMs = Date.now() - new Date(data.updated_at).getTime();
-    return { notes: data.research_notes, stale: ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000 };
+    return { notes, stale: ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000 || version !== RESEARCH_SCOPE_VERSION };
   } catch {
     return null;
   }
@@ -557,7 +600,9 @@ async function cacheResearch(supabase: ReturnType<typeof createSupabaseAdminClie
     // calls in outside that flow.
     const { data: existing } = await supabase.from("city_research_cache").select("curated").eq("city_slug", citySlug).single();
     if (existing?.curated) return;
-    await supabase.from("city_research_cache").upsert({ city_slug: citySlug, research_notes: notes, updated_at: new Date().toISOString(), curated: false });
+    // Stamped with the scope it was gathered under, so a later scope change
+    // can tell this entry apart from one that already covers everything.
+    await supabase.from("city_research_cache").upsert({ city_slug: citySlug, research_notes: `#scope:v${RESEARCH_SCOPE_VERSION}\n${notes}`, updated_at: new Date().toISOString(), curated: false });
   } catch (error) {
     console.error("Caching research failed", error);
   }

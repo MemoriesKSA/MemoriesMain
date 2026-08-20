@@ -4259,6 +4259,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "على الجرف فوق المتوسط خارج البلدة القديمة مباشرة، بمسابح ومنفذ إلى البحر."
       }
     ],
+    "trustedProviders": [
+      {
+        "nameEn": "Transfeero",
+        "nameAr": "ترانسفيرو",
+        "typeEn": "Airport transfer booking platform",
+        "typeAr": "منصة حجز نقل من المطار",
+        "noteEn": "Its Türkiye page names Antalya Airport among the airports it covers, with the fare fixed at booking and free cancellation. Useful here because most Antalya hotels sit well down the coast from the terminal.",
+        "noteAr": "تذكر صفحتها الخاصة بتركيا مطار أنطاليا ضمن المطارات التي تغطيها، بسعر يُثبَّت عند الحجز وإمكانية إلغاء مجاني. وهو مفيد هنا لأن معظم فنادق أنطاليا تقع بعيدًا على الساحل عن المطار."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -4594,6 +4604,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "tier": "luxury"
       }
     ],
+    "trustedProviders": [
+      {
+        "nameEn": "Transfeero",
+        "nameAr": "ترانسفيرو",
+        "typeEn": "Airport transfer booking platform",
+        "typeAr": "منصة حجز نقل من المطار",
+        "noteEn": "Its Türkiye page names Ankara Esenboğa among the airports it covers, at a fare fixed when you book. Esenboğa is about 30km out of the centre, so a pre-booked car saves the arrival negotiation.",
+        "noteAr": "تذكر صفحتها الخاصة بتركيا مطار أنقرة إسنبوغا ضمن المطارات التي تغطيها، بسعر يُثبَّت عند الحجز. ويبعد إسنبوغا نحو 30 كم عن المركز، فالسيارة المحجوزة مسبقًا توفّر عليك المساومة عند الوصول."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -4850,6 +4870,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
     ],
     "dining": [
       {
+        "nameEn": "Blue Elephant Bangkok",
+        "nameAr": "بلو إليفانت بانكوك",
+        "cuisineEn": "Royal Thai",
+        "cuisineAr": "تايلاندي ملكي",
+        "descriptionEn": "Royal Thai cooking in a restored colonial house on Sathorn, from a group that has been exporting this style of Thai fine dining for decades. Lunch and dinner daily, and they run a cooking school in the same building.",
+        "descriptionAr": "مطبخ تايلاندي ملكي في بيت استعماري مُرمَّم في ساثورن، من مجموعة تُصدِّر هذا الطراز من الطعام التايلاندي الراقي منذ عقود. غداء وعشاء يوميًا، ولديهم مدرسة طبخ في المبنى نفسه."
+      },
+      {
         "nameEn": "Bo.lan",
         "nameAr": "بو لان",
         "cuisineEn": "Traditional Thai",
@@ -4880,6 +4908,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "ذا سيام",
         "descriptionEn": "Thirty-eight suites on three riverside acres, quieter and more private than the big riverside names.",
         "descriptionAr": "ثمانٍ وثلاثون جناحًا على ثلاثة أفدنة عند النهر، أهدأ وأكثر خصوصية من الأسماء الكبيرة على الضفة."
+      }
+    ],
+    "trustedProviders": [
+      {
+        "nameEn": "Blacklane",
+        "nameAr": "بلاك لين",
+        "typeEn": "Chauffeur & airport transfer service",
+        "typeAr": "خدمة سائق خاص ونقل من المطار",
+        "noteEn": "The same global chauffeur company our Riyadh plans use runs a Bangkok service. Its own city page covers airport transfers with an hour of complimentary waiting time and flight tracking, hire by the hour, and city-to-city runs such as Bangkok down to Pattaya, at a fare fixed when you book.",
+        "noteAr": "شركة السائقين العالمية نفسها التي نستعين بها في خطط الرياض تعمل في بانكوك. وصفحتها الخاصة بالمدينة تشمل النقل من المطار مع ساعة انتظار مجانية وتتبّع الرحلة، والاستئجار بالساعة، والرحلات بين المدن مثل بانكوك إلى باتايا، بسعر يُثبَّت عند الحجز."
       }
     ],
     "sampleDay": [
@@ -4954,7 +4992,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "من أصفى المياه في تايلاند، برحلة يوم إلى الشمال. مغلقة أمام الزوار تقريبًا من مايو إلى أكتوبر."
       }
     ],
-    "dining": [],
+    "dining": [
+      {
+        "nameEn": "Blue Elephant Phuket",
+        "nameAr": "بلو إليفانت بوكيت",
+        "cuisineEn": "Southern Thai",
+        "cuisineAr": "تايلاندي جنوبي",
+        "descriptionEn": "The same group's Phuket dining room, in the restored Phra Pitak Chinpracha mansion in the old town, cooking southern Thai dishes. Open daily from morning until late evening.",
+        "descriptionAr": "صالة الطعام التابعة للمجموعة نفسها في بوكيت، داخل قصر فرا بيتاك تشينبراتشا المُرمَّم في المدينة القديمة، بأطباق تايلاندية جنوبية. مفتوح يوميًا من الصباح حتى وقت متأخر من المساء."
+      }
+    ],
     "stay": [
       {
         "nameEn": "Rosewood Phuket",
@@ -4969,6 +5016,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionEn": "A private bay on the quieter northwest coast, villas with their own pools.",
         "descriptionAr": "خليج خاص على الساحل الشمالي الغربي الأهدأ، وفلل بمسابح خاصة.",
         "tier": "luxury"
+      }
+    ],
+    "trustedProviders": [
+      {
+        "nameEn": "Blacklane",
+        "nameAr": "بلاك لين",
+        "typeEn": "Chauffeur & airport transfer service",
+        "typeAr": "خدمة سائق خاص ونقل من المطار",
+        "noteEn": "Its Phuket page covers pickup from Phuket International (HKT), hire by the hour for a day around the island, and transfers out to the ferry piers for the island trips, all at a price agreed before you travel.",
+        "noteAr": "صفحتها الخاصة ببوكيت تشمل الاستقبال من مطار بوكيت الدولي (HKT)، والاستئجار بالساعة ليوم حول الجزيرة، والنقل إلى أرصفة العبّارات لرحلات الجزر، وكل ذلك بسعر متفق عليه قبل السفر."
       }
     ],
     "sampleDay": [
@@ -5365,7 +5422,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "الشارع الذي تأكل فيه المدينة بعد الغروب، على مسافة مشي قصيرة من بوكيت بينتانغ."
       }
     ],
-    "dining": [],
+    "dining": [
+      {
+        "nameEn": "Dewakan",
+        "nameAr": "ديواكان",
+        "cuisineEn": "Modern Malaysian",
+        "cuisineAr": "ماليزي معاصر",
+        "descriptionEn": "Chef Darren Teoh's tasting-menu restaurant on the 48th floor at Platinum Park, built almost entirely on Malaysian ingredients. Booked well ahead, and their own site says last-minute tables are rare.",
+        "descriptionAr": "مطعم الشيف دارين تيو بقائمة التذوّق في الطابق الثامن والأربعين في بلاتينوم بارك، مبني بالكامل تقريبًا على مكوّنات ماليزية. يُحجز مبكرًا، وموقعه نفسه يذكر أن الطاولات في اللحظة الأخيرة نادرة."
+      }
+    ],
     "stay": [
       {
         "nameEn": "Mandarin Oriental, Kuala Lumpur",
@@ -5380,6 +5446,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionEn": "In the Bukit Bintang shopping district, walkable to Jalan Alor and the malls.",
         "descriptionAr": "في حي بوكيت بينتانغ التجاري، على مسافة مشي من جالان ألور والمولات.",
         "tier": "luxury"
+      }
+    ],
+    "trustedProviders": [
+      {
+        "nameEn": "Blacklane",
+        "nameAr": "بلاك لين",
+        "typeEn": "Chauffeur & airport transfer service",
+        "typeAr": "خدمة سائق خاص ونقل من المطار",
+        "noteEn": "Its Kuala Lumpur page is built around the run in from KLIA, roughly 50km out of the city, with flight tracking and free waiting time, and the same fixed-fare booking for rides in town.",
+        "noteAr": "صفحتها الخاصة بكوالالمبور مبنية على الطريق من مطار كوالالمبور الدولي، على بُعد نحو 50 كم من المدينة، مع تتبّع الرحلة ووقت انتظار مجاني، وبالحجز نفسه بسعر ثابت للتنقل داخل المدينة."
       }
     ],
     "sampleDay": [
@@ -5454,7 +5530,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "السبب الذي يأتي من أجله كثيرون: تشار كواي تياو وأسام لاكسا وتشندول في مراكز الباعة."
       }
     ],
-    "dining": [],
+    "dining": [
+      {
+        "nameEn": "Kebaya Dining Room",
+        "nameAr": "كيبايا داينينغ روم",
+        "cuisineEn": "Peranakan (Nyonya)",
+        "cuisineAr": "بيرناكان (نيونيا)",
+        "descriptionEn": "Nyonya cooking in the Seven Terraces heritage hotel on Stewart Lane, dinner only in two sittings at 6pm and 8pm. Call to confirm rather than relying on the web form, which their own site says is a request rather than a booking.",
+        "descriptionAr": "مطبخ نيونيا في فندق سيفن تيراسز التراثي في شارع ستيوارت، عشاء فقط على جلستين في السادسة والثامنة مساءً. اتصل للتأكيد بدل الاعتماد على نموذج الموقع، فموقعهم نفسه يذكر أنه طلب وليس حجزًا مؤكدًا."
+      }
+    ],
     "stay": [
       {
         "nameEn": "Eastern & Oriental Hotel",
@@ -5860,6 +5945,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
     ],
     "dining": [
       {
+        "nameEn": "Barbarestan",
+        "nameAr": "بارباريستان",
+        "cuisineEn": "Historic Georgian",
+        "cuisineAr": "جورجي تاريخي",
+        "descriptionEn": "A family-run dining room on Aghmashenebeli Avenue cooking from the 19th-century recipe book of Barbare Jorjadze, dish by dish. Listed by both the World's 50 Best Discovery guide and Gault&Millau Georgia.",
+        "descriptionAr": "صالة طعام تديرها عائلة في شارع أغماشينيبيلي، تطبخ من كتاب وصفات باربارِه جورجادزه من القرن التاسع عشر، طبقًا بطبق. مدرجة في دليل World's 50 Best Discovery وفي غو ميّو جورجيا."
+      },
+      {
         "nameEn": "Shavi Lomi",
         "nameAr": "شافي لومي",
         "cuisineEn": "Georgian",
@@ -5881,6 +5974,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "رومز أوتيل تبليسي",
         "descriptionEn": "Stamba's sister in Vera, a converted publishing building with a well-used terrace.",
         "descriptionAr": "شقيق ستامبا في حي فيرا، مبنى نشر محوّل بشرفة كثيرة الاستخدام."
+      }
+    ],
+    "trustedProviders": [
+      {
+        "nameEn": "Transfeero",
+        "nameAr": "ترانسفيرو",
+        "typeEn": "Airport transfer booking platform",
+        "typeAr": "منصة حجز نقل من المطار",
+        "noteEn": "A worldwide transfer platform whose own Georgia page names Tbilisi International among the airports it covers, at a price fixed when you book and with free cancellation. Confirm the vehicle class and where the driver meets you at the time of booking.",
+        "noteAr": "منصة نقل عالمية تذكر صفحتها الخاصة بجورجيا مطار تبليسي الدولي ضمن المطارات التي تغطيها، بسعر يُثبَّت عند الحجز وإمكانية إلغاء مجاني. أكّد فئة السيارة ومكان لقاء السائق عند الحجز."
       }
     ],
     "sampleDay": [
@@ -6119,6 +6222,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "قاعة مركزية موثوقة للانطلاق إلى الأخاديد والأديرة."
       }
     ],
+    "trustedProviders": [
+      {
+        "nameEn": "Transfeero",
+        "nameAr": "ترانسفيرو",
+        "typeEn": "Airport transfer booking platform",
+        "typeAr": "منصة حجز نقل من المطار",
+        "noteEn": "Its Georgia page names Kutaisi International among the airports it covers, which matters here because Kutaisi is where most of the low-cost European flights land rather than Tbilisi. Price is fixed at booking.",
+        "noteAr": "تذكر صفحتها الخاصة بجورجيا مطار كوتايسي الدولي ضمن المطارات التي تغطيها، وهو أمر مهم هنا لأن كوتايسي هي مهبط معظم رحلات الطيران الاقتصادي الأوروبية وليس تبليسي. والسعر يُثبَّت عند الحجز."
+      }
+    ],
     "sampleDay": [
       {
         "timeEn": "Morning",
@@ -6342,7 +6455,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "descriptionAr": "حديقة النهر التي تستخدمها المدينة فعلًا، وبداخلها متحف غراج."
       }
     ],
-    "dining": [],
+    "dining": [
+      {
+        "nameEn": "Twins Garden",
+        "nameAr": "توينز غاردن",
+        "cuisineEn": "Modern Russian",
+        "cuisineAr": "روسي معاصر",
+        "descriptionEn": "The Berezutskiy brothers' restaurant on Strastnoy Boulevard, working from its own farm outside the city. Open daily from midday to midnight, with tables bookable on its own site.",
+        "descriptionAr": "مطعم الأخوين بيريزوتسكي في جادة ستراستنوي، يعتمد على مزرعته الخاصة خارج المدينة. مفتوح يوميًا من الظهر حتى منتصف الليل، ويمكن حجز الطاولات عبر موقعه."
+      }
+    ],
     "stay": [
       {
         "nameEn": "Hotel Metropol Moscow",

@@ -52,7 +52,16 @@ export const PLACE_URLS: Record<string, string> = {
   "Mandarin Oriental Al Faisaliah, Riyadh": "https://www.mandarinoriental.com/en/riyadh/olaya",
   "Fairmont Riyadh": "https://www.fairmont.com/en/hotels/riyadh/fairmont-riyadh.html",
   "Courtyard by Marriott Riyadh Olaya": "https://www.marriott.com/en-us/hotels/ruhcy-courtyard-riyadh-olaya/overview/",
-  "Blacklane": "https://www.blacklane.com/en/countries/saudi-arabia/riyadh/",
+  // The three international operators below are pointed at their own
+  // front doors rather than a country page. Each of them now appears in
+  // several countries' city data, and this registry holds one URL per
+  // name, so the Riyadh and Saudi-Arabia pages that used to be here were
+  // sending a Bangkok or Istanbul customer to the wrong country. Their
+  // city coverage was checked directly: Blacklane has live pages for
+  // Bangkok, Phuket, Kuala Lumpur and Istanbul and none for Tbilisi or
+  // Moscow; Transfeero's own country pages name Tbilisi and Kutaisi in
+  // Georgia and Istanbul, Antalya and Ankara in Türkiye.
+  "Blacklane": "https://www.blacklane.com/en/",
   "NAYLAM": "https://naylam.com/",
 
   // ---- Jeddah ----
@@ -117,12 +126,12 @@ export const PLACE_URLS: Record<string, string> = {
   // routes and the booking form live.
   "Hello Chauffeur": "https://hellochauffeurlimo.com/",
   "The Royal Chauffeur": "https://theroyalchauffeur.com/",
-  "MyChauffeur": "https://mychauffeur.com/en/saudi-arabia/riyadh",
+  "MyChauffeur": "https://mychauffeur.com/en/",
   "Online Umrah Taxi": "https://onlineumrahtaxi.com/",
   "Easy Access AlUla": "https://www.alulashuttle.com/",
   // Their own page for exactly the transfer our Red Sea plans describe.
   "GH Trips": "https://ghtrips.com/saudi-arabia/private-transfer-in-shura-island/",
-  "Transfeero": "https://www.transfeero.com/en/country/saudi-arabia/",
+  "Transfeero": "https://www.transfeero.com/en/",
   "Noorha Transport": "https://noorhatransport.com/",
 
   // ---- Türkiye ----
@@ -210,6 +219,20 @@ export const PLACE_URLS: Record<string, string> = {
   // Inside Mövenpick Al Khobar, so the hotel's own page for it is the
   // booking surface rather than a separate restaurant site.
   "Maharaja by Vineet": "https://movenpick.accor.com/en/middle-east/saudi-arabia/al-khobar/hotel-al-khobar/restaurants/maharaja-by-vineet.html",
+
+  // ---- Restaurants outside Saudi ----
+  // Same rule as the Saudi ones: listed only where the restaurant has its
+  // own site and that site was opened and seen showing this restaurant.
+  // Checked and left out, so nobody re-adds them from memory: Barbarestan
+  // (barbarestan.ge serves a certificate for a different domain), White
+  // Rabbit Moscow (expired certificate), Shavi Lomi and Raya Phuket (no
+  // site of their own). All four are real and all four fall through to a
+  // map search.
+  "Blue Elephant Bangkok": "https://blueelephant.com/restaurant/bangkok/",
+  "Blue Elephant Phuket": "https://blueelephant.com/restaurant/phuket-restaurant/",
+  "Dewakan": "https://dewakan.my/",
+  "Kebaya Dining Room": "https://kebaya.com.my/",
+  "Twins Garden": "https://twinsgarden.ru/home-eng",
 };
 
 export function officialUrlFor(placeName: string): string | null {
