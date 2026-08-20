@@ -121,7 +121,7 @@ export function FlagshipCityGuidePage({
         <Link className="flagshipSoftCta" href={planHref}>
           {isWorship
             ? (ar ? "جاهز نرتب لك رحلة؟" : "Ready to start arranging your visit?")
-            : (ar ? `حبيت ${cityName}؟ ودك تروح لها؟ خلينا نخطط لك باقة رحلة متكاملة تشبه أحلامك.` : "Already know this is your trip? Start your plan")}
+            : (ar ? `حبيت ${cityName}؟ ودك تروح لها؟ خلينا نخطط لك رحلة متكاملة تشبه أحلامك.` : "Already know this is your trip? Start your plan")}
           <ArrowRight className={ar ? "directionArrow" : ""} size={15} />
         </Link>
       </section>
@@ -262,7 +262,7 @@ export function FlagshipCityGuidePage({
           <h2>
             {isWorship
               ? (ar ? <>لنرتّب رحلتك<br /><em>إلى {cityName}.</em></> : <>Let&rsquo;s arrange your journey<br /><em>to {cityName}.</em></>)
-              : (ar ? <>لنصمّم حلمك<br /><em>في {cityName}.</em></> : <>Let&rsquo;s shape your dream<br /><em>in {cityName}.</em></>)}
+              : (ar ? <>لنصمم باقة حلمك<br /><em>في {cityName}.</em></> : <>Let&rsquo;s shape your dream<br /><em>in {cityName}.</em></>)}
           </h2>
           <p>
             {isWorship
