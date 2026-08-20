@@ -39,7 +39,7 @@ const cases: [string, unknown, unknown][] = [
   // The paywall must actually withhold the day, not just score it.
   ["short trip keeps the overview", applyPaywall(shortPlan, null, 2).visibleText.includes("An overview of the stay."), true],
   ["short trip withholds day one", applyPaywall(shortPlan, null, 2).visibleText.includes("Breakfast somewhere."), false],
-  ["short trip teases both headings", applyPaywall(shortPlan, null, 2).lockedTitles.length, 2],
+  ["short trip teases both headings", applyPaywall(shortPlan, null, 2).lockedDays.length, 2],
   ["normal trip still shows day one", applyPaywall(shortPlan, null, 6).visibleText.includes("Breakfast somewhere."), true],
 ];
 

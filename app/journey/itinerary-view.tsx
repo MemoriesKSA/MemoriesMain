@@ -1,6 +1,69 @@
 import type { CSSProperties, ReactNode } from "react";
 import { parseItinerary, splitOverviewGroup } from "./parse-itinerary";
 import { mapsSearchUrl } from "./place-links";
+import { REDACTION_PATTERN, type LockedDay } from "./paywall";
+
+// Filler for the blurred blocks. Deliberately meaningless: the real words
+// never leave the server (see paywall.ts), only the measurements do, and the
+// browser draws to those measurements. Blurred at this radius nothing is
+// legible, but the block has the rhythm and ragged edge of real prose, which
+// is the whole point of showing it rather than an empty placeholder.
+const FILLER_WORDS = "morning coffee before the drive across town and a slow lunch beside the water then an easy evening walk through the old quarter with time to sit".split(" ");
+
+function fillerLine(length: number, seed: number): string {
+  let out = "";
+  let i = seed % FILLER_WORDS.length;
+  while (out.length < length) {
+    out += (out ? " " : "") + FILLER_WORDS[i % FILLER_WORDS.length];
+    i++;
+  }
+  return out.slice(0, length);
+}
+
+const blurredTextStyle: CSSProperties = {
+  filter: "blur(4.5px)",
+  userSelect: "none",
+  pointerEvents: "none",
+  color: "var(--ink-2)",
+};
+
+// A withheld name inside otherwise readable prose: the hotel we picked, with
+// every reason for picking it left visible around it.
+function BlurredName({ length }: { length: number }) {
+  return (
+    <span
+      aria-label="hidden until unlocked"
+      style={{
+        ...blurredTextStyle,
+        display: "inline-block",
+        verticalAlign: "baseline",
+        fontWeight: 600,
+        color: "var(--gold)",
+      }}
+    >
+      {fillerLine(Math.max(6, Math.min(length, 40)), length)}
+    </span>
+  );
+}
+
+// Turns the server's redaction markers into blurred pills. Everything else
+// passes through as the plain string it already was.
+function renderRedactions(text: string, keyPrefix: string): ReactNode {
+  const pattern = new RegExp(REDACTION_PATTERN.source, "g");
+  if (!pattern.test(text)) return text;
+  pattern.lastIndex = 0;
+
+  const out: ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) out.push(text.slice(last, match.index));
+    out.push(<BlurredName key={`${keyPrefix}-r${match.index}`} length={Number(match[1])} />);
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
 
 const cardStyle: CSSProperties = { background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" };
 
@@ -22,10 +85,13 @@ function escapeRegex(value: string) {
 // a fragment of it. Anything not in the curated list is left as plain text,
 // we never try to guess at place names in prose.
 function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>, placeCities?: Record<string, string>): ReactNode {
-  if (!places.length) return text;
+  // Redactions are handled even when there is nothing to link, otherwise a
+  // line whose only notable content was the hidden hotel would print the
+  // raw marker at the reader.
+  if (!places.length) return renderRedactions(text, "p");
   const pattern = new RegExp(`(${places.map(escapeRegex).join("|")})`, "gi");
   const parts = text.split(pattern);
-  if (parts.length === 1) return text;
+  if (parts.length === 1) return renderRedactions(text, "p");
 
   const lookup = new Set(places.map((p) => p.toLowerCase()));
   return parts.map((part, i) =>
@@ -34,7 +100,7 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string, offici
         {part}
       </a>
     ) : (
-      part
+      <span key={i}>{renderRedactions(part, `p${i}`)}</span>
     ),
   );
 }
@@ -57,7 +123,7 @@ function BulletLines({ lines, places, cityLabel, officialUrls, placeCities }: { 
 // unchanged if it doesn't match the expected shape (e.g. a reviewer typed
 // something free-form), so this never hides content it can't confidently
 // restructure.
-export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, lockedTitles = [] }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; lockedTitles?: string[] }) {
+export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, lockedDays = [] }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; lockedDays?: LockedDay[] }) {
   const parsed = parseItinerary(text);
   if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
@@ -74,32 +140,71 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
   // raw text IS that internal content, showing it would defeat the filter.
   if (!sections.length) return null;
 
-  // Locked days are rendered from their headings alone. Their contents were
-  // dropped on the server (see paywall.ts) and are not present in this
-  // component at all, so there is nothing here to reveal.
-  const lockedCards = lockedTitles.map((title, i) => (
-    <div key={`locked-${i}`} style={{ ...cardStyle, borderStyle: "dashed", background: "transparent", opacity: 0.75 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <span
-          style={{
-            flexShrink: 0,
-            display: "grid",
-            placeItems: "center",
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            border: "1px dashed var(--line)",
-            color: "var(--muted)",
-            fontSize: 15,
-          }}
-          aria-hidden="true"
-        >
-          &#128274;
-        </span>
-        <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 18, color: "var(--muted)" }}>{title}</p>
+  // Locked days open exactly like the free ones: same card, same numbered
+  // circle, same heading, so the plan reads as one continuous document with
+  // the answers dimmed rather than as a plan that stops and a list that
+  // starts. What sits under each heading is filler drawn to the real day's
+  // measurements, blurred. The real lines were dropped on the server and are
+  // not in this component at all, so there is nothing here to un-blur.
+  const lockedCards = lockedDays.map((day, i) => {
+    const number = day.title.match(/[\d٠-٩]+/)?.[0] ?? "•";
+    // A day whose measurements didn't survive still gets a believable block
+    // rather than an empty card.
+    const lengths = day.lineLengths.length ? day.lineLengths : [88, 104, 76];
+    return (
+      <div key={`locked-${i}`} style={{ ...cardStyle, position: "relative", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span
+            style={{
+              flexShrink: 0,
+              display: "grid",
+              placeItems: "center",
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              // A fixed navy, not var(--ink): that token flips to near-white in dark mode, which left the day number as pale gold on an almost white disc. Same trap the hero band on the journey page documents.
+              background: "#102d29",
+              color: "var(--gold-light)",
+              fontFamily: "var(--font-display), Georgia, serif",
+              fontSize: 16,
+              fontWeight: 700,
+            }}
+          >
+            {number}
+          </span>
+          <p style={{ margin: 0, flex: 1, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{day.title}</p>
+          <span
+            title="Unlock to read this day"
+            style={{
+              flexShrink: 0,
+              display: "grid",
+              placeItems: "center",
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              background: "rgba(231,185,79,.16)",
+              border: "1px solid var(--gold)",
+              fontSize: 13,
+            }}
+          >
+            &#128274;
+          </span>
+        </div>
+        <ul aria-label="Locked until you unlock the plan" style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "grid", gap: 9 }}>
+          {lengths.map((length, li) => (
+            <li key={li} style={{ display: "flex", gap: 10 }}>
+              <span aria-hidden="true" style={{ ...blurredTextStyle, flexShrink: 0, color: "var(--gold)" }}>
+                &bull;
+              </span>
+              <span aria-hidden="true" style={{ ...blurredTextStyle, fontSize: 14.5, lineHeight: 1.65 }}>
+                {fillerLine(length, length + li)}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>
-  ));
+    );
+  });
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
@@ -142,7 +247,8 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
                   width: 38,
                   height: 38,
                   borderRadius: "50%",
-                  background: "var(--ink)",
+                  // A fixed navy, not var(--ink): that token flips to near-white in dark mode, which left the day number as pale gold on an almost white disc. Same trap the hero band on the journey page documents.
+                  background: "#102d29",
                   color: "var(--gold-light)",
                   fontFamily: "var(--font-display), Georgia, serif",
                   fontSize: 16,

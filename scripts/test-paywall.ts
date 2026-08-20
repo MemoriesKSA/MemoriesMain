@@ -30,14 +30,14 @@ const cases: [string, unknown, unknown][] = [
   ["free day 5 body visible (first day of stop 2)", multi.visibleText.includes("SECRET_D5"), true],
   ["locked day 2 body withheld", multi.visibleText.includes("SECRET_D2"), false],
   ["locked day 6 body withheld", multi.visibleText.includes("SECRET_D6"), false],
-  ["two locked headings returned", multi.lockedTitles.length, 2],
-  ["locked heading kept for teaser", multi.lockedTitles[0].startsWith("Day 2"), true],
-  ["locked headings carry no body", multi.lockedTitles.join(" ").includes("SECRET"), false],
+  ["two locked headings returned", multi.lockedDays.length, 2],
+  ["locked heading kept for teaser", multi.lockedDays.map((d) => d.title)[0].startsWith("Day 2"), true],
+  ["locked headings carry no body", multi.lockedDays.map((d) => d.title).join(" ").includes("SECRET"), false],
 
   // With no stop markers we must fall back to day one only, never more.
   ["fallback keeps day 1", single.visibleText.includes("SECRET_D1"), true],
   ["fallback locks day 5 too", single.visibleText.includes("SECRET_D5"), false],
-  ["fallback locks three days", single.lockedTitles.length, 3],
+  ["fallback locks three days", single.lockedDays.length, 3],
 
   // Arabic headings must behave identically.
   ["arabic day heading parsed", applyPaywall(["اليوم 1 — الاثنين", "صباحًا: وصول", "اليوم 2 — الثلاثاء", "SECRET_AR"].join("\n"), null).visibleText.includes("SECRET_AR"), false],

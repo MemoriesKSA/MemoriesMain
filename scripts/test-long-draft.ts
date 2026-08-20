@@ -108,7 +108,7 @@ async function main() {
     ["stop mapping stored", !!stored?.length, JSON.stringify(stored)],
     ["stop mapping came from the form", JSON.stringify(stored?.map((s) => s.firstDay)) === "[1,7,13]", `got ${JSON.stringify(stored?.map((s) => s.firstDay))}`],
     ["free days are each stop's first", JSON.stringify(freeDayNumbers(stored, totalDays)) === "[1,7,13]", JSON.stringify(freeDayNumbers(stored, totalDays))],
-    ["paywall withholds most of the plan", paywalled.lockedTitles.length === totalDays - 3, `${paywalled.lockedTitles.length} locked of ${totalDays}`],
+    ["paywall withholds most of the plan", paywalled.lockedDays.length === totalDays - 3, `${paywalled.lockedDays.length} locked of ${totalDays}`],
     ["model's own STOPS line agrees", JSON.stringify(markers?.map((s) => s.firstDay)) === "[1,7,13]", `model said ${JSON.stringify(markers?.map((s) => s.firstDay))}`],
   ];
 

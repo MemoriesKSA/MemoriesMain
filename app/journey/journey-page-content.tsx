@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity } from "./place-links";
-import { applyPaywall, shouldPaywall } from "./paywall";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, stayNamesForCity } from "./place-links";
+import { applyPaywall, shouldPaywall, redactStayNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
 import type { PlanStop } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
@@ -45,8 +45,13 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // whether a free day can be spared at all on a very short trip.
   const nights = nightsBetween(proposal.from_date, proposal.to_date);
   const totalDays = daysFromNights(nights);
-  const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_en ?? "", lockedTitles: [] };
-  const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_ar ?? "", lockedTitles: [] };
+  const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_en ?? "", lockedDays: [] };
+  const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_ar ?? "", lockedDays: [] };
+  // The chosen hotel names come out of the overview while it is unpaid, with
+  // every reason for choosing them left in place. Done here, on the server,
+  // so the name is genuinely absent rather than merely hidden.
+  const visibleEn = locked ? redactStayNames(en.visibleText, stayNamesForCity(proposal.city, false)) : en.visibleText;
+  const visibleAr = locked ? redactStayNames(ar.visibleText, stayNamesForCity(proposal.city, true)) : ar.visibleText;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFee(nights, stopCount);
 
@@ -76,20 +81,20 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           </div>
         )}
 
-        {en.visibleText && (
-          <section dir="ltr" style={{ marginBottom: ar.visibleText ? 32 : 0 }}>
+        {visibleEn && (
+          <section dir="ltr" style={{ marginBottom: visibleAr ? 32 : 0 }}>
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={en.visibleText} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedTitles={en.lockedTitles} />
+            <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={en.lockedDays} />
           </section>
         )}
 
-        {locked && (en.lockedTitles.length > 0 || ar.lockedTitles.length > 0) && (
+        {locked && (en.lockedDays.length > 0 || ar.lockedDays.length > 0) && (
           <PlanUnlock
             fee={unlockFee}
             currency={proposal.currency || "SAR"}
-            lockedCount={Math.max(en.lockedTitles.length, ar.lockedTitles.length)}
+            lockedCount={Math.max(en.lockedDays.length, ar.lockedDays.length)}
             stopCount={stopCount}
             locale={locale}
           />
@@ -99,12 +104,12 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           <RevisionRequest token={token} locale={locale} />
         )}
 
-        {ar.visibleText && (
+        {visibleAr && (
           <section dir="rtl">
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={ar.visibleText} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedTitles={ar.lockedTitles} />
+            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={ar.lockedDays} />
           </section>
         )}
 

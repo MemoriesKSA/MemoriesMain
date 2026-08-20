@@ -126,6 +126,19 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
 }
 
 /**
+ * Just the hotels, for the paywall's name redaction. Restaurants and
+ * attractions stay readable: it is the chosen hotel that is worth teasing,
+ * and blurring everything would leave the overview meaningless rather than
+ * tantalising.
+ */
+export function stayNamesForCity(cityLabel: string, ar: boolean): string[] {
+  const names = guidesForLabel(cityLabel).flatMap(({ guide }) =>
+    [...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
+  );
+  return [...new Set(names.filter((n) => n && n.trim().length > 3))];
+}
+
+/**
  * Which city each name belongs to, so a map search for a Jeddah restaurant
  * says Jeddah. Without this a multi-stop plan would search every place in
  * the whole trip label, and "Sura, Riyadh → Jeddah → AlUla, Saudi Arabia"

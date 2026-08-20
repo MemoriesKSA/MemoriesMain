@@ -131,12 +131,23 @@ export function parseItinerary(text: string): ItinerarySection[] | null {
   return sections;
 }
 
-// A short mini-label like "Hotel pick" or "Driver pick" is a standalone
-// short line immediately followed by more lines in the same paragraph group.
-// Used only for light visual styling, never changes what text is shown.
+// A short mini-label like "Where you'll stay" or "Getting around". Used only
+// for light visual styling, never changes what text is shown.
+//
+// A heading is not always in the same block as the text beneath it. The
+// drafts leave a blank line under it, which made it a group of one, which
+// failed the `length > 1` test, so every overview heading fell through and
+// rendered as ordinary body text: the gold styling on the other side of this
+// function was simply never reached. Both shapes count now.
+const looksLikeOverviewHeading = (line: string) => !!line && line.length <= 44 && !/[.!?؟]$/.test(line);
+
 export function splitOverviewGroup(group: string[]): { label: string | null; lines: string[] } {
-  if (group.length > 1 && group[0].length <= 40 && !/[.!?]$/.test(group[0])) {
+  if (group.length > 1 && looksLikeOverviewHeading(group[0])) {
     return { label: group[0], lines: group.slice(1) };
+  }
+  // A heading standing alone, its paragraph having become the next group.
+  if (group.length === 1 && looksLikeOverviewHeading(group[0])) {
+    return { label: group[0], lines: [] };
   }
   return { label: null, lines: group };
 }
