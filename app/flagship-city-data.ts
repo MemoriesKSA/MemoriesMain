@@ -4077,6 +4077,734 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       { en: "Mosques close to visitors during prayer and for about half an hour after; Friday midday is the busiest and worth planning around.", ar: "تُغلق المساجد أمام الزوار أثناء الصلاة ولنحو نصف ساعة بعدها؛ وظهر الجمعة هو الأكثر ازدحامًا ويستحق التخطيط حوله." },
     ],
   },
+  "turkey/cappadocia": {
+    "attractions": [
+      {
+        "nameEn": "Göreme Open-Air Museum",
+        "nameAr": "متحف غوريمه المفتوح",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "Rock-cut churches with Byzantine frescoes, cut straight into the volcanic tuff.",
+        "descriptionAr": "كنائس منحوتة في الصخر بجداريات بيزنطية، محفورة مباشرة في الحجر البركاني."
+      },
+      {
+        "nameEn": "Hot-air balloon flight",
+        "nameAr": "رحلة منطاد الهواء الساخن",
+        "categoryEn": "At dawn",
+        "categoryAr": "عند الفجر",
+        "descriptionEn": "The reason most people come. Flights launch at first light and are cancelled for wind, so plan it early in the stay and keep a spare morning.",
+        "descriptionAr": "السبب الذي يأتي من أجله معظم الناس. تنطلق الرحلات مع أول ضوء وتُلغى بسبب الرياح، لذا خطط لها في بداية إقامتك واترك صباحًا احتياطيًا."
+      },
+      {
+        "nameEn": "Uçhisar Castle",
+        "nameAr": "قلعة أوتشيسار",
+        "categoryEn": "Viewpoint",
+        "categoryAr": "إطلالة",
+        "descriptionEn": "The highest point in the region, a hollowed rock outcrop you climb for the whole valley at once.",
+        "descriptionAr": "أعلى نقطة في المنطقة، صخرة مجوّفة تتسلقها فترى الوادي كله دفعة واحدة."
+      },
+      {
+        "nameEn": "Derinkuyu Underground City",
+        "nameAr": "مدينة درينكويو الجوفية",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "Eight levels dug down into the rock, once sheltering thousands. Not for anyone uneasy in tight spaces.",
+        "descriptionAr": "ثمانية مستويات محفورة في الصخر، آوت آلافًا في زمنها. لا تناسب من يضيق بالأماكن الضيقة."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Seten Restaurant",
+        "nameAr": "مطعم سيتين",
+        "cuisineEn": "Anatolian",
+        "cuisineAr": "أناضولي",
+        "descriptionEn": "Regional Anatolian cooking in Göreme, the usual choice for a proper dinner rather than a tourist menu.",
+        "descriptionAr": "مطبخ أناضولي محلي في غوريمه، والخيار المعتاد لعشاء حقيقي بدل قوائم السياح."
+      },
+      {
+        "nameEn": "Topdeck Cave Restaurant",
+        "nameAr": "توب ديك كيف",
+        "cuisineEn": "Turkish home cooking",
+        "cuisineAr": "مطبخ تركي منزلي",
+        "descriptionEn": "A small cave dining room in Göreme, family-run and booked out most evenings, so reserve.",
+        "descriptionAr": "قاعة طعام صغيرة داخل كهف في غوريمه، تديرها عائلة وتُحجز بالكامل معظم الأمسيات، فاحجز مسبقًا."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Museum Hotel",
+        "nameAr": "ميوزيم أوتيل",
+        "descriptionEn": "A Relais & Châteaux cave hotel in Uçhisar, with Hittite through Ottoman pieces set into the rooms themselves.",
+        "descriptionAr": "فندق كهفي من مجموعة ريليه آند شاتو في أوتشيسار، بقطع أثرية من الحثيين حتى العثمانيين موضوعة في الغرف نفسها.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Argos in Cappadocia",
+        "nameAr": "أرغوس إن كابادوكيا",
+        "descriptionEn": "A restored monastery in Uçhisar, cave rooms linked by tunnels and courtyards, looking over Pigeon Valley.",
+        "descriptionAr": "دير مرمم في أوتشيسار، غرف كهفية تربطها أنفاق وأفنية، تطل على وادي الحمام.",
+        "tier": "luxury"
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "Sultan Cave Suites",
+        "nameAr": "سلطان كيف سويتس",
+        "descriptionEn": "In Göreme, best known for the rooftop terrace where the balloons come up in front of you at sunrise.",
+        "descriptionAr": "في غوريمه، وأشهر ما فيه شرفة السطح حيث ترتفع المناطيد أمامك عند الشروق."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Before dawn",
+        "timeAr": "قبل الفجر",
+        "placeEn": "Balloon flight",
+        "placeAr": "رحلة المنطاد",
+        "descriptionEn": "Pickup is around 04:30 in summer; dress warmer than you expect.",
+        "descriptionAr": "الاصطحاب نحو الرابعة والنصف فجرًا صيفًا؛ والبس أدفأ مما تتوقع."
+      },
+      {
+        "timeEn": "Late morning",
+        "timeAr": "قبيل الظهر",
+        "placeEn": "Göreme Open-Air Museum",
+        "placeAr": "متحف غوريمه المفتوح",
+        "descriptionEn": "The frescoed churches, before the midday heat.",
+        "descriptionAr": "الكنائس المزينة بالجداريات، قبل حر الظهيرة."
+      },
+      {
+        "timeEn": "Sunset",
+        "timeAr": "الغروب",
+        "placeEn": "Uçhisar Castle",
+        "placeAr": "قلعة أوتشيسار",
+        "descriptionEn": "Climb for the light going down over the valleys.",
+        "descriptionAr": "اصعد لترى الضوء يهبط على الوديان."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Balloon flights are weather-dependent and cancel often. Book for your first morning so a cancellation still leaves you another chance.",
+        "ar": "رحلات المناطيد مرتبطة بالطقس وتُلغى كثيرًا. احجزها في صباحك الأول حتى يبقى لك فرصة أخرى إن أُلغيت."
+      },
+      {
+        "en": "Göreme, Uçhisar and Ürgüp are all within a short drive of each other. Where you sleep matters less than having a car or driver.",
+        "ar": "غوريمه وأوتشيسار وأورغوب جميعها على مسافة قيادة قصيرة من بعضها. المكان الذي تنام فيه أقل أهمية من توفر سيارة أو سائق."
+      }
+    ]
+  },
+  "turkey/antalya": {
+    "attractions": [
+      {
+        "nameEn": "Kaleiçi Old Town",
+        "nameAr": "البلدة القديمة كاله إيتشي",
+        "categoryEn": "Old town",
+        "categoryAr": "بلدة قديمة",
+        "descriptionEn": "Ottoman houses, Roman walls and a small harbour, all inside the old city walls.",
+        "descriptionAr": "بيوت عثمانية وأسوار رومانية ومرفأ صغير، كلها داخل أسوار المدينة القديمة."
+      },
+      {
+        "nameEn": "Hadrian's Gate",
+        "nameAr": "بوابة هادريان",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "A Roman triumphal arch from AD 130, still the way into the old town on foot.",
+        "descriptionAr": "قوس نصر روماني من عام 130 ميلادي، ولا يزال المدخل المشيًا إلى البلدة القديمة."
+      },
+      {
+        "nameEn": "Düden Waterfalls",
+        "nameAr": "شلالات دودان",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "The lower falls drop straight off the cliff into the Mediterranean; best seen from a boat.",
+        "descriptionAr": "الشلالات السفلى تسقط مباشرة من الجرف إلى المتوسط؛ وأجمل مشاهدة لها من قارب."
+      },
+      {
+        "nameEn": "Antalya Museum",
+        "nameAr": "متحف أنطاليا",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "One of Türkiye's strongest archaeological collections, largely from nearby Perge.",
+        "descriptionAr": "من أقوى المجموعات الأثرية في تركيا، ومعظمها من مدينة برجه القريبة."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Seraser Fine Dining",
+        "nameAr": "سيراسر",
+        "cuisineEn": "Mediterranean",
+        "cuisineAr": "متوسطي",
+        "descriptionEn": "Inside the Tuvana Hotel in Kaleiçi, in an Ottoman mansion, with courtyard tables in season.",
+        "descriptionAr": "داخل فندق توفانا في كاله إيتشي، في قصر عثماني، مع طاولات في الفناء في الموسم."
+      },
+      {
+        "nameEn": "Vanilla Restaurant",
+        "nameAr": "فانيلا",
+        "cuisineEn": "Modern European",
+        "cuisineAr": "أوروبي معاصر",
+        "descriptionEn": "A long-standing Kaleiçi kitchen doing modern European cooking, an easy change from kebab.",
+        "descriptionAr": "مطبخ عريق في كاله إيتشي يقدم مطبخًا أوروبيًا معاصرًا، وتغيير سهل عن الكباب."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Tuvana Hotel",
+        "nameAr": "فندق توفانا",
+        "descriptionEn": "A boutique conversion of Ottoman houses in the middle of Kaleiçi, walkable to everything in the old town.",
+        "descriptionAr": "فندق بوتيك محوّل من بيوت عثمانية في وسط كاله إيتشي، وكل ما في البلدة القديمة على مسافة مشي.",
+        "tier": "luxury"
+      },
+      {
+        "nameEn": "Akra Hotel",
+        "nameAr": "فندق أكرا",
+        "descriptionEn": "On the cliff above the Mediterranean just outside the old town, with pools and sea access.",
+        "descriptionAr": "على الجرف فوق المتوسط خارج البلدة القديمة مباشرة، بمسابح ومنفذ إلى البحر."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Kaleiçi Old Town",
+        "placeAr": "البلدة القديمة",
+        "descriptionEn": "Walk in through Hadrian's Gate before the heat.",
+        "descriptionAr": "ادخل من بوابة هادريان قبل اشتداد الحر."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Düden Waterfalls",
+        "placeAr": "شلالات دودان",
+        "descriptionEn": "By boat, so you see them from the water.",
+        "descriptionAr": "بالقارب، لتراها من جهة البحر."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Kaleiçi harbour",
+        "placeAr": "مرفأ كاله إيتشي",
+        "descriptionEn": "Dinner in the old town, then the walk down to the marina.",
+        "descriptionAr": "عشاء في البلدة القديمة، ثم النزول مشيًا إلى المارينا."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Antalya is the gateway to Side, Aspendos and Perge, all an easy day trip and all worth one.",
+        "ar": "أنطاليا هي البوابة إلى سيده وأسبندوس وبرجه، وكلها رحلات يوم سهلة وتستحق."
+      },
+      {
+        "en": "July and August are very hot and very full. May, June, September and October are the comfortable months.",
+        "ar": "يوليو وأغسطس شديدا الحرارة والازدحام. أما مايو ويونيو وسبتمبر وأكتوبر فهي الشهور المريحة."
+      }
+    ]
+  },
+  "turkey/bodrum": {
+    "attractions": [
+      {
+        "nameEn": "Bodrum Castle",
+        "nameAr": "قلعة بودروم",
+        "categoryEn": "Castle",
+        "categoryAr": "قلعة",
+        "descriptionEn": "Built by the Knights of St John, now the Museum of Underwater Archaeology, on the headland between the two bays.",
+        "descriptionAr": "بناها فرسان القديس يوحنا، وهي اليوم متحف الآثار تحت الماء، على الرأس بين الخليجين."
+      },
+      {
+        "nameEn": "Bodrum Marina",
+        "nameAr": "مارينا بودروم",
+        "categoryEn": "Waterfront",
+        "categoryAr": "واجهة بحرية",
+        "descriptionEn": "Where the gulets tie up and the evening starts; the walk along it is the town's main promenade.",
+        "descriptionAr": "حيث ترسو مراكب الغولت ويبدأ المساء؛ والمشي بمحاذاتها هو كورنيش البلدة الرئيسي."
+      },
+      {
+        "nameEn": "Gulet day on the Aegean",
+        "nameAr": "يوم على مركب غولت",
+        "categoryEn": "On the water",
+        "categoryAr": "على الماء",
+        "descriptionEn": "A wooden gulet out to the bays for the day, the standard way to see the coast here.",
+        "descriptionAr": "مركب غولت خشبي إلى الخلجان ليوم كامل، وهي الطريقة المعتادة لرؤية الساحل هنا."
+      },
+      {
+        "nameEn": "Mausoleum of Halicarnassus",
+        "nameAr": "ضريح هاليكارناسوس",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "One of the seven wonders of the ancient world, now foundations and fragments, but the site is the point.",
+        "descriptionAr": "إحدى عجائب الدنيا السبع القديمة، ولم يبق منها سوى الأسس والشظايا، لكن الموقع نفسه هو المقصود."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Kitchen Bodrum",
+        "nameAr": "كيتشن بودروم",
+        "cuisineEn": "Modern Aegean",
+        "cuisineAr": "إيجي معاصر",
+        "descriptionEn": "A well-regarded Bodrum kitchen doing modern Aegean cooking; book for the terrace in season.",
+        "descriptionAr": "مطبخ محترم في بودروم يقدم مطبخًا إيجيًا معاصرًا؛ احجز للشرفة في الموسم."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Mandarin Oriental, Bodrum",
+        "nameAr": "ماندارين أورينتال بودروم",
+        "descriptionEn": "On Paradise Bay with private beaches and several restaurants, the full resort rather than a town hotel.",
+        "descriptionAr": "على خليج بارادايس بشواطئ خاصة وعدة مطاعم، منتجع متكامل لا فندق مدينة.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Bodrum Castle",
+        "placeAr": "قلعة بودروم",
+        "descriptionEn": "The castle and its underwater archaeology museum.",
+        "descriptionAr": "القلعة ومتحف الآثار الغارقة فيها."
+      },
+      {
+        "timeEn": "Midday",
+        "timeAr": "منتصف النهار",
+        "placeEn": "Gulet day",
+        "placeAr": "يوم الغولت",
+        "descriptionEn": "Out to the bays, swimming from the boat.",
+        "descriptionAr": "إلى الخلجان، والسباحة من المركب."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Bodrum Marina",
+        "placeAr": "مارينا بودروم",
+        "descriptionEn": "Dinner along the marina.",
+        "descriptionAr": "عشاء بمحاذاة المارينا."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Bodrum town and the peninsula's bays are different holidays. Decide which one you want before choosing where to sleep.",
+        "ar": "بلدة بودروم وخلجان شبه الجزيرة عطلتان مختلفتان. قرر أيهما تريد قبل اختيار مكان إقامتك."
+      }
+    ]
+  },
+  "turkey/izmir": {
+    "attractions": [
+      {
+        "nameEn": "Ephesus",
+        "nameAr": "أفسس",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "The best-preserved classical city in the eastern Mediterranean, an hour south of İzmir. Go early.",
+        "descriptionAr": "أفضل مدينة كلاسيكية محفوظة في شرق المتوسط، على بعد ساعة جنوب إزمير. اذهب مبكرًا."
+      },
+      {
+        "nameEn": "Kordon promenade",
+        "nameAr": "كوردون",
+        "categoryEn": "Waterfront",
+        "categoryAr": "واجهة بحرية",
+        "descriptionEn": "The seafront the city lives on, best walked in the hour before sunset.",
+        "descriptionAr": "الواجهة البحرية التي تعيش عليها المدينة، وأجمل وقت للمشي فيها الساعة التي تسبق الغروب."
+      },
+      {
+        "nameEn": "Kemeraltı Bazaar",
+        "nameAr": "بازار كمر ألتي",
+        "categoryEn": "Market",
+        "categoryAr": "سوق",
+        "descriptionEn": "A working Ottoman market rather than a tourist one, with courtyards and coffee houses inside it.",
+        "descriptionAr": "سوق عثماني عامل لا سوق سياح، بداخله أفنية ومقاهٍ."
+      },
+      {
+        "nameEn": "Şirince village",
+        "nameAr": "قرية شيرينجه",
+        "categoryEn": "Village",
+        "categoryAr": "قرية",
+        "descriptionEn": "A hillside village above Selçuk, usually paired with Ephesus on the same day.",
+        "descriptionAr": "قرية على سفح تل فوق سلجوق، وتُزار عادة مع أفسس في اليوم نفسه."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Scappi",
+        "nameAr": "سكابي",
+        "cuisineEn": "Italian",
+        "cuisineAr": "إيطالي",
+        "descriptionEn": "On the ninth floor of the Swissôtel over the Kordon, and on the MICHELIN Guide's recommended list for 2026.",
+        "descriptionAr": "في الطابق التاسع من سويس أوتيل فوق كوردون، وضمن قائمة ميشلان الموصى بها لعام 2026."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Swissôtel Büyük Efes, İzmir",
+        "nameAr": "سويس أوتيل بويوك أفس إزمير",
+        "descriptionEn": "Set in gardens in the commercial centre, overlooking the Kordon promenade.",
+        "descriptionAr": "يقع وسط حدائق في المركز التجاري، ويطل على كورنيش كوردون.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Early morning",
+        "timeAr": "الصباح الباكر",
+        "placeEn": "Ephesus",
+        "placeAr": "أفسس",
+        "descriptionEn": "Drive down at opening, before the coach parties.",
+        "descriptionAr": "انزل عند الافتتاح قبل وصول الحافلات السياحية."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Şirince",
+        "placeAr": "شيرينجه",
+        "descriptionEn": "Lunch up in the village on the way back.",
+        "descriptionAr": "غداء في القرية في طريق العودة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Kordon",
+        "placeAr": "كوردون",
+        "descriptionEn": "The seafront walk, then dinner in the city.",
+        "descriptionAr": "المشي على الواجهة البحرية، ثم العشاء في المدينة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Ephesus has two gates. Start at the upper one and walk down, so the whole site is downhill.",
+        "ar": "لأفسس بوابتان. ابدأ من العليا وانزل مشيًا، فيكون الموقع كله في اتجاه الهبوط."
+      }
+    ]
+  },
+  "turkey/fethiye": {
+    "attractions": [
+      {
+        "nameEn": "Ölüdeniz Blue Lagoon",
+        "nameAr": "البحيرة الزرقاء أولودنيز",
+        "categoryEn": "Beach",
+        "categoryAr": "شاطئ",
+        "descriptionEn": "The sheltered lagoon that appears on every poster of Türkiye, inside a protected park.",
+        "descriptionAr": "البحيرة المحمية التي تظهر في كل ملصق عن تركيا، داخل محمية طبيعية."
+      },
+      {
+        "nameEn": "Paragliding from Babadağ",
+        "nameAr": "الطيران الشراعي من بابا داغ",
+        "categoryEn": "Adventure",
+        "categoryAr": "مغامرة",
+        "descriptionEn": "Tandem flights off a 1,900-metre mountain, landing on the beach at Ölüdeniz. Weather-dependent.",
+        "descriptionAr": "طيران ثنائي من جبل بارتفاع 1900 متر، والهبوط على شاطئ أولودنيز. ومرهون بالطقس."
+      },
+      {
+        "nameEn": "Butterfly Valley",
+        "nameAr": "وادي الفراشات",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Reachable by boat from Ölüdeniz, a steep valley with a beach at the bottom.",
+        "descriptionAr": "يُوصل إليه بالقارب من أولودنيز، وادٍ شديد الانحدار بشاطئ في أسفله."
+      },
+      {
+        "nameEn": "Saklıkent Gorge",
+        "nameAr": "مضيق ساكليكنت",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "An 18km gorge you walk into through cold running water; wear something you can soak.",
+        "descriptionAr": "مضيق بطول 18 كيلومترًا تمشي فيه عبر مياه جارية باردة؛ فالبس ما لا يهمك أن يبتل."
+      }
+    ],
+    "dining": [],
+    "stay": [
+      {
+        "nameEn": "Hillside Beach Club",
+        "nameAr": "هيل سايد بيتش كلوب",
+        "descriptionEn": "A resort in its own private bay outside Fethiye, pine-covered, with a private beach and a kids' club.",
+        "descriptionAr": "منتجع في خليج خاص به خارج فتحية، تحيط به أشجار الصنوبر، بشاطئ خاص ونادٍ للأطفال.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Ölüdeniz",
+        "placeAr": "أولودنيز",
+        "descriptionEn": "The lagoon early, before the day boats arrive.",
+        "descriptionAr": "البحيرة مبكرًا، قبل وصول قوارب النهار."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Butterfly Valley",
+        "placeAr": "وادي الفراشات",
+        "descriptionEn": "By boat, with time to swim.",
+        "descriptionAr": "بالقارب، مع وقت للسباحة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Fethiye harbour",
+        "placeAr": "مرفأ فتحية",
+        "descriptionEn": "Fish dinner back in town.",
+        "descriptionAr": "عشاء سمك في البلدة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Fethiye is the start of the Lycian Way and the usual base for a blue cruise. Both are worth building the trip around.",
+        "ar": "فتحية هي بداية درب ليكيا والقاعدة المعتادة للرحلة الزرقاء. وكلاهما يستحق أن تُبنى الرحلة حوله."
+      }
+    ]
+  },
+  "turkey/ankara": {
+    "attractions": [
+      {
+        "nameEn": "Anıtkabir",
+        "nameAr": "أنيتكابير",
+        "categoryEn": "Memorial",
+        "categoryAr": "نصب",
+        "descriptionEn": "Atatürk's mausoleum and the museum beneath it, the single site every visitor to Ankara goes to.",
+        "descriptionAr": "ضريح أتاتورك والمتحف الذي تحته، وهو الموقع الذي يقصده كل زائر لأنقرة."
+      },
+      {
+        "nameEn": "Museum of Anatolian Civilizations",
+        "nameAr": "متحف حضارات الأناضول",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "Hittite, Phrygian and earlier, in a restored Ottoman bedesten. One of the country's best museums.",
+        "descriptionAr": "الحثيون والفريجيون وما قبلهم، داخل بدستان عثماني مرمم. من أفضل متاحف البلاد."
+      },
+      {
+        "nameEn": "Ankara Castle",
+        "nameAr": "قلعة أنقرة",
+        "categoryEn": "Castle",
+        "categoryAr": "قلعة",
+        "descriptionEn": "The old citadel above the city, with lanes of old houses inside the walls.",
+        "descriptionAr": "القلعة القديمة فوق المدينة، وبداخل أسوارها أزقة من البيوت العتيقة."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "JW Steakhouse",
+        "nameAr": "جيه دبليو ستيك هاوس",
+        "cuisineEn": "Steakhouse",
+        "cuisineAr": "ستيك هاوس",
+        "descriptionEn": "The signature restaurant at the JW Marriott, the reliable choice for a formal dinner in the city.",
+        "descriptionAr": "المطعم المميز في جيه دبليو ماريوت، والخيار الموثوق لعشاء رسمي في المدينة."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "JW Marriott Hotel Ankara",
+        "nameAr": "جيه دبليو ماريوت أنقرة",
+        "descriptionEn": "A large business hotel with a spa and indoor pool, and the city's most dependable standard.",
+        "descriptionAr": "فندق أعمال كبير بمنتجع صحي ومسبح داخلي، وأكثر المستويات موثوقية في المدينة.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Anıtkabir",
+        "placeAr": "أنيتكابير",
+        "descriptionEn": "Arrive for the changing of the guard.",
+        "descriptionAr": "احضر عند تبديل الحرس."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Museum of Anatolian Civilizations",
+        "placeAr": "متحف حضارات الأناضول",
+        "descriptionEn": "Then the castle lanes just above it.",
+        "descriptionAr": "ثم أزقة القلعة فوقه مباشرة."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Ankara Castle",
+        "placeAr": "قلعة أنقرة",
+        "descriptionEn": "Dinner up in the citadel for the view back over the city.",
+        "descriptionAr": "عشاء في أعلى القلعة لرؤية المدينة من فوق."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Ankara is a capital rather than a resort. Two days covers it well, and it pairs naturally with Cappadocia by road or rail.",
+        "ar": "أنقرة عاصمة لا منتجع. يومان يغطيانها جيدًا، وتُدمج طبيعيًا مع كابادوكيا برًا أو بالقطار."
+      }
+    ]
+  },
+  "turkey/bursa": {
+    "attractions": [
+      {
+        "nameEn": "Grand Mosque (Ulu Cami)",
+        "nameAr": "الجامع الكبير",
+        "categoryEn": "Mosque",
+        "categoryAr": "مسجد",
+        "descriptionEn": "Twenty domes and some of the finest Ottoman calligraphy anywhere, in the middle of the old city.",
+        "descriptionAr": "عشرون قبة وبعض أجمل الخط العثماني في أي مكان، في وسط المدينة القديمة."
+      },
+      {
+        "nameEn": "Uludağ",
+        "nameAr": "جبل أولوداغ",
+        "categoryEn": "Mountain",
+        "categoryAr": "جبل",
+        "descriptionEn": "The mountain above the city, a cable car ride up, and Türkiye's best-known ski hill in winter.",
+        "descriptionAr": "الجبل المطل على المدينة، يُصعد إليه بالتلفريك، وهو أشهر جبل تزلج في تركيا شتاءً."
+      },
+      {
+        "nameEn": "Cumalıkızık village",
+        "nameAr": "قرية جوماليكيزيك",
+        "categoryEn": "Village",
+        "categoryAr": "قرية",
+        "descriptionEn": "A UNESCO-listed Ottoman village on the lower slopes, houses barely changed in six centuries.",
+        "descriptionAr": "قرية عثمانية مدرجة في اليونسكو على السفوح السفلى، وبيوتها لم تتغير تقريبًا منذ ستة قرون."
+      },
+      {
+        "nameEn": "Bursa thermal baths",
+        "nameAr": "حمامات بورصة الحرارية",
+        "categoryEn": "Thermal",
+        "categoryAr": "حمامات معدنية",
+        "descriptionEn": "The city has been a spa town since Roman times; the historic baths are in Çekirge.",
+        "descriptionAr": "المدينة مصيف استشفائي منذ العهد الروماني؛ والحمامات التاريخية في تشكيرغه."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "Kebapçı İskender",
+        "nameAr": "كبابجي إسكندر",
+        "cuisineEn": "İskender kebab",
+        "cuisineAr": "كباب إسكندر",
+        "descriptionEn": "The dish was invented in Bursa and this family claims the original; it is the thing to eat here.",
+        "descriptionAr": "الطبق ابتُكر في بورصة وتنسب هذه العائلة الأصل لنفسها؛ وهو ما يجب أن تأكله هنا."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Çelik Palas",
+        "nameAr": "تشيليك بالاس",
+        "descriptionEn": "Built in 1935 on Atatürk's instruction and renovated since, with its own thermal pool and Turkish baths.",
+        "descriptionAr": "بُني عام 1935 بأمر من أتاتورك ورُمم بعدها، وله مسبح حراري وحمامات تركية خاصة به.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Grand Mosque",
+        "placeAr": "الجامع الكبير",
+        "descriptionEn": "The mosque and the covered market beside it.",
+        "descriptionAr": "الجامع والسوق المسقوف بجانبه."
+      },
+      {
+        "timeEn": "Midday",
+        "timeAr": "منتصف النهار",
+        "placeEn": "Kebapçı İskender",
+        "placeAr": "كبابجي إسكندر",
+        "descriptionEn": "İskender kebab where it was invented.",
+        "descriptionAr": "كباب إسكندر في مكان ابتكاره."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Cumalıkızık",
+        "placeAr": "جوماليكيزيك",
+        "descriptionEn": "The Ottoman village on the way up the mountain.",
+        "descriptionAr": "القرية العثمانية في الطريق صعودًا إلى الجبل."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Bursa is a comfortable day or overnight from Istanbul, and the fast ferry across the Sea of Marmara beats the road.",
+        "ar": "بورصة على مسافة يوم أو ليلة مريحة من إسطنبول، والعبّارة السريعة عبر بحر مرمرة أفضل من الطريق البري."
+      }
+    ]
+  },
+  "turkey/trabzon": {
+    "attractions": [
+      {
+        "nameEn": "Sümela Monastery",
+        "nameAr": "دير سوميلا",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A Greek Orthodox monastery built into a cliff face at 1,200 metres, about an hour from the city.",
+        "descriptionAr": "دير أرثوذكسي يوناني مبني في وجه جرف على ارتفاع 1200 متر، على بعد نحو ساعة من المدينة."
+      },
+      {
+        "nameEn": "Uzungöl",
+        "nameAr": "أوزون غول",
+        "categoryEn": "Lake",
+        "categoryAr": "بحيرة",
+        "descriptionEn": "A lake in a green valley with wooden houses around it, roughly 95km from Trabzon and busy in summer.",
+        "descriptionAr": "بحيرة في وادٍ أخضر تحيط بها بيوت خشبية، على بعد نحو 95 كيلومترًا من طرابزون ومزدحمة صيفًا."
+      },
+      {
+        "nameEn": "Hagia Sophia of Trabzon",
+        "nameAr": "آيا صوفيا طرابزون",
+        "categoryEn": "Heritage",
+        "categoryAr": "تراث",
+        "descriptionEn": "A thirteenth-century Byzantine church above the sea, with frescoes still in place.",
+        "descriptionAr": "كنيسة بيزنطية من القرن الثالث عشر فوق البحر، ولا تزال جدارياتها في مكانها."
+      },
+      {
+        "nameEn": "Atatürk Pavilion",
+        "nameAr": "قصر أتاتورك",
+        "categoryEn": "Museum",
+        "categoryAr": "متحف",
+        "descriptionEn": "A white mansion in gardens on the hill above town, kept as it was.",
+        "descriptionAr": "قصر أبيض وسط حدائق على التل فوق البلدة، محفوظ كما كان."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "La Couronne d'Or",
+        "nameAr": "لا كورون دور",
+        "cuisineEn": "Fine dining",
+        "cuisineAr": "مطبخ راقٍ",
+        "descriptionEn": "The formal restaurant at the Zorlu Grand, the city's most dependable option for a proper dinner.",
+        "descriptionAr": "المطعم الرسمي في زورلو غراند، وأكثر خيارات المدينة موثوقية لعشاء حقيقي."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "Zorlu Grand Hotel Trabzon",
+        "nameAr": "زورلو غراند طرابزون",
+        "descriptionEn": "In the city centre, the established five-star and the usual base for Sümela and Uzungöl trips.",
+        "descriptionAr": "في وسط المدينة، الفندق الخمس نجوم الراسخ والقاعدة المعتادة لرحلات سوميلا وأوزون غول.",
+        "tier": "luxury"
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "Sümela Monastery",
+        "placeAr": "دير سوميلا",
+        "descriptionEn": "Go early; the cliff path is cooler and quieter.",
+        "descriptionAr": "اذهب مبكرًا؛ فممر الجرف أبرد وأهدأ."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Uzungöl",
+        "placeAr": "أوزون غول",
+        "descriptionEn": "The lake and the valley around it.",
+        "descriptionAr": "البحيرة والوادي المحيط بها."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "Trabzon centre",
+        "placeAr": "وسط طرابزون",
+        "descriptionEn": "Back to the city for dinner.",
+        "descriptionAr": "العودة إلى المدينة للعشاء."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "The Black Sea coast is green because it rains, including in summer. Bring a light waterproof whatever the month.",
+        "ar": "ساحل البحر الأسود أخضر لأنه ممطر، حتى في الصيف. احمل معطفًا خفيفًا مقاومًا للمطر في أي شهر."
+      },
+      {
+        "en": "Sümela and Uzungöl are in opposite directions from the city. Give each its own day rather than trying to combine them.",
+        "ar": "سوميلا وأوزون غول في اتجاهين متعاكسين من المدينة. خصّص لكل منهما يومًا بدل محاولة الجمع بينهما."
+      }
+    ]
+  },
 };
 
 export const flagshipCityGuideBySlug = (countrySlug: string, citySlug: string) =>

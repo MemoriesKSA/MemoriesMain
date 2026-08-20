@@ -3,13 +3,15 @@
 // quietly falls back to a Maps search with nobody noticing.
 
 import { PLACE_URLS } from "../app/journey/place-urls";
-import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
-import { saudiArabia } from "../app/components/planner-data";
+import { flagshipCityGuideBySlug, flagshipCityKeys } from "../app/flagship-city-data";
 import { NATIONAL_CHAINS, PLATFORMS } from "../app/journey/place-links";
 
+// Walks every country in the data. It used to walk Saudi's city list, which
+// was the whole dataset at the time; the first Turkish city made every
+// Turkish name look like an orphan.
 const known = new Set<string>();
-for (const c of saudiArabia.cities) {
-  const g = flagshipCityGuideBySlug("saudi-arabia", c.value);
+for (const { countrySlug, citySlug } of flagshipCityKeys()) {
+  const g = flagshipCityGuideBySlug(countrySlug, citySlug);
   if (!g) continue;
   g.attractions.forEach((a) => known.add(a.nameEn));
   g.dining.forEach((d) => known.add(d.nameEn));

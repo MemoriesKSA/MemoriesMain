@@ -140,6 +140,19 @@ export const PLACE_URLS: Record<string, string> = {
   "Karaköy Lokantası": "https://karakoylokantasi.com/",
   "Cab Istanbul": "https://cabistanbul.com/",
 
+  // The rest of Türkiye.
+  "Museum Hotel": "https://www.museumhotel.com.tr/en",
+  "Argos in Cappadocia": "https://www.argosincappadocia.com/",
+  "Sultan Cave Suites": "https://sultancavesuites.com/",
+  "Tuvana Hotel": "https://tuvanahotel.com/",
+  "Akra Hotel": "https://www.akrahotels.com/",
+  "Mandarin Oriental, Bodrum": "https://www.mandarinoriental.com/en/bodrum/paradise-bay",
+  "Swissôtel Büyük Efes, İzmir": "https://www.swissotel.com/hotels/izmir/",
+  "Hillside Beach Club": "https://www.hillsidebeachclub.com/en",
+  // Marriott refuses scripts, so this was read in a browser.
+  "JW Marriott Hotel Ankara": "https://www.marriott.com/en-us/hotels/esbjw-jw-marriott-hotel-ankara/overview/",
+  "Zorlu Grand Hotel Trabzon": "https://www.zorlugrand.com/EN/",
+
   // ---- Booking platforms ----
   // The permit and ticket systems a plan sends the customer to. Nusuk is the
   // Ministry's own platform for Rawdah and Umrah permits; the Haramain train
