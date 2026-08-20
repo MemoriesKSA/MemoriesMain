@@ -97,9 +97,26 @@ const fallbackPlaces = (cityEn: string, cityAr: string) => ({
   ar: [`القلب التاريخي والمعالم المميزة في ${cityAr}`, `المتاحف والأسواق والأحياء ذات الطابع المحلي`, `إطلالة أو واجهة مائية أو وجهة طبيعية قريبة`],
 });
 
-export const countryGuides: CountryGuide[] = travelCountries.map((country) => {
+// Countries the planner can already build a real trip for, but which the
+// public catalogue has no photography for. A country card is a full-bleed
+// photo with the name over it, so the only two ways to ship one of these
+// today are a broken tile or another country's photo captioned Malaysia,
+// and neither belongs on a page whose whole job is to make a place look
+// worth going to. They stay out of /destinations and stay in the planner,
+// which the catalogue's own empty state already allows for: "We haven't
+// added that country yet. Tell us the place and we'll plan around it."
+//
+// Move one out of here as soon as it has a hero image and city images under
+// /images/cities/<slug>/. test-city-uniqueness.ts fails if a planner country
+// is neither profiled nor named here, so this list cannot rot quietly.
+export const CATALOGUE_PENDING = new Set(["malaysia", "georgia", "russia"]);
+
+export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) => {
   const profile = profiles[country.value];
-  if (!profile) throw new Error(`Missing destination profile for ${country.value}`);
+  if (!profile) {
+    if (CATALOGUE_PENDING.has(country.value)) return [];
+    throw new Error(`Missing destination profile for ${country.value}`);
+  }
   const cities = country.cities.filter((city) => !city.value.startsWith("other-")).map((city) => {
     const detail = cityDetails[`${country.value}/${city.value}`];
     const fallback = fallbackPlaces(city.en, city.ar);
@@ -115,7 +132,7 @@ export const countryGuides: CountryGuide[] = travelCountries.map((country) => {
       days: detail?.days ?? "3–5",
     };
   });
-  return { slug: country.value, nameEn: country.en, nameAr: country.ar, ...profile, cities };
+  return [{ slug: country.value, nameEn: country.en, nameAr: country.ar, ...profile, cities }];
 });
 
 export const countryGuideBySlug = (slug: string) => countryGuides.find((country) => country.slug === slug);

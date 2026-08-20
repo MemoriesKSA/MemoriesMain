@@ -11,6 +11,7 @@
 
 import { flagshipCityGuideBySlug, flagshipCityKeys, flagshipCountryForCity } from "../app/flagship-city-data";
 import { travelCountries } from "../app/components/planner-data";
+import { CATALOGUE_PENDING, countryGuideBySlug } from "../app/destination-guide-data";
 
 const keys = flagshipCityKeys();
 const bySlug = new Map<string, string[]>();
@@ -46,11 +47,26 @@ const gaps = travelCountries
       .filter((city) => !city.value.startsWith("other-") && !flagshipCityGuideBySlug(country.value, city.value))
       .map((city) => `${country.value}/${city.value}`));
 
+// Every country in the planner has to be either in the public catalogue or
+// deliberately held back from it. Adding Malaysia, Georgia and Russia to the
+// planner broke `next build` outright, because the catalogue throws on a
+// country it has no profile for, and nothing before this caught it: the type
+// checker and every unit test were green while the site would not build.
+const uncatalogued = travelCountries
+  .filter((country) => !countryGuideBySlug(country.value) && !CATALOGUE_PENDING.has(country.value))
+  .map((country) => country.value);
+// A country that got its profile and stayed on the pending list would be
+// held out of the catalogue for no reason, with the list itself as the only
+// evidence of why.
+const staleHoldbacks = [...CATALOGUE_PENDING].filter((slug) => countryGuideBySlug(slug));
+
 const cases: [string, unknown, unknown][] = [
   ["no city slug is claimed by two countries in the deep data", collisions.length, 0],
   ["no city slug is claimed by two countries in the planner", plannerCollisions.length, 0],
   ["every deep-data city resolves to exactly one country", keys.every((k) => flagshipCountryForCity(k.citySlug) === k.countrySlug), true],
   ["every city we offer in a supported country has data behind it", gaps.length, 0],
+  ["every planner country is catalogued or knowingly held back", uncatalogued.length, 0],
+  ["nothing is held back from the catalogue that already has a profile", staleHoldbacks.length, 0],
 ];
 
 let pass = 0;
