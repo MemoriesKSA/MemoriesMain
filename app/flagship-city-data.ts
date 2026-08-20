@@ -2,6 +2,25 @@
 // city guide (destination-guide-data.ts), entries here get their own
 // distinct page template — see components/flagship-city-guide-page.tsx.
 // A city with no entry here simply falls back to the generic template.
+//
+// HOTELS ARE A FACTUAL CLAIM, AND THEY GO STALE.
+//
+// All 75 hotels were checked against operator sources on 20 August 2026 and
+// three were wrong:
+//   - Four Seasons Jeddah, removed earlier: a building site until 2027.
+//   - The Oberoi Madinah: Oberoi ended its management on 1 January 2026 and
+//     it had sat here as a bookable luxury pick for the eight months since.
+//   - Taif Marriott Resort & Spa: no such property. Marriott lists one Taif
+//     hotel and it is not that. It looks invented, and it was first in the
+//     list, so it was the default luxury pick for the city.
+//
+// All three were luxury picks, and each sat where a draft would reach for it
+// first. Booking sites kept listing the Oberoi long after it closed, so a
+// search that finds an aggregator page proves nothing: check the operator.
+//
+// Re-check yearly, and whenever a plan is built around a property nobody has
+// booked recently. A hotel that doesn't exist is worse than a wrong price,
+// because it makes every other claim in the plan look invented too.
 
 export type FlagshipPlace = {
   nameEn: string;
