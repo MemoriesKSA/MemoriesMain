@@ -10,11 +10,18 @@ import { REDACTION_PATTERN, type LockedDay } from "./paywall";
 // is the whole point of showing it rather than an empty placeholder.
 const FILLER_WORDS = "morning coffee before the drive across town and a slow lunch beside the water then an easy evening walk through the old quarter with time to sit".split(" ");
 
-function fillerLine(length: number, seed: number): string {
+// Arabic filler for the Arabic half. English words blurred inside an RTL
+// page still read as the wrong script: Latin letters sit at a different
+// density and run the other way, so the block looks foreign even when no
+// individual word is legible.
+const FILLER_WORDS_AR = "صباح هادئ قبل التوجه إلى وسط المدينة ثم غداء على مهل قرب الماء وبعدها نزهة مسائية سهلة في الحي القديم مع وقت للجلوس".split(" ");
+
+function fillerLine(length: number, seed: number, ar = false): string {
+  const words = ar ? FILLER_WORDS_AR : FILLER_WORDS;
   let out = "";
-  let i = seed % FILLER_WORDS.length;
+  let i = seed % words.length;
   while (out.length < length) {
-    out += (out ? " " : "") + FILLER_WORDS[i % FILLER_WORDS.length];
+    out += (out ? " " : "") + words[i % words.length];
     i++;
   }
   return out.slice(0, length);
@@ -29,7 +36,7 @@ const blurredTextStyle: CSSProperties = {
 
 // A withheld name inside otherwise readable prose: the hotel we picked, with
 // every reason for picking it left visible around it.
-function BlurredName({ length }: { length: number }) {
+function BlurredName({ length, ar }: { length: number; ar?: boolean }) {
   return (
     <span
       aria-label="hidden until unlocked"
@@ -41,14 +48,14 @@ function BlurredName({ length }: { length: number }) {
         color: "var(--gold)",
       }}
     >
-      {fillerLine(Math.max(6, Math.min(length, 40)), length)}
+      {fillerLine(Math.max(6, Math.min(length, 40)), length, ar)}
     </span>
   );
 }
 
 // Turns the server's redaction markers into blurred pills. Everything else
 // passes through as the plain string it already was.
-function renderRedactions(text: string, keyPrefix: string): ReactNode {
+function renderRedactions(text: string, keyPrefix: string, ar?: boolean): ReactNode {
   const pattern = new RegExp(REDACTION_PATTERN.source, "g");
   if (!pattern.test(text)) return text;
   pattern.lastIndex = 0;
@@ -58,7 +65,7 @@ function renderRedactions(text: string, keyPrefix: string): ReactNode {
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text)) !== null) {
     if (match.index > last) out.push(text.slice(last, match.index));
-    out.push(<BlurredName key={`${keyPrefix}-r${match.index}`} length={Number(match[1])} />);
+    out.push(<BlurredName key={`${keyPrefix}-r${match.index}`} length={Number(match[1])} ar={ar} />);
     last = match.index + match[0].length;
   }
   if (last < text.length) out.push(text.slice(last));
@@ -84,14 +91,14 @@ function escapeRegex(value: string) {
 // placeNamesForCity) so the alternation matches the fullest name rather than
 // a fragment of it. Anything not in the curated list is left as plain text,
 // we never try to guess at place names in prose.
-function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>, placeCities?: Record<string, string>): ReactNode {
+function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>, placeCities?: Record<string, string>, ar?: boolean): ReactNode {
   // Redactions are handled even when there is nothing to link, otherwise a
   // line whose only notable content was the hidden hotel would print the
   // raw marker at the reader.
-  if (!places.length) return renderRedactions(text, "p");
+  if (!places.length) return renderRedactions(text, "p", ar);
   const pattern = new RegExp(`(${places.map(escapeRegex).join("|")})`, "gi");
   const parts = text.split(pattern);
-  if (parts.length === 1) return renderRedactions(text, "p");
+  if (parts.length === 1) return renderRedactions(text, "p", ar);
 
   const lookup = new Set(places.map((p) => p.toLowerCase()));
   return parts.map((part, i) =>
@@ -100,18 +107,18 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string, offici
         {part}
       </a>
     ) : (
-      <span key={i}>{renderRedactions(part, `p${i}`)}</span>
+      <span key={i}>{renderRedactions(part, `p${i}`, ar)}</span>
     ),
   );
 }
 
-function BulletLines({ lines, places, cityLabel, officialUrls, placeCities }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string>; placeCities?: Record<string, string> }) {
+function BulletLines({ lines, places, cityLabel, officialUrls, placeCities, ar }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string>; placeCities?: Record<string, string>; ar?: boolean }) {
   return (
     <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "grid", gap: 9 }}>
       {lines.map((line, i) => (
         <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15, lineHeight: 1.7, color: "var(--ink-2)" }}>
           <span style={{ flexShrink: 0, width: 6, height: 6, marginTop: 9, borderRadius: "50%", background: "var(--gold)" }} />
-          <span>{linkifyPlaces(line, places, cityLabel, officialUrls, placeCities)}</span>
+          <span>{linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}</span>
         </li>
       ))}
     </ul>
@@ -123,7 +130,7 @@ function BulletLines({ lines, places, cityLabel, officialUrls, placeCities }: { 
 // unchanged if it doesn't match the expected shape (e.g. a reviewer typed
 // something free-form), so this never hides content it can't confidently
 // restructure.
-export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, lockedDays = [] }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; lockedDays?: LockedDay[] }) {
+export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, lockedDays = [], ar = false }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; lockedDays?: LockedDay[]; ar?: boolean }) {
   const parsed = parseItinerary(text);
   if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
@@ -197,7 +204,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
                 &bull;
               </span>
               <span aria-hidden="true" style={{ ...blurredTextStyle, fontSize: 14.5, lineHeight: 1.65 }}>
-                {fillerLine(length, length + li)}
+                {fillerLine(length, length + li, ar)}
               </span>
             </li>
           ))}
@@ -222,7 +229,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
                     <div style={{ display: "grid", gap: 4 }}>
                       {lines.map((line, li) => (
                         <p key={li} style={{ margin: 0, fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-2)" }}>
-                          {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities)}
+                          {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}
                         </p>
                       ))}
                     </div>
@@ -259,7 +266,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
               </span>
               <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{section.title}</p>
             </div>
-            <BulletLines lines={section.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} placeCities={placeCities} />
+            <BulletLines lines={section.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} placeCities={placeCities} ar={ar} />
           </div>
         );
       })}

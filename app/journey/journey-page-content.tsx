@@ -109,7 +109,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={ar.lockedDays} />
+            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={ar.lockedDays} ar />
           </section>
         )}
 
