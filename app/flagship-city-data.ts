@@ -1452,13 +1452,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       },
     ],
     extendedStay: [
-      {
-        nameEn: "The Oberoi Madinah",
-        nameAr: "الأوبروي المدينة",
-        descriptionEn: "About 100 metres from Al-Masjid an-Nabawi on flat ground, a 2-3 minute walk with rooms overlooking the mosque.",
-        descriptionAr: "على بعد نحو 100 متر من المسجد النبوي على أرض مستوية، بمسافة مشي دقيقتين إلى ثلاث دقائق وغرف تطل على المسجد.",
-        tier: "luxury",
-      },
+      // The Oberoi Madinah was removed on 20 August 2026. Oberoi's own site
+      // states: "On 1st January 2026, Oberoi Hotels concluded its management
+      // of the property", and it is no longer taking reservations. It had sat
+      // here as a bookable luxury pick for eight months after closing.
+      //
+      // Do not re-add it from a booking site. Aggregators kept listing it long
+      // after the operator stopped, which is exactly how it survived here.
+      // If the building reopens it will be under a different name.
       {
         nameEn: "InterContinental Dar Al Iman Madinah",
         nameAr: "إنتركونتيننتال دار الإيمان المدينة",

@@ -76,6 +76,17 @@ export const PLACE_URLS: Record<string, string> = {
   "Pullman Zamzam Madinah": "https://makkah-madinah.accor.com/hotels/pullman-zamzam-madinah/",
   "Anwar Al Madinah Mövenpick": "https://makkah-madinah.accor.com/hotels/anwar-al-madinah-movenpick-hotel/",
   "InterContinental Dar Al Iman Madinah": "https://www.ihg.com/intercontinental/hotels/us/en/madinah/medha/hoteldetail",
+  "Crowne Plaza Madinah": "https://www.ihg.com/crowneplaza/hotels/us/en/madinah/medin/hoteldetail",
+  // Not the Crowne Plaza Madinah Al Haramain, which is a separate property
+  // being built by the railway station. This is the operating one, and its
+  // IHG code is medin.
+  "Nozol Royal Inn Hotel": "https://madenhotels.com/en/hotels-nozol/",
+
+  // Hilton and IHG both refuse scripts, so these two were read in a browser:
+  // Conrad's page loads as "Conrad Jabal Omar Makkah", ours keeps the shorter
+  // name a customer would actually search for.
+  "Conrad Makkah": "https://www.hilton.com/en/hotels/makcici-conrad-jabal-omar-makkah/",
+  "Al Kiswah Towers Hotel": "https://alkiswah-towers.com/",
 
   // ---- Restaurants ----
   // National chains first. These are named in plans for cities whose dining
