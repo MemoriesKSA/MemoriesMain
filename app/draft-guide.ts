@@ -311,10 +311,39 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
   }
 }
 
+// Headroom for the longest trip the planner will accept: three stops across
+// a long stay, in Arabic, which is the heaviest case by some distance.
+//
+// This was 6000, and a twelve-day Madinah plan hit the ceiling mid-sentence:
+// the Arabic stopped inside Day 11 and Day 12 never existed. Two reasons it
+// was too low. `max_tokens` is the budget for thinking AND output, and
+// adaptive thinking takes a real share of it before a word is written; and
+// Arabic needs noticeably more tokens than English for the same text, so the
+// translation is always the first to run out.
+const DRAFT_MAX_TOKENS = 32_000;
+
+/**
+ * Rejects a response that stopped because it ran out of room.
+ *
+ * Truncation is the one failure mode that looks like success: the text comes
+ * back well-formed right up to the point it stops, so nothing downstream
+ * notices. A truncated plan reached a real customer this way, ending
+ * mid-sentence on day eleven of twelve. Storing a half plan is worse than
+ * storing none, so this refuses it rather than passing it on.
+ */
+function assertNotTruncated(response: Anthropic.Message, label: string) {
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(`${label} hit the token ceiling and came back truncated, so it was discarded rather than saved half-finished.`);
+  }
+}
+
 async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string, stopLabels: string[] = []): Promise<string> {
-  const response = await anthropic.messages.create({
+  // Streamed, not because anything watches the stream, but because a
+  // non-streaming request this size can outlive the SDK's own request
+  // timeout. finalMessage() still gives the whole message back.
+  const response = await anthropic.messages.stream({
     model: "claude-opus-5",
-    max_tokens: 6000,
+    max_tokens: DRAFT_MAX_TOKENS,
     thinking: { type: "adaptive" },
     // "high" effort was pushing a single call's reasoning time past the
     // function's own timeout even after parallelizing (parallelism is
@@ -323,7 +352,8 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     output_config: { effort: "medium" },
     system: cachedSystem(buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
-  });
+  }).finalMessage();
+  assertNotTruncated(response, "The English draft");
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
 }
@@ -359,7 +389,7 @@ Translate now.`;
 async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string, groundedFactsAr: string): Promise<string> {
   if (!englishDraft) return "";
   try {
-    const response = await anthropic.messages.create({
+    const response = await anthropic.messages.stream({
       // KEEP THIS ON OPUS. Sonnet was measured on a real draft here and
       // failed twice in one sample. It translated the "Day 1" header into
       // "اليوم 1", which stops matching DAY_HEADING in
@@ -371,12 +401,18 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
       // as not knowing the subject. The self-check pass below runs on
       // Sonnet, that one is fine, this one is not.
       model: "claude-opus-5",
-      max_tokens: 6000,
+      max_tokens: DRAFT_MAX_TOKENS,
       thinking: { type: "adaptive" },
       output_config: { effort: "medium" },
       system: cachedSystem(buildTranslationSystemPrompt()),
       messages: [{ role: "user", content: buildTranslationUserPrompt(englishDraft, groundedFactsAr) }],
-    });
+    }).finalMessage();
+    // Arabic is the half that runs out of room first, so this is the guard
+    // that actually earns its keep. Returning nothing is deliberate: an
+    // absent translation is obvious to the reviewer and harmless to the
+    // customer's page, whereas one that stops mid-sentence on day eleven
+    // looks finished until somebody reads to the end.
+    assertNotTruncated(response, "The Arabic translation");
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
     return textBlock?.text?.trim() ?? "";
   } catch (error) {
@@ -436,9 +472,13 @@ async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabic
 
 function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
+  // An absent Arabic half has to announce itself. Silence here reads as "no
+  // Arabic was needed" rather than "the translation was thrown away for
+  // being truncated", and the difference decides whether this gets published
+  // as an English-only plan by accident.
   const arabicSection = arabicDraft
     ? `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px" dir="rtl"><p style="margin:0 0 14px;color:#ba8427;font-size:11px;font-weight:800;letter-spacing:1.5px">النسخة العربية</p><div style="font-size:14px;line-height:1.9">${escapeHtml(arabicDraft).replace(/\n/g, "<br />")}</div></div>`
-    : "";
+    : `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px"><p style="margin:0 0 8px;color:#a8523f;font-size:11px;font-weight:800;letter-spacing:1.5px">ARABIC TRANSLATION MISSING</p><p style="margin:0;font-size:13.5px;line-height:1.7">No Arabic version was produced for this draft, so the proposal has been saved with the English half only. Do not publish until Arabic is added: the customer's page offers both languages and the Arabic side would be empty. Re-run the draft or translate it by hand in the reviewer tool.</p></div>`;
   const isClean = /^no issues found/i.test(selfCheck.trim());
   const selfCheckSection = selfCheck
     ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheck)}</div></div>`

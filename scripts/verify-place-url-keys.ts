@@ -1,10 +1,11 @@
-// Every key in PLACE_URLS must exactly match a nameEn in the flagship data,
-// otherwise the URL silently never applies and the place quietly falls back
-// to a Maps search with nobody noticing.
+// Every key in PLACE_URLS must exactly match a nameEn in the flagship data
+// or a national chain, otherwise the URL silently never applies and the place
+// quietly falls back to a Maps search with nobody noticing.
 
 import { PLACE_URLS } from "../app/journey/place-urls";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 import { saudiArabia } from "../app/components/planner-data";
+import { NATIONAL_CHAINS } from "../app/journey/place-links";
 
 const known = new Set<string>();
 for (const c of saudiArabia.cities) {
@@ -15,6 +16,10 @@ for (const c of saudiArabia.cities) {
   [...g.stay, ...(g.extendedStay ?? [])].forEach((s) => known.add(s.nameEn));
   [...(g.trustedProviders ?? []), ...(g.extendedProviders ?? [])].forEach((p) => known.add(p.nameEn));
 }
+
+// Chains are matched in every city rather than held in any one city's
+// data, so they are legitimate keys and are not orphans.
+NATIONAL_CHAINS.forEach((c) => known.add(c.en));
 
 const orphans = Object.keys(PLACE_URLS).filter((k) => !known.has(k));
 

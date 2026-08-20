@@ -32,6 +32,24 @@ export function citySlugFromLabel(label: string): string | null {
 // Every real, named business or site we hold for this city, in the language
 // being rendered. Only these get linked: the list is finite and curated, so
 // we never guess at what is or isn't a place name in free prose.
+//
+// Chains with branches across the Kingdom, kept here rather than in each
+// city's data because they appear in plans for cities whose dining list is
+// empty, which is most of them. A twelve-day Madinah plan named Al Baik,
+// Zaitoon, Kudu and Al Tazaj and linked none of them, because Madinah holds
+// no dining entries for the linker to match against.
+//
+// Matching these in any Saudi city is safe precisely because they are
+// national. A per-city entry would be claiming "there is a branch here",
+// which we can't verify for every city; a chain's own site claims nothing
+// about a particular branch.
+export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
+  { en: "Al Baik", ar: "البيك" },
+  { en: "Kudu", ar: "كودو" },
+  { en: "Al Tazaj", ar: "التزاج" },
+  { en: "Zaitoon", ar: "زيتون" },
+];
+
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   const slug = citySlugFromLabel(cityLabel);
   if (!slug) return [];
@@ -43,6 +61,7 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
     ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
     ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
     ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
+    ...NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)),
   ];
 
   // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
@@ -71,5 +90,13 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
   guide.attractions.forEach((a) => add(a.nameEn, a.nameAr));
   [...guide.stay, ...(guide.extendedStay ?? [])].forEach((s) => add(s.nameEn, s.nameAr));
   [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].forEach((p) => add(p.nameEn, p.nameAr));
+  // Restaurants were held back from official links deliberately, on the
+  // grounds that a map result serves a diner better. That is still true of
+  // the ones with no site, and they still fall through to a map search, but
+  // a restaurant that has a real site is exactly the one worth opening: the
+  // menu and the booking page live there. add() only fires for names that
+  // are actually in PLACE_URLS, so the rest are unaffected.
+  guide.dining.forEach((d) => add(d.nameEn, d.nameAr));
+  NATIONAL_CHAINS.forEach((c) => add(c.en, c.ar));
   return map;
 }

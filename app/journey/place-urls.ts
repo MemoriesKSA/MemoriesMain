@@ -15,11 +15,21 @@
 // which is why an incomplete list is safe: the gap degrades to something
 // still useful rather than to a dead link.
 //
-// Restaurants are deliberately excluded. Many Saudi restaurants have no site
-// at all, or run on Instagram, and for a diner the map result (hours, phone,
-// reservation link, photos) beats a homepage anyway.
+// Restaurants were excluded at first, on the reasoning that many Saudi
+// restaurants have no site or run on Instagram. That holds for most of them
+// and they still fall back to a map search, but it was wrong as a blanket
+// rule: the ones that DO have a real site are exactly the ones a customer
+// wants to open, to see a menu or book a table. So a restaurant is listed
+// here when it has its own verified site, and left out when it doesn't.
 //
-// Keys are the exact nameEn from flagship-city-data.ts.
+// Checked and rejected, so nobody re-adds them from memory: Yauatcha (the
+// Hakkasan group page has no Riyadh venue, and the Mandarin Oriental page
+// redirects to the hotel's general dining index rather than the restaurant),
+// Sultan's Steakhouse, San Carlo, Porter House, Sura, OKTO and Circolo (no
+// official site found). All of those are better served by a map search.
+//
+// Keys are the exact nameEn from flagship-city-data.ts, or from the national
+// chain list in place-links.ts.
 
 export const PLACE_URLS: Record<string, string> = {
   // ---- Riyadh ----
@@ -66,6 +76,25 @@ export const PLACE_URLS: Record<string, string> = {
   "Pullman Zamzam Madinah": "https://makkah-madinah.accor.com/hotels/pullman-zamzam-madinah/",
   "Anwar Al Madinah Mövenpick": "https://makkah-madinah.accor.com/hotels/anwar-al-madinah-movenpick-hotel/",
   "InterContinental Dar Al Iman Madinah": "https://www.ihg.com/intercontinental/hotels/us/en/madinah/medha/hoteldetail",
+
+  // ---- Restaurants ----
+  // National chains first. These are named in plans for cities whose dining
+  // list is empty, so they are matched everywhere rather than per city (see
+  // NATIONAL_CHAINS in place-links.ts).
+  "Al Baik": "https://www.albaik.com/",
+  "Kudu": "https://www.kudu.com.sa/",
+  // taza.com.sa is the address that gets quoted around, but it redirects
+  // here, so the destination is what's stored.
+  "Al Tazaj": "https://www.altazaj.sa/",
+  "Zaitoon": "https://zaitoonksa.com/",
+
+  // City restaurants with their own sites.
+  // The brand's own Riyadh page, not the group index, so the link lands on
+  // the right restaurant in the right city.
+  "La Petite Maison": "https://lpmrestaurants.com/riyadh/",
+  "Myazu": "https://myazu.com/",
+  "Lusin": "https://lusinrestaurant.com/",
+  "Maraya Social": "https://marayasocial.com/",
 };
 
 export function officialUrlFor(placeName: string): string | null {
