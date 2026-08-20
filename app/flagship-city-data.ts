@@ -1176,7 +1176,16 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "الجبل الواقع جنوب الحرم والمرتبط بالهجرة، ولا يزال يزوره الحجاج ممن لديهم وقت إضافي.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Maki House",
+        nameAr: "ماكي هاوس",
+        cuisineEn: "Japanese",
+        cuisineAr: "ياباني",
+        descriptionEn: "Japanese cooking in the Al-Awali district, sushi and teppanyaki, a change of pace from the Haram-district chains.",
+        descriptionAr: "مطبخ ياباني في حي العوالي، سوشي وتيبانياكي، وتغيير عن السلاسل المنتشرة في محيط الحرم.",
+      },
+    ],
     stay: [
       {
         nameEn: "Fairmont Makkah Clock Royal Tower",
@@ -1394,7 +1403,40 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "موقع غزوة أحد، ومقر دفن سبعين من صحابة النبي.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "To'mah",
+        nameAr: "مطعم طُعمة",
+        cuisineEn: "Madani Saudi",
+        cuisineAr: "مديني سعودي",
+        descriptionEn: "Traditional Madani cooking built on the city's own recipes rather than a general Saudi menu.",
+        descriptionAr: "مطبخ مديني تقليدي مبني على وصفات المدينة نفسها، لا على قائمة سعودية عامة.",
+      },
+      {
+        nameEn: "Zaman Jaddi",
+        nameAr: "مطعم زمان جدي",
+        cuisineEn: "Madani Saudi",
+        cuisineAr: "مديني سعودي",
+        descriptionEn: "Time-honoured Madani dishes in a heritage setting, for a meal that belongs to the city.",
+        descriptionAr: "أطباق مدينية عريقة في أجواء تراثية، لوجبة تنتمي إلى المدينة فعلًا.",
+      },
+      {
+        nameEn: "Social Farm",
+        nameAr: "سوشال فارم",
+        cuisineEn: "Farm dining",
+        cuisineAr: "مطعم مزرعة",
+        descriptionEn: "An open-air farm setting away from the Haram district, quieter and slower than the centre.",
+        descriptionAr: "أجواء مزرعة في الهواء الطلق بعيدًا عن منطقة الحرم، أهدأ وأبطأ إيقاعًا من المركز.",
+      },
+      {
+        nameEn: "Arabesque",
+        nameAr: "مطعم أرابسيك",
+        cuisineEn: "Fine dining",
+        cuisineAr: "مطبخ راقٍ",
+        descriptionEn: "Upscale dining in Madinah, listed by the national tourism board among the city's notable restaurants.",
+        descriptionAr: "مطعم راقٍ في المدينة المنورة، أدرجته هيئة السياحة الوطنية ضمن أبرز مطاعم المدينة.",
+      },
+    ],
     stay: [
       {
         nameEn: "Pullman Zamzam Madinah",
@@ -2109,7 +2151,40 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "أحد أعلى قمم سلسلة السروات بارتفاع نحو 2,700 متر، شمال النماص مباشرة.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Sadaf Abha",
+        nameAr: "مطعم سدف أبها",
+        cuisineEn: "Saudi & southern",
+        cuisineAr: "سعودي وجنوبي",
+        descriptionEn: "Saudi cooking with the southern highland dishes Aseer is known for, in a family-friendly room.",
+        descriptionAr: "مطبخ سعودي مع أطباق المرتفعات الجنوبية التي تشتهر بها عسير، في أجواء مناسبة للعائلات.",
+      },
+      {
+        nameEn: "Ala Bali",
+        nameAr: "مطعم على بالي",
+        cuisineEn: "Italian & Lebanese",
+        cuisineAr: "إيطالي ولبناني",
+        descriptionEn: "Italian and Lebanese cooking, with terrace seating looking out over the Abha mountains.",
+        descriptionAr: "مطبخ إيطالي ولبناني، مع جلسات خارجية تطل على جبال أبها.",
+      },
+      {
+        nameEn: "Karamna",
+        nameAr: "مطعم كرمنا",
+        cuisineEn: "Lebanese",
+        cuisineAr: "لبناني",
+        descriptionEn: "Lebanese mezze and mixed grills, with outdoor seating and mountain views.",
+        descriptionAr: "مقبلات لبنانية ومشاوٍ مشكّلة، مع جلسات خارجية وإطلالات جبلية.",
+      },
+      {
+        nameEn: "Shandal Abha",
+        nameAr: "مطعم شندل أبها",
+        cuisineEn: "Hijazi & Gulf",
+        cuisineAr: "حجازي وخليجي",
+        descriptionEn: "Hijazi and Gulf dishes in a traditional Saudi setting, a good introduction to the region's cooking.",
+        descriptionAr: "أطباق حجازية وخليجية في أجواء سعودية تقليدية، ومدخل جيد إلى مطبخ المنطقة.",
+      },
+    ],
     stay: [],
     extendedStay: [
       {
@@ -2315,7 +2390,40 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "قرية جبلية بتلفريك خاص بها وأنشطة عائلية فوق أرض الوادي.",
       },
     ],
-    dining: [],
+    dining: [
+      {
+        nameEn: "Al Nakhil Ghyoom Al Hada",
+        nameAr: "مطعم النخيل غيوم الهدا",
+        cuisineEn: "Arabic",
+        cuisineAr: "عربي",
+        descriptionEn: "Arabic cooking up in Al Hada, where the mountain fog settles below the terrace on a cool evening.",
+        descriptionAr: "مأكولات عربية في أعالي الهدا، حيث يستقر ضباب الجبل تحت الشرفة في الأمسيات الباردة.",
+      },
+      {
+        nameEn: "Mallah Restaurant & Cafe",
+        nameAr: "مطعم ومقهى ملاح",
+        cuisineEn: "Saudi",
+        cuisineAr: "سعودي",
+        descriptionEn: "A local favourite for kabsa and jareesh, unfussy and consistently good rather than dressed up for visitors.",
+        descriptionAr: "من مفضلات أهل الطائف للكبسة والجريش، بسيط وجيد على الدوام أكثر منه مُعدًّا للزوار.",
+      },
+      {
+        nameEn: "Baitna Alqadeem",
+        nameAr: "مطعم بيتنا القديم",
+        cuisineEn: "Saudi heritage",
+        cuisineAr: "تراثي سعودي",
+        descriptionEn: "Classic Saudi dishes served inside a preserved old Taif house, so the room is part of the meal.",
+        descriptionAr: "أطباق سعودية أصيلة تُقدَّم داخل بيت طائفي قديم محفوظ، فيصبح المكان نفسه جزءًا من الوجبة.",
+      },
+      {
+        nameEn: "Seven Huts Cafe",
+        nameAr: "مقهى الأكواخ السبعة",
+        cuisineEn: "Cafe",
+        cuisineAr: "مقهى",
+        descriptionEn: "A mountain cafe above Taif, worth the drive for coffee and a long look at the view.",
+        descriptionAr: "مقهى جبلي فوق الطائف، تستحق الطريق إليه من أجل القهوة وإطالة النظر إلى المشهد.",
+      },
+    ],
     stay: [
       {
         nameEn: "Taif Marriott Resort & Spa",

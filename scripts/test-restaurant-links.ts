@@ -37,6 +37,20 @@ const cases: [string, unknown, unknown][] = [
   ["Porter House stays on maps", riyadhUrls["porter house"], undefined],
   // ...but still linkable, as a map search.
   ["Yauatcha is still linked at all", placeNamesForCity("Riyadh", false).includes("Yauatcha"), true],
+
+  // Dining researched for the cities that had none. These had no entry at
+  // all, so a plan naming them linked nothing.
+  ["Madinah names To'mah", madinahNames.includes("To'mah"), true],
+  ["Madinah names Zaman Jaddi in Arabic", madinahNamesAr.includes("مطعم زمان جدي"), true],
+  ["Taif names Baitna Alqadeem", placeNamesForCity("Taif", false).includes("Baitna Alqadeem"), true],
+  ["Aseer names Karamna", placeNamesForCity("Aseer", false).includes("Karamna"), true],
+  ["Makkah names Maki House", placeNamesForCity("Makkah", false).includes("Maki House"), true],
+
+  // Al Romansiah is the fallback that matters for the cities still carrying
+  // no dining list of their own.
+  ["Al Romansiah works in Jazan", placeNamesForCity("Jazan", false).includes("Al Romansiah"), true],
+  ["Al Romansiah works in Yanbu", placeNamesForCity("Yanbu", false).includes("Al Romansiah"), true],
+  ["Al Romansiah has its own site", officialUrlMapForCity("Tabuk")["al romansiah"], "https://alromansiah.com"],
 ];
 
 let pass = 0;

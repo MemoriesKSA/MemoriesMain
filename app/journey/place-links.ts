@@ -48,6 +48,13 @@ export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
   { en: "Kudu", ar: "كودو" },
   { en: "Al Tazaj", ar: "التزاج" },
   { en: "Zaitoon", ar: "زيتون" },
+  // Al Romansiah earns its place here more than the fast-food names do: it
+  // serves kabsa, mandi and mathbi, it is in every city we cover, and it is
+  // often the most useful answer for a visitor who wants Saudi food without
+  // a reservation. The cities with no dining list of their own lean on it.
+  { en: "Al Romansiah", ar: "الرومانسية" },
+  { en: "Herfy", ar: "هرفي" },
+  { en: "Shawarmer", ar: "شاورمر" },
 ];
 
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {

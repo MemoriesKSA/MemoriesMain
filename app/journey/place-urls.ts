@@ -87,6 +87,9 @@ export const PLACE_URLS: Record<string, string> = {
   // here, so the destination is what's stored.
   "Al Tazaj": "https://www.altazaj.sa/",
   "Zaitoon": "https://zaitoonksa.com/",
+  "Al Romansiah": "https://alromansiah.com",
+  "Herfy": "https://herfy.com",
+  "Shawarmer": "https://www.shawarmer.com",
 
   // City restaurants with their own sites.
   // The brand's own Riyadh page, not the group index, so the link lands on
