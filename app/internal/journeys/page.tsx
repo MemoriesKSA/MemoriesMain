@@ -19,7 +19,7 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
   const supabase = createSupabaseAdminClient();
   const { data: proposals } = await supabase
     .from("proposals")
-    .select("id, reference, customer_name, city, status, updated_at")
+    .select("id, reference, customer_name, city, status, updated_at, revision_used, revision_note, revision_requested_at")
     .order("updated_at", { ascending: false });
 
   const draftCount = proposals?.filter((p) => p.status !== "published").length ?? 0;

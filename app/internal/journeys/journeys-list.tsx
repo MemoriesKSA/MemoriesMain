@@ -14,6 +14,13 @@ type ProposalRow = {
   city: string;
   status: string;
   updated_at: string;
+  // A requested revision is recorded in the database first and emailed
+  // second. If that email never lands, the request would otherwise sit here
+  // unseen while the customer has spent their one revision and been told we
+  // got it, so the list has to show it too.
+  revision_used?: boolean | null;
+  revision_note?: string | null;
+  revision_requested_at?: string | null;
 };
 
 function timeAgo(value: string, locale: ReviewerLocale) {
@@ -79,6 +86,7 @@ export function JourneysList({ proposals, locale }: { proposals: ProposalRow[]; 
         )}
         {filtered.map((p, i) => {
           const published = p.status === "published";
+          const awaitingRevision = !!p.revision_used && !!p.revision_note;
           const label = `${p.customer_name} · ${p.city}`;
           return (
             <div
@@ -97,6 +105,16 @@ export function JourneysList({ proposals, locale }: { proposals: ProposalRow[]; 
                   <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 3 }}>
                     {t.reference(p.reference)} · {t.updatedAgo(timeAgo(p.updated_at, locale))}
                   </div>
+                  {awaitingRevision && (
+                    <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                      <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, padding: "3px 9px", borderRadius: 999, background: "rgba(231,185,79,.18)", border: "1px solid var(--gold)", color: "var(--ink)", textTransform: locale === "ar" ? "none" : "uppercase" }}>
+                        {locale === "ar" ? "طلب تعديل" : "Revision requested"}
+                      </span>
+                      <span style={{ fontSize: 12, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 380 }}>
+                        {p.revision_note}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <span
                   style={{
