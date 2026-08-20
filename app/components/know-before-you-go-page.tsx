@@ -227,7 +227,7 @@ export function KnowBeforeYouGoPage({ locale = "en" }: { locale?: Locale }) {
           <h2>{ar ? <>متحمس تروح<br /><em>السعودية؟</em></> : <>Let&rsquo;s shape your trip<br /><em>to Saudi Arabia.</em></>}</h2>
           <p>
             {ar
-              ? "عطني تواريخ رحلتك ومين بروح معاك ووين ودك تروح، وخلي علينا الباقي."
+              ? "عطني تواريخ رحلتك ومين بروح معاك ووين ودك تروح، واترك الباقي علينا."
               : "Tell us your dates, who's travelling and what you're hoping for, and we'll take it from there."}
           </p>
         </div>

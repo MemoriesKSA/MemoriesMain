@@ -17,7 +17,7 @@ export function HelpfulFeedback({ locale = "en" }: { locale?: "en" | "ar" }) {
 
   return (
     <section className="container helpfulFeedback">
-      <p>{ar ? "هل كانت هذه المعلومات مفيدة؟" : "Was this information helpful?"}</p>
+      <p>{ar ? "إن شالله أنك استفدت من هذه المعلومات؟" : "Was this information helpful?"}</p>
       <div className="helpfulButtons">
         <button type="button" onClick={() => setAnswered(true)} aria-label={ar ? "نعم، مفيدة" : "Yes, helpful"}>
           <ThumbsUp size={16} /> {ar ? "نعم" : "Yes"}
