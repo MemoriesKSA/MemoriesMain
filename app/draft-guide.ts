@@ -351,6 +351,8 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
       }],
     });
 
+    logResearchSpend(cityLabelEn, response);
+
     // A web-search turn comes back as many short text blocks interleaved
     // with the search calls themselves (one burst of prose between each
     // search), not one final block. Taking only the last one, as this used
@@ -399,6 +401,45 @@ function assertNotTruncated(response: Anthropic.Message, label: string) {
   if (response.stop_reason === "max_tokens") {
     throw new Error(`${label} hit the token ceiling and came back truncated, so it was discarded rather than saved half-finished.`);
   }
+}
+
+// List prices for what this pass uses, in dollars: Opus 5 input and output
+// per million tokens, and the web search tool per thousand searches. Kept
+// here only so the log line is readable at a glance; they are Anthropic's
+// published rates and will drift, so treat the printed figure as an order of
+// magnitude rather than an invoice.
+const OPUS_IN_PER_M = 5;
+const OPUS_OUT_PER_M = 25;
+const SEARCH_PER_K = 10;
+
+/**
+ * The research pass is the expensive half of a draft and it was the only call
+ * in the pipeline reporting nothing about what it cost. The drafts log their
+ * token use on every run; this one ran 45 searches and said nothing, which
+ * left "why does it spend so much" to be answered by arithmetic on the
+ * pricing page instead of by the logs.
+ *
+ * Cached input is priced differently from fresh input, so it is printed
+ * separately rather than folded into one number.
+ */
+function logResearchSpend(cityLabelEn: string, response: Anthropic.Message) {
+  const usage = response.usage as Anthropic.Usage & {
+    server_tool_use?: { web_search_requests?: number };
+    cache_read_input_tokens?: number | null;
+    cache_creation_input_tokens?: number | null;
+  };
+  const searches = usage.server_tool_use?.web_search_requests ?? 0;
+  const cached = usage.cache_read_input_tokens ?? 0;
+  const fresh = usage.input_tokens;
+  const out = usage.output_tokens;
+  const dollars =
+    (fresh / 1_000_000) * OPUS_IN_PER_M +
+    (out / 1_000_000) * OPUS_OUT_PER_M +
+    (searches / 1_000) * SEARCH_PER_K;
+  console.log(
+    `Research for ${cityLabelEn}: ${searches} searches, ${fresh} input tokens` +
+    `${cached ? ` (+${cached} cached)` : ""}, ${out} output. Roughly $${dollars.toFixed(2)}.`,
+  );
 }
 
 /**
