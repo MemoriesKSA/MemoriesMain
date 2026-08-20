@@ -102,6 +102,22 @@ export const PLACE_URLS: Record<string, string> = {
   "Herfy": "https://herfy.com",
   "Shawarmer": "https://www.shawarmer.com",
 
+  // ---- Drivers ----
+  // All thirteen were checked in August 2026 and every one is a real,
+  // operating business. These are the entries a plan tells the customer to
+  // go and contact, so a map search for a chauffeur company was the least
+  // useful fallback in the file: their own site is where the fleet, the
+  // routes and the booking form live.
+  "Hello Chauffeur": "https://hellochauffeurlimo.com/",
+  "The Royal Chauffeur": "https://theroyalchauffeur.com/",
+  "MyChauffeur": "https://mychauffeur.com/en/saudi-arabia/riyadh",
+  "Online Umrah Taxi": "https://onlineumrahtaxi.com/",
+  "Easy Access AlUla": "https://www.alulashuttle.com/",
+  // Their own page for exactly the transfer our Red Sea plans describe.
+  "GH Trips": "https://ghtrips.com/saudi-arabia/private-transfer-in-shura-island/",
+  "Transfeero": "https://www.transfeero.com/en/country/saudi-arabia/",
+  "Noorha Transport": "https://noorhatransport.com/",
+
   // ---- Booking platforms ----
   // The permit and ticket systems a plan sends the customer to. Nusuk is the
   // Ministry's own platform for Rawdah and Umrah permits; the Haramain train
