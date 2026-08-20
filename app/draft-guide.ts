@@ -264,7 +264,7 @@ Draft the day-by-day sketch now.`;
 // flight times or prices, which a generic web search can't honestly
 // verify, that needs a real flight-search API and isn't in scope here, see
 // the flight rule below for why.
-async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
+export async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string): Promise<string> {
   try {
     const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
     if (!attractionNames) return "";
