@@ -2924,8 +2924,11 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         nameAr: "حي تجار اللؤلؤ",
         categoryEn: "Heritage",
         categoryAr: "تراث",
-        descriptionEn: "Coral-built houses on Farasan with carved plasterwork, left over from the pearling era.",
-        descriptionAr: "بيوت مبنية من المرجان في فرسان بزخارف جصية منحوتة، متبقية من زمن تجارة اللؤلؤ.",
+        // Named for what it is rather than what it is called, so the
+        // description carries a landmark that can actually be searched: the
+        // Al-Rifai house is the one everybody photographs.
+        descriptionEn: "Coral-built houses on Farasan with carved plasterwork, left over from the pearling era; the Al-Rifai house is the finest of them.",
+        descriptionAr: "بيوت مبنية من المرجان في فرسان بزخارف جصية منحوتة، متبقية من زمن تجارة اللؤلؤ، وأجملها بيت الرفاعي.",
       },
       {
         nameEn: "Jazan Corniche",
@@ -3927,8 +3930,10 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "تكوينات مرجانية تبدأ قريبًا من الشاطئ، مفضلة لهواة السنوركل.",
       },
       {
-        nameEn: "Al-Farabi Coral Reef",
-        nameAr: "شعاب الفارابي المرجانية",
+        // It is an island you snorkel off, not a named reef. "Al-Farabi
+        // Coral Reef" finds nothing; the island does.
+        nameEn: "Al-Farabi Island",
+        nameAr: "جزيرة الفارابي",
         categoryEn: "Diving",
         categoryAr: "غوص",
         descriptionEn: "A vibrant, uncrowded dive site rarely visited by international tourists.",
