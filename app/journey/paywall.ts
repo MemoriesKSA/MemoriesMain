@@ -95,93 +95,47 @@ const REDACTION = (length: number) => `⟦R:${length}⟧`;
 export const REDACTION_PATTERN = /⟦R:(\d+)⟧/g;
 
 /**
- * Hides the chosen hotel names in the overview while leaving every reason
- * for choosing them in place.
+ * Hides every hotel the plan names, while leaving the reasons, the tiers and
+ * the prices readable.
  *
- * The point is to tease, not to withhold the proof: "an outdoor pool and
- * garden after dusty desert mornings, well-reviewed, and a straightforward
- * mid-range base that keeps your budget in good shape" is what convinces
- * someone the plan is real and theirs. Only the answer is held back.
+ * It began as the picks only, on the reasoning that the alternatives work as
+ * aspiration precisely because you can read them. That was wrong about what
+ * is being sold: "swap the AlUla leg for The Chedi Hegra, from about SAR
+ * 3,915 a night" is a researched, actionable recommendation, and someone can
+ * act on it without paying. The picks and the alternatives are the same kind
+ * of answer, so both are held back.
  *
- * Scoped to the stay section on purpose. Hotels named elsewhere are the
- * upgrade options, and those work as aspiration precisely because they are
- * readable.
+ * What stays is everything that proves the work is real: "an outdoor pool and
+ * garden after dusty desert mornings, well-reviewed, a mid-range base that
+ * keeps your budget in good shape", the star ratings, and every figure. A
+ * reader can see there is a property at SAR 3,915 a night and that we have a
+ * reason for it. They just cannot see which one.
  *
- * Done here rather than with a blur in the browser for the same reason as
- * the days: a name blurred in CSS is still a name sitting in the page source.
+ * Done here rather than with a blur in the browser for the same reason as the
+ * days: a name blurred in CSS is still a name sitting in the page source.
  */
 export function redactStayNames(text: string, stayNames: string[]): string {
   if (!text || !stayNames.length) return text;
 
-  const lines = text.split(/\r?\n/);
   // Longest first, so a hotel whose name contains another's is matched whole.
   const ordered = [...stayNames].filter(Boolean).sort((a, b) => b.length - a.length);
   const escape = (name: string) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // Which lines are the stay block, and which hotels were actually chosen.
-  // Only the picks are hidden: the hotels named further down are the upgrade
-  // options, and those work as aspiration precisely because they're readable.
-  const inStay: boolean[] = [];
-  const chosen = new Set<string>();
-  let insideStay = false;
-  lines.forEach((line, i) => {
-    const heading = line.trim();
-    if (isStayHeading(heading)) {
-      insideStay = true;
-      inStay[i] = false;
-      return;
-    }
-    if (insideStay && isOtherHeading(heading)) insideStay = false;
-    inStay[i] = insideStay;
-    // Only the assignment lines, "Riyadh, Days 1-7: <hotel> (<tag>)", name a
-    // pick. The prose underneath them discusses the upgrade options, and
-    // treating those as picks hid the very names the upsell depends on.
-    if (insideStay && isStayAssignmentLine(line)) {
-      for (const name of ordered) {
-        if (new RegExp(escape(name), "i").test(line)) chosen.add(name);
-      }
-    }
-  });
-  if (!chosen.size) return text;
-
-  return lines
-    .map((line, i) => {
-      let out = line;
-      // A chosen hotel is hidden everywhere it appears, not only in the stay
-      // block. It was named again inside a free day ("transfer to X") and
-      // rendered there as a plain, readable link, which handed over the
-      // answer the overview was carefully withholding.
-      for (const name of chosen) {
-        out = out.replace(new RegExp(escape(name), "gi"), () => REDACTION(name.length));
-      }
-      // In the stay block the tag that follows the name goes too, since
-      // "(4-star suite hotel on Olaya Street)" narrows it to one property.
-      // Elsewhere the surrounding sentence is ordinary prose and stays.
-      if (inStay[i]) {
-        out = out.replace(/(⟦R:\d+⟧)\s*\(([^)]{0,120})\)/g, (_m, marker: string, inner: string) => `${marker} ${REDACTION(inner.length + 2)}`);
-      }
-      return out;
-    })
-    .join("\n");
+  let out = text;
+  for (const name of ordered) {
+    out = out.replace(new RegExp(escape(name), "gi"), () => REDACTION(name.length));
+  }
+  // The tag right after a name goes too: "(4-star suite hotel on Olaya
+  // Street)" narrows it to one property as surely as the name does. A
+  // parenthetical carrying a figure is left alone, since the prices are the
+  // part worth showing.
+  return out.replace(/(⟦R:\d+⟧)\s*\(([^)]{0,120})\)/g, (whole, marker: string, inner: string) =>
+    CARRIES_A_FIGURE.test(inner) ? whole : `${marker} ${REDACTION(inner.length + 2)}`,
+  );
 }
 
-// "Where you'll stay" and its Arabic equivalent, as written by the drafting
-// prompt. Matched loosely because the model varies the wording slightly.
-function isStayHeading(line: string): boolean {
-  return /^where you.{0,3}ll stay$/i.test(line) || /^(مكان|أماكن) الإقامة$/.test(line) || /^أين ستقيم/.test(line);
-}
-
-// "Riyadh, Days 1-7: <hotel>" and its Arabic equivalent: a stop, its span of
-// days, then the pick. A colon alone isn't enough, since "On the tier:"
-// introduces the upgrade paragraph and must not count.
-function isStayAssignmentLine(line: string): boolean {
-  return line.includes(":") && /\bdays?\b|اليوم|الأيام/i.test(line);
-}
-
-// Any of the other overview headings, which mark the end of the stay block.
-function isOtherHeading(line: string): boolean {
-  return !isStayHeading(line) && /^[A-Za-z؀-ۿ]/.test(line) && line.split(/\s+/).length <= 8;
-}
+// A parenthetical that quotes money or a rate, which stays readable.
+const CARRIES_A_FIGURE = /SAR|USD|ريال|دولار|\d[\d,.]*\s*(a night|per night|لليلة)/i;
 
 /**
  * Whether a plan should be paywalled at all. Kept in one place so the page,

@@ -38,11 +38,16 @@ const redacted = redactStayNames(paywalled.visibleText, ["Novotel Suites Riyadh 
 const serialised = JSON.stringify({ text: redacted, lockedDays: paywalled.lockedDays });
 
 const day2 = paywalled.lockedDays.find((d) => d.title.startsWith("Day 2"));
-// The stay line specifically. The same hotel is named again further down
-// under "Getting around", and that mention is deliberately left readable, so
-// asserting the name is absent from the whole document would be asserting
-// the opposite of what the scoping is meant to do.
 const stayLine = redacted.split("\n").find((l) => l.startsWith("Riyadh, Days 1-3")) ?? "";
+
+// The upgrade sentence, naming hotels the customer was never assigned. These
+// are alternatives rather than picks, and they are hidden all the same: a
+// researched "swap it for X at about SAR 3,915 a night" can be acted on
+// without paying, which makes it the product.
+const upgraded = redactStayNames(
+  "Swap the AlUla leg for The Chedi Hegra is from about SAR 3,915 a night, or Banyan Tree AlUla (from about SAR 4,200 a night). Dinner at Myazu.",
+  ["The Chedi Hegra", "Banyan Tree AlUla", "Novotel Suites Riyadh Olaya"],
+);
 
 const cases: [string, unknown, unknown][] = [
   // Free days are day 1 and day 3 (first day of each stop), so day 2 locks.
@@ -70,8 +75,13 @@ const cases: [string, unknown, unknown][] = [
   ["the sentence around it survives", redacted.includes("desk can arrange it"), true],
   // The tag after the name narrows it to one property, so it goes as well.
   ["the descriptor after the name is hidden too", stayLine.includes("4-star suite hotel"), false],
-  // A hotel never chosen is an upgrade option and stays readable.
-  ["an unchosen hotel stays readable", redactStayNames(paywalled.visibleText, ["Banyan Tree AlUla", "Novotel Suites Riyadh Olaya"]).includes("Myazu"), true],
+  // The alternatives go too. "Swap the AlUla leg for The Chedi Hegra, from
+  // about SAR 3,915 a night" is just as actionable as the pick itself.
+  ["an alternative hotel is hidden as well", upgraded.includes("The Chedi Hegra"), false],
+  ["its price stays readable", upgraded.includes("from about SAR 3,915 a night"), true],
+  ["a parenthetical quoting a rate is left alone", upgraded.includes("(from about SAR 4,200 a night)"), true],
+  // Restaurants and everything else are untouched: only hotels are hidden.
+  ["a restaurant is not a hotel", upgraded.includes("Myazu"), true],
 
   // Nothing is redacted once they have paid.
   ["an unlocked plan keeps its names", redactStayNames(plan, []).includes("Novotel Suites Riyadh Olaya"), true],
