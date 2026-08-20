@@ -2426,12 +2426,17 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       },
     ],
     stay: [
-      {
-        nameEn: "Taif Marriott Resort & Spa",
-        nameAr: "منتجع وسبا ماريوت الطائف",
-        descriptionEn: "Modern mountain luxury, large pools and a well-regarded wellness centre.",
-        descriptionAr: "فخامة جبلية عصرية، مسابح واسعة ومركز عافية معروف.",
-      },
+      // "Taif Marriott Resort & Spa" was removed on 20 August 2026. It does
+      // not appear to exist. Marriott's own portfolio lists exactly one Taif
+      // property, Le Méridien Al Hada, which is the entry below; the name
+      // returns nothing on any booking platform and appears in no signing or
+      // opening announcement.
+      //
+      // It was the first hotel in this list, so it was the default luxury
+      // pick for Taif, and a plan naming it would have sent a paying customer
+      // to book a hotel that has never existed. The Oberoi at least used to
+      // be real. Nothing goes in this file that has not been seen on the
+      // operator's own site.
       {
         nameEn: "Le Méridien Al Hada",
         nameAr: "لو ميريديان الهدا",
