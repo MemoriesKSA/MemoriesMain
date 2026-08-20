@@ -25,8 +25,15 @@
 // Checked and rejected, so nobody re-adds them from memory: Yauatcha (the
 // Hakkasan group page has no Riyadh venue, and the Mandarin Oriental page
 // redirects to the hotel's general dining index rather than the restaurant),
-// Sultan's Steakhouse, San Carlo, Porter House, Sura, OKTO and Circolo (no
-// official site found). All of those are better served by a map search.
+// Sultan's Steakhouse, Sura, Circolo and San Carlo Cicchetti (real, but no
+// working page: San Carlo's group site 404s on its Jeddah restaurant). All
+// of those are better served by a map search.
+//
+// Porterhouse and OKTO were on that list until a later pass searched for
+// them properly and found porterhouse-sa.com and okto-sa.com. A search that
+// comes back empty means the search was wrong at least as often as it means
+// the thing does not exist, so "rejected" here means checked, not proven
+// absent.
 //
 // Keys are the exact nameEn from flagship-city-data.ts, or from the national
 // chain list in place-links.ts.
@@ -134,6 +141,11 @@ export const PLACE_URLS: Record<string, string> = {
   "Myazu": "https://myazu.com/",
   "Lusin": "https://lusinrestaurant.com/",
   "Maraya Social": "https://marayasocial.com/",
+  "Porterhouse": "https://porterhouse-sa.com/",
+  "OKTO": "https://okto-sa.com/",
+  // Inside Mövenpick Al Khobar, so the hotel's own page for it is the
+  // booking surface rather than a separate restaurant site.
+  "Maharaja by Vineet": "https://movenpick.accor.com/en/middle-east/saudi-arabia/al-khobar/hotel-al-khobar/restaurants/maharaja-by-vineet.html",
 };
 
 export function officialUrlFor(placeName: string): string | null {

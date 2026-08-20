@@ -375,8 +375,9 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionAr: "مطبخ ياباني متقن ضمن قائمة أفضل 50 مطعمًا في الشرق الأوسط وشمال أفريقيا.",
       },
       {
-        nameEn: "Porter House",
-        nameAr: "بورتر هاوس",
+        // "Porterhouse", one word, is the name it actually trades under.
+        nameEn: "Porterhouse",
+        nameAr: "بورترهاوس",
         cuisineEn: "Steakhouse",
         cuisineAr: "ستيك هاوس",
         descriptionEn: "Classic New York steakhouse spirit with globally sourced beef, in a sleek Olaya setting.",
@@ -676,8 +677,10 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
     ],
     dining: [
       {
-        nameEn: "San Carlo",
-        nameAr: "سان كارلو",
+        // The Jeddah restaurant is San Carlo Cicchetti; "San Carlo" alone is
+        // the group, and the fuller name is what a search will find.
+        nameEn: "San Carlo Cicchetti",
+        nameAr: "سان كارلو تشيكيتي",
         cuisineEn: "Italian",
         cuisineAr: "إيطالي",
         descriptionEn: "The most reliable address in the city for Italian cooking, in a polished Corniche-adjacent setting.",
