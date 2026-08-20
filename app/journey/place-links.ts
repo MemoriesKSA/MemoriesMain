@@ -11,22 +11,38 @@
 // useful for a trip: directions, opening hours, phone number, photos,
 // reviews, and the venue's own website if it has one.
 
-import { flagshipCityGuideBySlug } from "../flagship-city-data";
+import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../flagship-city-data";
 import { officialUrlFor } from "./place-urls";
-import { saudiArabia } from "../components/planner-data";
+import { travelCountries, type CountryOption } from "../components/planner-data";
 
-export function mapsSearchUrl(placeName: string, cityLabel: string) {
-  const query = `${placeName}, ${cityLabel}, Saudi Arabia`;
+/**
+ * A map search for a place, in its own city and its own country.
+ *
+ * The country used to be the literal string "Saudi Arabia", which was
+ * correct while the data was Saudi and silently wrong the moment it wasn't:
+ * "Hagia Sophia, Istanbul, Saudi Arabia" finds nothing at all.
+ */
+export function mapsSearchUrl(placeName: string, cityLabel: string, countryName = "") {
+  const query = [placeName, cityLabel, countryName].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+/** Every country the planner offers, searched rather than assuming Saudi. */
+function allCountries(): CountryOption[] {
+  return travelCountries;
 }
 
 // Proposals store the display label ("Riyadh", "Dammam & Al Khobar"), not the
 // slug, so match on the label in either language rather than trying to
-// reverse a slug out of it.
+// reverse a slug out of it. Searched across every country, since a label
+// alone no longer implies which one.
 export function citySlugFromLabel(label: string): string | null {
   const needle = label.trim().toLowerCase();
-  const hit = saudiArabia.cities.find((c) => c.en.toLowerCase() === needle || c.ar === label.trim() || c.value === needle);
-  return hit?.value ?? null;
+  for (const country of allCountries()) {
+    const hit = country.cities.find((c) => c.en.toLowerCase() === needle || c.ar === label.trim() || c.value === needle);
+    if (hit) return hit.value;
+  }
+  return null;
 }
 
 /**
@@ -53,13 +69,25 @@ export function citySlugsFromLabel(label: string): string[] {
 
 function guidesForLabel(label: string) {
   return citySlugsFromLabel(label)
-    .map((slug) => ({ slug, guide: flagshipCityGuideBySlug("saudi-arabia", slug) }))
-    .filter((g): g is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>> } => !!g.guide);
+    .map((slug) => {
+      const countrySlug = flagshipCountryForCity(slug);
+      return countrySlug ? { slug, countrySlug, guide: flagshipCityGuideBySlug(countrySlug, slug) } : null;
+    })
+    .filter((g): g is { slug: string; countrySlug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>> } => !!g?.guide);
 }
 
 /** The English city name for a slug, which is what a map search wants. */
 function cityLabelForSlug(slug: string): string {
-  return saudiArabia.cities.find((c) => c.value === slug)?.en ?? slug;
+  for (const country of allCountries()) {
+    const hit = country.cities.find((c) => c.value === slug);
+    if (hit) return hit.en;
+  }
+  return slug;
+}
+
+/** The English country name for a slug, for the tail of a map search. */
+export function countryNameForSlug(countrySlug: string): string {
+  return allCountries().find((c) => c.value === countrySlug)?.en ?? "";
 }
 
 // Every real, named business or site we hold for this city, in the language
@@ -139,18 +167,22 @@ export function stayNamesForCity(cityLabel: string, ar: boolean): string[] {
 }
 
 /**
- * Which city each name belongs to, so a map search for a Jeddah restaurant
- * says Jeddah. Without this a multi-stop plan would search every place in
- * the whole trip label, and "Sura, Riyadh → Jeddah → AlUla, Saudi Arabia"
- * finds nothing.
+ * Where each name should be searched: its own city and its own country, as
+ * one "Istanbul, Turkey" string.
  *
- * Keyed lowercase, in both languages, pointing at the English city name
- * because that is what a map search resolves most reliably.
+ * Without it a multi-stop plan searches every place in the whole trip label,
+ * and "Sura, Riyadh → Jeddah → AlUla" finds nothing. The country half was a
+ * hardcoded "Saudi Arabia" until the data covered more than one, at which
+ * point it stopped being a detail and started sending people to the wrong
+ * hemisphere.
+ *
+ * Keyed lowercase, in both languages, pointing at the English names because
+ * that is what a map search resolves most reliably.
  */
 export function placeCityMapForCity(cityLabel: string): Record<string, string> {
   const map: Record<string, string> = {};
-  for (const { slug, guide } of guidesForLabel(cityLabel)) {
-    const city = cityLabelForSlug(slug);
+  for (const { slug, countrySlug, guide } of guidesForLabel(cityLabel)) {
+    const city = [cityLabelForSlug(slug), countryNameForSlug(countrySlug)].filter(Boolean).join(", ");
     const add = (en: string, arName: string) => {
       // First city wins, so a name shared by two stops keeps the earlier one
       // rather than silently flipping to the later.

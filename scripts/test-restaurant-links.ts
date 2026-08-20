@@ -85,9 +85,9 @@ const cases: [string, unknown, unknown][] = [
   ["platforms resolve on a multi-stop plan", officialUrlMapForCity(MULTI)["nusuk"], "https://www.nusuk.sa"],
   // Each place must map-search in its own city: "Sura, Riyadh → Jeddah →
   // AlUla, Saudi Arabia" finds nothing.
-  ["a Jeddah place searches in Jeddah", placeCityMapForCity(MULTI)["sura"], "Jeddah"],
-  ["an AlUla place searches in AlUla", placeCityMapForCity(MULTI)["elephant rock"], "AlUla"],
-  ["a Riyadh place searches in Riyadh", placeCityMapForCity(MULTI)["six flags qiddiya city"], "Riyadh"],
+  ["a Jeddah place searches in Jeddah", placeCityMapForCity(MULTI)["sura"], "Jeddah, Saudi Arabia"],
+  ["an AlUla place searches in AlUla", placeCityMapForCity(MULTI)["elephant rock"], "AlUla, Saudi Arabia"],
+  ["a Riyadh place searches in Riyadh", placeCityMapForCity(MULTI)["six flags qiddiya city"], "Riyadh, Saudi Arabia"],
 ];
 
 let pass = 0;

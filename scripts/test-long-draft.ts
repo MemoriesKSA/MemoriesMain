@@ -48,6 +48,8 @@ async function main() {
   await generateDraftGuide({
     submissionId,
     city: "riyadh",
+    countrySlug: "saudi-arabia",
+    countryName: "Saudi Arabia",
     stops: ["riyadh", "jeddah", "alula"],
     stopPurposes: ["leisure", "leisure", "leisure"],
     stopNights: STOP_NIGHTS,

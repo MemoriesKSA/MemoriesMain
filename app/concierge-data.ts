@@ -57,12 +57,16 @@ function findMentionedInternational(rawText: string): { country: CountryGuide; c
   return matches;
 }
 
-function serializeFlagshipCity(city: CityGuide, guide: FlagshipCityGuide, locale: Locale): string {
+function serializeFlagshipCity(city: CityGuide, guide: FlagshipCityGuide, locale: Locale, countryName: string): string {
   const ar = locale === "ar";
   const name = ar ? city.nameAr : city.nameEn;
-  const lines: string[] = [`### ${name} (Saudi Arabia)${guide.tone === "worship" ? ", pilgrimage city, respectful/practical tone only" : ""}`];
-  lines.push((ar ? guide.storyAr : guide.storyEn).join(" "));
-  lines.push(`Weather, best time: ${ar ? guide.weather.bestWindow.monthsAr : guide.weather.bestWindow.monthsEn} (${ar ? guide.weather.bestWindow.tempAr : guide.weather.bestWindow.tempEn}). Peak heat: ${ar ? guide.weather.peakHeat.monthsAr : guide.weather.peakHeat.monthsEn}.`);
+  const lines: string[] = [`### ${name} (${countryName})${guide.tone === "worship" ? ", pilgrimage city, respectful/practical tone only" : ""}`];
+  // Story and weather are the editorial half and a city can be here purely
+  // to ground the draft, so both are optional now.
+  const story = ar ? guide.storyAr : guide.storyEn;
+  if (story?.length) lines.push(story.join(" "));
+  const w = guide.weather;
+  if (w) lines.push(`Weather, best time: ${ar ? w.bestWindow.monthsAr : w.bestWindow.monthsEn} (${ar ? w.bestWindow.tempAr : w.bestWindow.tempEn}). Peak heat: ${ar ? w.peakHeat.monthsAr : w.peakHeat.monthsEn}.`);
   if (guide.transportation?.length) lines.push(`Getting there/around: ${guide.transportation.map((t) => `${ar ? t.modeAr : t.modeEn}, ${ar ? t.descriptionAr : t.descriptionEn}`).join(" | ")}`);
   lines.push(`Places worth visiting: ${guide.attractions.map((a) => `${ar ? a.nameAr : a.nameEn} (${ar ? a.descriptionAr : a.descriptionEn})`).join("; ")}`);
   if (guide.dining.length) lines.push(`Dining: ${guide.dining.map((d) => `${ar ? d.nameAr : d.nameEn} (${ar ? d.cuisineAr : d.cuisineEn})`).join("; ")}`);
@@ -189,9 +193,18 @@ export function buildSystemPromptParts(locale: Locale, conversationText: string)
   const groundedBlocks: string[] = [];
   for (const city of saudiMatches) {
     const guide = flagshipCityGuideBySlug("saudi-arabia", city.slug);
-    if (guide) groundedBlocks.push(serializeFlagshipCity(city, guide, locale));
+    if (guide) groundedBlocks.push(serializeFlagshipCity(city, guide, locale, locale === "ar" ? "السعودية" : "Saudi Arabia"));
   }
   for (const match of intlMatches) {
+    // An international city with deep data gets the deep serializer, the
+    // same as a Saudi one. Without this the concierge would keep answering
+    // about Istanbul from the thin country profile while the draft pass was
+    // planning it from real hotels and restaurants.
+    const guide = match.city ? flagshipCityGuideBySlug(match.country.slug, match.city.slug) : undefined;
+    if (match.city && guide) {
+      groundedBlocks.push(serializeFlagshipCity(match.city, guide, locale, locale === "ar" ? match.country.nameAr : match.country.nameEn));
+      continue;
+    }
     groundedBlocks.push(serializeInternationalCity(match.country, match.city, locale));
   }
 

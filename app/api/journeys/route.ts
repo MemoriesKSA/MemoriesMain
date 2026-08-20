@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
+import { travelCountries } from "../../components/planner-data";
 import { flagshipCityGuideBySlug } from "../../flagship-city-data";
 
 export const runtime = "nodejs";
@@ -262,10 +263,19 @@ export async function POST(request: Request) {
   // for (the "Other" city option). Those can't produce a draft, but running
   // the generator anyway means it tells the team that plainly instead of the
   // request vanishing into silence, which is what used to happen.
-  if (submission.country === "saudi-arabia" || flagshipCityGuideBySlug("saudi-arabia", submission.city)) {
+  //
+  // And for any other country where we do hold data for the chosen city.
+  // The condition used to name Saudi twice, which is why a Turkish request
+  // got the emails and no draft: nothing was broken, nothing was logged, the
+  // branch simply never ran.
+  const countrySlug = submission.country;
+  const countryName = travelCountries.find((c) => c.value === countrySlug)?.en ?? readable(countrySlug);
+  if (countrySlug === "saudi-arabia" || flagshipCityGuideBySlug(countrySlug, submission.city)) {
     after(() => generateDraftGuide({
       submissionId: submission.submissionId,
       city: submission.city,
+      countrySlug,
+      countryName,
       purpose: submission.purpose,
       travellers: submission.travellers,
       travellerCount: submission.travellerCount,

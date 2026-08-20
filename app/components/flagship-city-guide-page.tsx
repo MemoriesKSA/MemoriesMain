@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
 import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data";
 import { countryGuideBySlug } from "../destination-guide-data";
-import type { FlagshipCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
+import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -32,7 +32,7 @@ export function FlagshipCityGuidePage({
 }: {
   country: CountryGuide;
   city: CityGuide;
-  guide: FlagshipCityGuide;
+  guide: EditorialCityGuide;
   locale?: Locale;
 }) {
   const ar = locale === "ar";

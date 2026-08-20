@@ -12,7 +12,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
 import { randomBytes } from "node:crypto";
 import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city-data";
-import { saudiArabia } from "./components/planner-data";
+import { travelCountries } from "./components/planner-data";
+
+/** The cities the planner offers for a country, for slug -> label lookups. */
+function countryCities(countrySlug: string) {
+  return travelCountries.find((c) => c.value === countrySlug)?.cities ?? [];
+}
 import { createSupabaseAdminClient } from "./supabase-admin";
 import { splitDraftForStorage } from "./journey/parse-itinerary";
 import { parseStopMarkers, stripStopMarkers, stopsFromNights } from "./journey/plan-stops";
@@ -26,6 +31,11 @@ export type DraftGuideSubmission = {
   // Purpose per stop, same order as `stops`. A trip can be Umrah in Makkah
   // and leisure in Riyadh, so one trip-wide purpose isn't enough.
   stopPurposes: string[];
+  // Which country the trip is in. The pipeline assumed Saudi everywhere,
+  // which was true until it wasn't: the grounded-facts lookup, the prompt
+  // header, the research brief and the transliteration note all named it.
+  countrySlug: string;
+  countryName: string;
   // Nights slept at each stop, same order as `stops`. Collected in the
   // planner so the day each stop begins on is known here, rather than being
   // read back out of the model's own output.
@@ -222,7 +232,7 @@ function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, gr
   const calendar = dayByDayCalendar(submission.fromDate, submission.toDate);
   return `Customer request summary:
 Name: ${submission.name}
-Destination: ${cityLabel}, Saudi Arabia${stopsSummary}
+Destination: ${cityLabel}, ${submission.countryName}${stopsSummary}
 Trip dates: ${submission.fromDate} to ${submission.toDate} (${tripLength(submission.fromDate, submission.toDate)})
 ${calendar ? `Day-by-day calendar (correct, computed weekdays, use these exactly): ${calendar}\n` : ""}Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}
 Purpose / style: ${readable(submission.purpose)}
@@ -270,13 +280,13 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
     const needsDining = guide.dining.length < 3;
 
     const flightScope = wantsFlights
-      ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through Riyadh or Jeddah first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
+      ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub airports first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
       : "";
     const diningScope = needsDining
       ? `\n- A genuinely price-tier-diverse set of real, currently-operating restaurants in ${cityLabelEn} that fit a ${readable(submission.purpose)} trip: aim for at least 2 budget/cheap options, at least 2 normal/mid-range options, and 1-2 upscale/expensive options if the city genuinely has them (roughly 8-12 total, this category is worth real search budget). For each: name, cuisine, one line on what it's known for, and a rough price tier (budget / normal / upscale) based on what you find. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run multiple differently-worded searches covering each tier, e.g. "best restaurants in ${cityLabelEn}", "cheap eats ${cityLabelEn}", "fine dining ${cityLabelEn}", and "popular places to eat near [a specific landmark from the attractions list]", well-known national chains count too, not just standalone restaurants.`
       : "";
     const rentalScope = wantsRentalCar
-      ? `\n- A genuinely price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: aim for at least one budget/cheap option, one normal/mid-range option, and one upscale/premium option if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo, etc., wherever they actually operate there) and real local operators, international chains are generally easier to verify as legitimate so don't skip them in favor of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor review scores and counts, how long they've operated, whether an official Saudi tourism or transport-authority source lists them). The customer asked for a rental car and we have no rental providers in our own data. Run multiple differently-worded searches, e.g. "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} Saudi Arabia", "cheap car rental ${cityLabelEn}", and "[company name] reviews" / "[company name] trustpilot" for whichever names come up, before concluding a tier or a reputation signal isn't findable.`
+      ? `\n- A genuinely price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: aim for at least one budget/cheap option, one normal/mid-range option, and one upscale/premium option if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo, etc., wherever they actually operate there) and real local operators, international chains are generally easier to verify as legitimate so don't skip them in favor of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor review scores and counts, how long they've operated, whether an official Saudi tourism or transport-authority source lists them). The customer asked for a rental car and we have no rental providers in our own data. Run multiple differently-worded searches, e.g. "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${submission.countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" / "[company name] trustpilot" for whichever names come up, before concluding a tier or a reputation signal isn't findable.`
       : "";
 
     const response = await anthropic.messages.create({
@@ -285,7 +295,7 @@ async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCit
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 35 }],
-      system: `You are a research assistant checking current, real-world facts for an internal Saudi Arabia trip-planning team, for ${cityLabelEn}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real Saudi city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
+      system: `You are a research assistant checking current, real-world facts for an internal trip-planning team, for ${cityLabelEn}, ${submission.countryName}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants and rental cars in particular are extremely findable in any real city with an ordinary web search, so a "nothing found" report on either is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
 
 Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${rentalScope}
 - Opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below. If a place turns out to be a free, unticketed public site with no formal opening hours (a public trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best done in early morning before the heat", that IS a real, useful finding, don't leave it as "unconfirmed" just because there's no ticket office to look up.${flightScope}
@@ -381,7 +391,7 @@ function buildTranslationSystemPrompt() {
 
 Your only job is faithful translation, not re-drafting:
 - Same hotel pick, same driver pick, same day count, same day order, same activity or meal on each day as the English original. Never swap which day something happens on, never substitute a different hotel, driver, restaurant or attraction than the one named in the English draft, never reorder the days.
-- For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never invent an Arabic name that contradicts the grounded facts. If a business genuinely has no Arabic name anywhere in the grounded facts, transliterate it into Arabic script the way it is normally said aloud in Saudi Arabia, and do it for every such name, don't transliterate some and leave others in Latin letters in the middle of an Arabic sentence, that inconsistency is what makes a page look machine-made.
+- For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never invent an Arabic name that contradicts the grounded facts. If a business genuinely has no Arabic name anywhere in the grounded facts, transliterate it into Arabic script the way a Saudi reader would normally say it aloud, and do it for every such name, don't transliterate some and leave others in Latin letters in the middle of an Arabic sentence, that inconsistency is what makes a page look machine-made.
 - Religious terms must be exactly right for a Muslim reader. The Friday congregational prayer is صلاة الجمعة, and on a Friday it takes the place of صلاة الظهر, so never write صلاة الظهر for it even if the English says something loose like "Friday midday prayer". Translate the meaning correctly, not the English word by word.
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
 - Keep the same section headings: "Needs the customer's input" becomes "يحتاج إلى رأي العميل", "Team to confirm before booking" becomes "على الفريق تأكيده قبل الحجز", "For the planner" becomes "للمخطط". Keep whichever of the two decision headings the English draft actually used, in the same order, don't add one that isn't there.
@@ -567,8 +577,8 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // matching the planner's own rule.
     const stopSlugs = (submission.stops?.length ? submission.stops : [submission.city]).filter(Boolean);
     const resolved = stopSlugs
-      .map((slug) => ({ slug, guide: flagshipCityGuideBySlug("saudi-arabia", slug), option: saudiArabia.cities.find((c) => c.value === slug) }))
-      .filter((s): s is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>>; option: typeof saudiArabia.cities[number] | undefined } => !!s.guide);
+      .map((slug) => ({ slug, guide: flagshipCityGuideBySlug(submission.countrySlug, slug), option: countryCities(submission.countrySlug).find((c) => c.value === slug) }))
+      .filter((s): s is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>>; option: ReturnType<typeof countryCities>[number] | undefined } => !!s.guide);
     const guide = resolved[0]?.guide;
     if (!guide || !resolved.length) {
       // Usually the "Other" city option, or a destination we haven't built
@@ -744,7 +754,7 @@ async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknow
   if (!resendKey) return;
 
   const reference = submission.submissionId.slice(0, 8).toUpperCase();
-  const cityLabel = saudiArabia.cities.find((c) => c.value === submission.city)?.en ?? readable(submission.city);
+  const cityLabel = countryCities(submission.countrySlug).find((c) => c.value === submission.city)?.en ?? readable(submission.city);
   const status = (error as { status?: number })?.status;
   const message = String((error as Error)?.message ?? error);
   const noCityData = message === "NO_CITY_DATA";

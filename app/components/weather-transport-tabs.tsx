@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Bus, Sun, Thermometer } from "lucide-react";
-import type { FlagshipCityGuide, FlagshipTransportMode } from "../flagship-city-data";
+import type { EditorialCityGuide, FlagshipTransportMode } from "../flagship-city-data";
 
-export function WeatherTransportTabs({ guide, locale = "en" }: { guide: FlagshipCityGuide; locale?: "en" | "ar" }) {
+export function WeatherTransportTabs({ guide, locale = "en" }: { guide: EditorialCityGuide; locale?: "en" | "ar" }) {
   const ar = locale === "ar";
   const hasTransport = (guide.transportation?.length ?? 0) > 0;
   const [tab, setTab] = useState<"weather" | "transport">("weather");

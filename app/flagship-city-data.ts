@@ -108,11 +108,22 @@ export type FlagshipCityGuide = {
   // pilgrimage cities (Makkah, Madinah) to swap section headings, drop the
   // dining/sample-day sections, and use respectful, practical CTA copy.
   tone?: "worship";
-  storyEn: string[];
-  storyAr: string[];
-  pullQuoteEn: string;
-  pullQuoteAr: string;
-  weather: {
+  // The editorial half, and the only part the public flagship page renders.
+  // Optional because a city can be here purely to ground the AI draft: the
+  // drafting pass reads attractions, dining, stays, drivers, the sample day
+  // and the tips, and never touches the story, the pull quote or the
+  // weather panel. Requiring them would mean writing a magazine feature for
+  // every city before the AI could plan a trip there, which is a lot of
+  // prose standing between a customer and a working plan.
+  //
+  // A city without them still gets a public page, the generic one, which is
+  // what every non-flagship city already uses. isEditorialGuide below is
+  // what the page routes check.
+  storyEn?: string[];
+  storyAr?: string[];
+  pullQuoteEn?: string;
+  pullQuoteAr?: string;
+  weather?: {
     bestWindow: FlagshipWeatherWindow;
     peakHeat: FlagshipWeatherWindow;
     tipEn: string;
@@ -4031,3 +4042,50 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
 
 export const flagshipCityGuideBySlug = (countrySlug: string, citySlug: string) =>
   flagshipCityGuides[`${countrySlug}/${citySlug}`];
+
+/**
+ * A guide complete enough for the editorial flagship page.
+ *
+ * The page reads the story, the pull quote and the weather panel directly,
+ * so a guide holding only AI grounding would render it half-empty. The
+ * routes narrow with isEditorialGuide and fall back to the generic city
+ * page, which is where every non-flagship city already lands.
+ */
+export type EditorialCityGuide = FlagshipCityGuide & {
+  storyEn: string[];
+  storyAr: string[];
+  pullQuoteEn: string;
+  pullQuoteAr: string;
+  weather: NonNullable<FlagshipCityGuide["weather"]>;
+};
+
+export function isEditorialGuide(guide: FlagshipCityGuide | undefined): guide is EditorialCityGuide {
+  return !!guide?.storyEn?.length && !!guide.storyAr?.length && !!guide.pullQuoteEn && !!guide.pullQuoteAr && !!guide.weather;
+}
+
+/** Every "country/city" pair we hold deep data for. */
+export function flagshipCityKeys(): { countrySlug: string; citySlug: string }[] {
+  return Object.keys(flagshipCityGuides).map((key) => {
+    const [countrySlug, citySlug] = key.split("/");
+    return { countrySlug, citySlug };
+  });
+}
+
+/**
+ * Which country a city belongs to, without being told.
+ *
+ * A published plan stores its city as a display label and no country, so
+ * once the data covers more than one country something has to bridge that.
+ * Adding a column would mean a migration on a live table for information we
+ * can already derive, since the set of cities is curated by us.
+ *
+ * It relies on no two countries sharing a city name, which is not true of
+ * the world (there is an Antalya in Turkey and a Tripoli in two countries)
+ * but is true of a list we control. scripts/test-city-uniqueness.ts fails
+ * the moment that stops holding, rather than letting a Turkish plan quietly
+ * resolve to a Saudi city.
+ */
+export function flagshipCountryForCity(citySlug: string): string | null {
+  const hits = flagshipCityKeys().filter((k) => k.citySlug === citySlug);
+  return hits.length === 1 ? hits[0].countrySlug : null;
+}
