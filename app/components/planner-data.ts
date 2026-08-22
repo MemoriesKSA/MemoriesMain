@@ -38,6 +38,29 @@ export const saudiArabia: CountryOption = {
   ]),
 };
 
+// The countries we hold researched city data for, and therefore the ones we
+// can actually build a plan for: multi-stop, the plan fee, and the AI draft
+// all key off this.
+//
+// It used to be the single check `country === saudiArabia.value`, written
+// when Saudi was the whole product. It stayed that way after five more
+// countries were added, so a customer choosing Türkiye could not add a
+// second destination and never saw a price - Istanbul and Cappadocia is the
+// commonest Turkish trip there is, and the form simply would not build it.
+//
+// Kept here rather than derived from flagship-city-data because this file is
+// imported by a client component and that one is thousands of lines of city
+// prose. scripts/test-city-uniqueness.ts asserts the two agree, so it cannot
+// drift the way the hardcoded check did.
+export const deepDataCountries = new Set([
+  "saudi-arabia",
+  "turkey",
+  "thailand",
+  "malaysia",
+  "georgia",
+  "russia",
+]);
+
 export const travelCountries: CountryOption[] = [
   saudiArabia,
   { value: "france", en: "France", ar: "فرنسا", aliases: "french", cities: cities([["paris","Paris","باريس"],["nice","Nice","نيس"],["cannes","Cannes","كان"],["lyon","Lyon","ليون"],["bordeaux","Bordeaux","بوردو"],["strasbourg","Strasbourg","ستراسبورغ"],["annecy","Annecy","آنسي"],["marseille","Marseille","مرسيليا"],["colmar","Colmar","كولمار"],["other-france","Another French city","مدينة فرنسية أخرى"]]) },

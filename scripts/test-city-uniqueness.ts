@@ -10,7 +10,7 @@
 // you the day you need one.
 
 import { flagshipCityGuideBySlug, flagshipCityKeys, flagshipCountryForCity } from "../app/flagship-city-data";
-import { travelCountries } from "../app/components/planner-data";
+import { deepDataCountries, travelCountries } from "../app/components/planner-data";
 import { CATALOGUE_PENDING, countryGuideBySlug } from "../app/destination-guide-data";
 
 const keys = flagshipCityKeys();
@@ -60,6 +60,18 @@ const uncatalogued = travelCountries
 // evidence of why.
 const staleHoldbacks = [...CATALOGUE_PENDING].filter((slug) => countryGuideBySlug(slug));
 
+// deepDataCountries drives multi-stop and the plan fee in the planner. It is
+// a hand-written list because the planner is a client component and the
+// flagship data is thousands of lines of city prose, so the two can drift.
+//
+// They already did, badly: the check was hardcoded to Saudi Arabia and stayed
+// that way through five country launches, so a Türkiye customer could not add
+// Cappadocia as a second stop and was never shown a price. Istanbul and
+// Cappadocia is the commonest Turkish trip there is.
+const dataCountries = new Set(keys.map((k) => k.countrySlug));
+const claimedNotHeld = [...deepDataCountries].filter((slug) => !dataCountries.has(slug));
+const heldNotClaimed = [...dataCountries].filter((slug) => !deepDataCountries.has(slug));
+
 const cases: [string, unknown, unknown][] = [
   ["no city slug is claimed by two countries in the deep data", collisions.length, 0],
   ["no city slug is claimed by two countries in the planner", plannerCollisions.length, 0],
@@ -67,6 +79,8 @@ const cases: [string, unknown, unknown][] = [
   ["every city we offer in a supported country has data behind it", gaps.length, 0],
   ["every planner country is catalogued or knowingly held back", uncatalogued.length, 0],
   ["nothing is held back from the catalogue that already has a profile", staleHoldbacks.length, 0],
+  ["the planner offers multi-stop for every country we hold data for", heldNotClaimed.length, 0],
+  ["and claims no country it has no data for", claimedNotHeld.length, 0],
 ];
 
 let pass = 0;

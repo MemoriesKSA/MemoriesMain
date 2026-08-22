@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, GraduationCap, Luggage, Map, MapPin, Plane, Sparkles } from "lucide-react";
 import { ElasticSelect, MultiChoice } from "./form-controls";
 import type { SelectChoice } from "./form-controls";
-import { pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
+import { deepDataCountries, pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
 import { planFee, NIGHT_RATE, EXTRA_STOP_FEE } from "../journey/pricing";
 
@@ -178,9 +178,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
   // Stop one is the primary city; extras follow it in travel order.
   const stops = [city, ...extraStops.map((s) => s.city)].filter(Boolean);
-  // Multi-stop only where we hold researched city data, which is Saudi
-  // Arabia. Elsewhere there is no plan to sell, so no reason to offer it.
-  const multiStopAvailable = country === saudiArabia.value;
+  // Multi-stop and the plan fee wherever we hold researched city data.
+  // This was `country === saudiArabia.value` and stayed that way through
+  // five more countries going in, so a Türkiye customer could not add
+  // Cappadocia and was never shown a price.
+  const multiStopAvailable = deepDataCountries.has(country);
   // Counted on extraStops, not `stops`: `stops` is filtered, so a row whose
   // city is still empty would not count and the cap could be clicked past.
   const canAddStop = multiStopAvailable && !!city && extraStops.length < MAX_STOPS - 1;
