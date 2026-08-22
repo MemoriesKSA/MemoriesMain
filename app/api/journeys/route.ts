@@ -23,13 +23,19 @@ export const runtime = "nodejs";
 // research and skip the expensive half, which is why nothing surfaced this
 // until the new countries went in.
 //
-// Two changes make 800 enough rather than merely larger: research is now one
-// bounded call per category instead of one long one, and it stops starting
-// new categories once RESEARCH_DEADLINE_MS has passed (see draft-guide.ts),
-// drafting with what it has. The worst case is a slightly thinner plan that
-// arrives rather than a good one that gets truncated, and the categories it
-// skipped are picked up by the next run for that city.
-export const maxDuration = 800;
+// 800 was tried and the deploy failed: this account is on Vercel's Hobby
+// plan, which caps below that, and the failure happens after a successful
+// build while deploying outputs. Four commits sat undeployed before anyone
+// noticed, so the number here is not a free dial - it is whatever the plan
+// permits, and 300 is the highest value this project has actually deployed.
+//
+// That makes the deadline the real mechanism rather than the ceiling.
+// Research stops starting new categories once RESEARCH_DEADLINE_MS has
+// passed (see draft-guide.ts) and the plan is written with what arrived, so
+// the worst case is a thinner plan that lands rather than a good one cut off
+// mid-sentence. Measured runs went well past 300s when every city was cold,
+// which is the case pre-warming exists to remove.
+export const maxDuration = 300;
 
 type JourneySubmission = {
   submissionId?: unknown;

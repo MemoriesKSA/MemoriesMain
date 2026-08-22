@@ -13,7 +13,15 @@ import { flagshipCityGuideBySlug } from "../../../flagship-city-data";
 import { travelCountries } from "../../../components/planner-data";
 
 export const runtime = "nodejs";
-export const maxDuration = 800;
+// 300, not 800: this account is on Vercel's Hobby plan and 800 fails the
+// deploy after a clean build. A full city is five or six categories and does
+// not fit in five minutes, which is fine here and nowhere else - each
+// category is stored as it finishes, so the next night resumes where this
+// one stopped and a city warms over a few runs instead of one.
+export const maxDuration = 300;
+
+// Leaves a margin under maxDuration for the request itself to return.
+const CRON_RESEARCH_DEADLINE_MS = 240 * 1000;
 
 // Keeps the cities we actually sell warm, so no customer ever triggers
 // research inside their own request.
@@ -99,6 +107,7 @@ export async function GET(request: Request) {
     ? readScopeVersion(target.notes).notes
     : "";
 
+  const startedAt = Date.now();
   let spent = 0;
   const notes = await researchOperationalFacts(
     new Anthropic({ apiKey: anthropicKey, maxRetries: 0 }),
@@ -126,15 +135,19 @@ export async function GET(request: Request) {
     (dollars) => { spent += dollars; },
     existing,
     async (soFar) => { await cacheResearch(supabase, target.citySlug, soFar); },
+    Date.now() + CRON_RESEARCH_DEADLINE_MS,
   );
 
   const categories = [...categoriesPresent(notes)];
+  // Says plainly whether the city finished or will be resumed tomorrow.
+  const finished = notes !== existing && Date.now() < startedAt + CRON_RESEARCH_DEADLINE_MS;
   console.log(`Re-warmed ${label}: ${categories.length} categories, roughly $${spent.toFixed(2)}.`);
   return Response.json({
     ok: !!notes,
     refreshed: target.citySlug,
     categories,
     approxCostUsd: Number(spent.toFixed(2)),
+    finished,
     stillDue: due.length - 1,
   });
 }

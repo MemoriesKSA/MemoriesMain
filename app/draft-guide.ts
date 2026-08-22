@@ -525,16 +525,24 @@ function assertNotTruncated(response: Anthropic.Message, label: string) {
 const RESEARCH_REQUEST_OPTIONS = { timeout: 20 * 60 * 1000, maxRetries: 0 };
 
 // How long a customer's draft may spend researching before it gives up and
-// writes the plan with what it has. The route is capped at 800 seconds and
-// the drafting, translation and self-check passes need most of the rest, so
-// research gets four minutes of it.
+// writes the plan with what it has.
+//
+// The route is capped at 300 seconds, not the 800 first attempted: this
+// account is on Vercel's Hobby plan and 800 would not deploy. So the budget
+// is genuinely tight, and research gets 90 seconds of it - roughly one
+// category - leaving the rest for the drafting, translation and self-check
+// passes, which cannot be skipped or degraded.
+//
+// Ninety seconds is not enough to research a cold city properly, and that is
+// the honest position: a cold city gets a thinner plan. The fix is warming it
+// beforehand, not giving the customer's request a longer leash.
 //
 // This only bites on a city nobody warmed. Skipped categories are simply not
 // stored, so the next customer for that city picks up where this one
 // stopped, and a pre-warm run finishes the job properly. A thinner plan that
 // arrives beats a better one cut off mid-sentence, which is what the old
 // 300-second cap actually produced.
-export const RESEARCH_DEADLINE_MS = 4 * 60 * 1000;
+export const RESEARCH_DEADLINE_MS = 90 * 1000;
 
 // List prices for what this pass uses, in dollars: Opus 5 input and output
 // per million tokens, and the web search tool per thousand searches. Kept
