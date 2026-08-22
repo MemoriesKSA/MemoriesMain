@@ -38,9 +38,13 @@ export function CountryCatalogue({ countries, locale = "en" }: { countries: Coun
   }, [displayedQuery, query]);
 
   const visible = useMemo(() => {
-    const needle = displayedQuery.trim().toLocaleLowerCase();
+    // Accent- and nickname-insensitive, matching the planner's country
+    // picker: this page calls it Türkiye and whoever is looking for it types
+    // Turkey.
+    const forSearch = (text: string) => text.toLocaleLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const needle = forSearch(displayedQuery.trim());
     if (!needle) return countries;
-    return countries.filter((country) => `${country.nameEn} ${country.nameAr} ${country.region} ${country.regionAr}`.toLocaleLowerCase().includes(needle));
+    return countries.filter((country) => forSearch(`${country.nameEn} ${country.nameAr} ${country.region} ${country.regionAr} ${country.aliases ?? ""}`).includes(needle));
   }, [countries, displayedQuery]);
 
   return <>

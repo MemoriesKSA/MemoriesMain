@@ -3,14 +3,37 @@
 import { Check, ChevronDown, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export type SelectChoice = { value: string; label: string; detail?: string };
+export type SelectChoice = {
+  value: string;
+  label: string;
+  detail?: string;
+  // Words that should match a search but never appear on screen: "turkey"
+  // for Türkiye, "uae" for the United Arab Emirates.
+  aliases?: string;
+};
+
+/**
+ * Lower-cases and drops accents, so a customer typing what is on their
+ * keyboard finds what is on the screen. Without this, "izmir" misses
+ * "İzmir", "malaga" misses "Málaga" and "quebec" misses "Québec" - the
+ * label looks right to whoever typed it and the list comes back empty.
+ *
+ * Only strips Latin combining marks, so Arabic labels are untouched.
+ */
+function forSearch(text: string): string {
+  return text.toLocaleLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
 
 export function ElasticSelect({ label, name, options, value, onChange, placeholder, searchPlaceholder, emptyText = "No matching options", searchable = false, disabled = false, required = false }: { label: string; name: string; options: SelectChoice[]; value: string; onChange: (value: string) => void; placeholder: string; searchPlaceholder?: string; emptyText?: string; searchable?: boolean; disabled?: boolean; required?: boolean }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
   const selected = options.find((option) => option.value === value);
-  const filtered = useMemo(() => options.filter((option) => `${option.label} ${option.detail ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())), [options, query]);
+  const filtered = useMemo(() => {
+    const needle = forSearch(query.trim());
+    if (!needle) return options;
+    return options.filter((option) => forSearch(`${option.label} ${option.detail ?? ""} ${option.aliases ?? ""}`).includes(needle));
+  }, [options, query]);
 
   useEffect(() => {
     function close(event: PointerEvent) {

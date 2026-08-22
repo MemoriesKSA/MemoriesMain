@@ -116,7 +116,11 @@ const phoneCodes: SelectChoice[] = [
 
 function text(ar: boolean, en: string, arabic: string) { return ar ? arabic : en; }
 function localize(ar: boolean, options: LocalChoice[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en, detail: ar ? option.detailAr : option.detailEn })); }
-function localizedOptions(ar: boolean, options: LocalizedOption[]): SelectChoice[] { return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en })); }
+function localizedOptions(ar: boolean, options: LocalizedOption[]): SelectChoice[] {
+  // The label the customer reads is one language; the words they type
+  // may be the other, or a nickname, so both go into the search text.
+  return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en, aliases: `${ar ? option.en : option.ar} ${option.aliases ?? ""}` }));
+}
 
 export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey", initialCountry = "", initialCity = "", fromCityGuide = false }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath; initialCountry?: string; initialCity?: string; fromCityGuide?: boolean }) {
   const ar = locale === "ar";

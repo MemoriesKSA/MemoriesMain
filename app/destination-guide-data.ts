@@ -18,6 +18,10 @@ export type CountryGuide = {
   slug: string;
   nameEn: string;
   nameAr: string;
+  // Search-only words, carried over from the planner's country list so the
+  // catalogue and the planner find a country by the same names. Türkiye is
+  // the reason: nobody types the U.
+  aliases?: string;
   image: string;
   region: string;
   regionAr: string;
@@ -132,7 +136,7 @@ export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) =
       days: detail?.days ?? "3–5",
     };
   });
-  return [{ slug: country.value, nameEn: country.en, nameAr: country.ar, ...profile, cities }];
+  return [{ slug: country.value, nameEn: country.en, nameAr: country.ar, aliases: country.aliases, ...profile, cities }];
 });
 
 export const countryGuideBySlug = (slug: string) => countryGuides.find((country) => country.slug === slug);
