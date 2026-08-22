@@ -155,7 +155,14 @@ async function main() {
     return;
   }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 2 });
+  // maxRetries 0, not 2. This client only ever makes one kind of expensive
+  // call, and an SDK retry on it re-runs a full research pass server-side,
+  // which bills whether or not the response ever reaches us. Cappadocia was
+  // pre-warmed once at maxRetries 2, timed out three times, and cost about
+  // $15 for nothing. The per-request options in draft-guide.ts already set
+  // this; setting it here too means a future call added to this script
+  // cannot inherit the expensive default by accident.
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 0 });
   const unreachable = await apiIsReachable(anthropic);
   if (unreachable) {
     console.error(`\nStopping before spending anything. The API rejected a test call:\n  ${unreachable.slice(0, 200)}`);
