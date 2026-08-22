@@ -12,10 +12,24 @@ export const runtime = "nodejs";
 // now fully sequential on purpose: research, then one English drafting
 // pass, then a translation pass into Arabic (faithful to the English, no
 // independent redrafting), then a self-check pass, four stages with
-// nothing running concurrently. Raised accordingly for headroom. If the
-// account's plan caps functions below this, the deploy itself will
-// surface that rather than failing silently at runtime.
-export const maxDuration = 300;
+// nothing running concurrently. If the account's plan caps functions below
+// this, the deploy itself will surface that rather than failing silently at
+// runtime.
+//
+// 300 was chosen as "headroom" before anyone had timed a real run, and it
+// was not headroom at all. Measured end to end: Georgia 502s, Türkiye 559s,
+// Russia 1062s, Thailand 1750s. Every one would have been cut off here.
+// Saudi drafts never hit it only because those five cities have curated
+// research and skip the expensive half, which is why nothing surfaced this
+// until the new countries went in.
+//
+// Two changes make 800 enough rather than merely larger: research is now one
+// bounded call per category instead of one long one, and it stops starting
+// new categories once RESEARCH_DEADLINE_MS has passed (see draft-guide.ts),
+// drafting with what it has. The worst case is a slightly thinner plan that
+// arrives rather than a good one that gets truncated, and the categories it
+// skipped are picked up by the next run for that city.
+export const maxDuration = 800;
 
 type JourneySubmission = {
   submissionId?: unknown;

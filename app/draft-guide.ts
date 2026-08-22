@@ -438,6 +438,7 @@ export async function researchOperationalFacts(
   onSpend?: (dollars: number) => void,
   existing = "",
   onCategory?: (notesSoFar: string) => Promise<void>,
+  deadlineAt?: number,
 ): Promise<string> {
   if (!guide.attractions.length) return existing;
 
@@ -456,6 +457,12 @@ export async function researchOperationalFacts(
 
   let notes = existing;
   for (const category of todo) {
+    // Checked between categories, never mid-call: a category already paid
+    // for is always allowed to finish and be stored.
+    if (deadlineAt && Date.now() > deadlineAt) {
+      console.warn(`Research for ${cityLabelEn} stopped at its deadline. The categories still missing are left unstored, so the next run picks them up.`);
+      break;
+    }
     const found = await researchOneCategory(anthropic, category, context, onSpend);
     // One failure ends the run rather than ploughing on. Everything already
     // gathered is returned and, if the caller persists it, picked up next
@@ -516,6 +523,18 @@ function assertNotTruncated(response: Anthropic.Message, label: string) {
 // falls back to older notes, the pre-warm script stops and says so - and a
 // human deciding to run it again is cheaper than a client deciding for them.
 const RESEARCH_REQUEST_OPTIONS = { timeout: 20 * 60 * 1000, maxRetries: 0 };
+
+// How long a customer's draft may spend researching before it gives up and
+// writes the plan with what it has. The route is capped at 800 seconds and
+// the drafting, translation and self-check passes need most of the rest, so
+// research gets four minutes of it.
+//
+// This only bites on a city nobody warmed. Skipped categories are simply not
+// stored, so the next customer for that city picks up where this one
+// stopped, and a pre-warm run finishes the job properly. A thinner plan that
+// arrives beats a better one cut off mid-sentence, which is what the old
+// 300-second cap actually produced.
+export const RESEARCH_DEADLINE_MS = 4 * 60 * 1000;
 
 // List prices for what this pass uses, in dollars: Opus 5 input and output
 // per million tokens, and the web search tool per thousand searches. Kept
@@ -941,6 +960,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         // Persist after each category, so a failure halfway keeps the half
         // that worked instead of paying for it again next time.
         supabase ? async (soFar) => { await cacheResearch(supabase, stop.slug, soFar); } : undefined,
+        // A customer is waiting on the other end of this, and the route has
+        // a hard ceiling. Research gets four minutes of it, then the plan
+        // gets written with whatever arrived.
+        Date.now() + RESEARCH_DEADLINE_MS,
       );
       if (fresh) {
         if (supabase) await cacheResearch(supabase, stop.slug, fresh);
