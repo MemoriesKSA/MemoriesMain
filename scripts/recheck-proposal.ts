@@ -22,6 +22,7 @@ import {
   serializeGuideForDraft,
   getCachedResearch,
   dayByDayCalendar,
+  readSelfCheckVerdict,
 } from "../app/draft-guide";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../app/flagship-city-data";
@@ -38,9 +39,10 @@ if (!reference || !Number.isFinite(REPEAT) || REPEAT < 1) {
   process.exit(1);
 }
 
-// The email paints the banner green only on this exact opening, so that is
-// what "green" has to mean here too. See wrapEmailHtml.
-const isGreen = (text: string) => /^no issues found/i.test(text.trim());
+// Green means exactly what the email means by it, read through the same
+// function, so this script can never report a pass the reviewer's inbox
+// would have shown as a warning.
+const isGreen = (text: string) => readSelfCheckVerdict(text).clean;
 
 // The proposals table stores display labels, never slugs: the stops array is
 // {label, firstDay} and the city column is "Istanbul → Cappadocia". So both

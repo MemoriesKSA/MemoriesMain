@@ -181,6 +181,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
   Each entry is a stop's city name exactly as you used it, then "=", then the day number that stop begins on. It is read by our tooling, not by a person, so the format matters more than how it reads.
 - Get religious terminology exactly right, most of our customers are Muslim and a loose word here reads as not knowing the subject. The Friday midday congregational prayer is Jumu'ah, and on a Friday it replaces the ordinary Dhuhr prayer rather than sitting alongside it. So write "Friday prayer (Jumu'ah)" when you mean it, never "Friday midday prayer" or "Dhuhr on Friday", which is what someone unfamiliar with it would write and which translates badly into Arabic. The same care applies to any other religious term you use.
 - Weigh the stated budget, traveller count, trip length and the customer's preferred accommodation rating (if given) when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day. If the customer's preferred rating and the budget point in different directions (e.g. they asked for 5-star but the budget only supports budget-tier), say so plainly as something needing the customer's input, don't silently pick one over the other.
+- Careful with the star rating specifically. Our hotel facts carry a tier, luxury or budget, and a description. They do NOT carry a star rating for any property, so you do not know how many stars any named hotel actually holds. Never write that a hotel "is 4-star", "matches the 4-star level you asked for" or anything that states or implies a star count for a named property, even when the customer asked for that rating and the hotel plainly suits them. That sentence reads as a fact we checked and it is really just their request repeated back. Say what the facts do support instead: the tier, and what the place is actually like. "Novotel Istanbul Bosphorus, a reliable mid-range base on the water" is honest and more useful than "a 4-star that matches your request".
 - When the budget is what rules out a more expensive option, frame it as an upgrade they can choose, never as a limit they have hit. Lead with what their budget comfortably covers, then offer the step up as a real option with a rough figure attached so they can actually decide, e.g. "your budget covers this trip comfortably at [hotel]; if you'd rather be on the water at a five-star, that's roughly [X] more and we'll happily reprice it". Never list the specific expensive places they are not getting as things that would "consume" or "eat" their budget, that tells a paying customer they can't afford something and gives them nothing to act on.
 - If the customer asked for a private driver (see requested transport), recommend one of the trusted providers listed and say why, once, briefly, carrying over any hedge from its grounded note per the rule above.
 - If the customer's notes mention something specific (a hotel, dietary need, occasion), work it in.
@@ -819,7 +820,17 @@ Check for, and only for:
 - Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge, anywhere in the draft including its own closing section.
 - Any way the Arabic translation actually disagrees with the English, a different hotel or driver named, a different day order, a place appearing on a different day, a flag present in one but not the other. Minor phrasing or word-order differences don't count, only substantive disagreements a translation should never have introduced.
 
-Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`;
+Output format, follow this exactly, it is read by tooling before it is read by a person.
+
+Your FIRST line is one of these two, alone on the line, nothing before it:
+VERDICT: CLEAN
+VERDICT: ISSUES
+
+Use CLEAN when you found nothing a reviewer has to act on. Then stop. Write nothing after it. Do not list what you checked, do not confirm that the weekdays line up or the hedges survived or the names match, do not summarise your reasoning. A reviewer reading a clean result needs one line and their evening back; a page of "I verified this and it was fine" is the same as no result at all, because they still have to read all of it to learn nothing.
+
+Use ISSUES only when something is actually wrong, then a short plain-text bullet list, one line each, specific enough to act on. Only defects go in that list. Never pad it with things that are correct, and never include an item whose content is that something checked out.
+
+Don't manufacture issues to seem thorough, and don't soften a real one into an observation. If you are unsure whether something is a defect, it is: say it in one line and let the reviewer decide.`;
 }
 
 export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, tripCalendar: string, onSpend?: (dollars: number) => void): Promise<string> {
@@ -873,6 +884,37 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
   }
 }
 
+/**
+ * Reads the self-check's verdict, and hands back the findings without it.
+ *
+ * The banner used to be decided by testing whether the text STARTED with
+ * "No issues found". That made a clean result depend on the model opening
+ * with the right sentence, and it doesn't reliably: a Jeddah draft with
+ * nothing wrong with it came back with seven bullets of "checked this, it's
+ * correct" and the clean sentence at the bottom, so a perfect draft was
+ * shown to the reviewer under a warning colour.
+ *
+ * A first-line token the prompt demands is checked exactly, so the colour
+ * stops being a guess about prose. The old phrasing is still accepted, for
+ * drafts written before this and for a run that ignores the format.
+ *
+ * Anything unrecognised counts as ISSUES on purpose: an unreadable verdict
+ * is a reason for a human to look, never a reason to show a green light.
+ */
+export function readSelfCheckVerdict(selfCheck: string): { clean: boolean; body: string } {
+  const text = (selfCheck ?? "").trim();
+  if (!text) return { clean: false, body: "" };
+
+  const lines = text.split(/\r?\n/);
+  const verdict = lines[0].trim().match(/^VERDICT:\s*(CLEAN|ISSUES)\b/i);
+  if (verdict) {
+    return { clean: verdict[1].toUpperCase() === "CLEAN", body: lines.slice(1).join("\n").trim() };
+  }
+  // Pre-verdict drafts, and any run that ignored the format.
+  if (/^no issues found/i.test(text)) return { clean: true, body: "" };
+  return { clean: false, body: text };
+}
+
 function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
   // An absent Arabic half has to announce itself. Silence here reads as "no
@@ -882,9 +924,14 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
   const arabicSection = arabicDraft
     ? `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px" dir="rtl"><p style="margin:0 0 14px;color:#ba8427;font-size:11px;font-weight:800;letter-spacing:1.5px">النسخة العربية</p><div style="font-size:14px;line-height:1.9">${escapeHtml(arabicDraft).replace(/\n/g, "<br />")}</div></div>`
     : `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px"><p style="margin:0 0 8px;color:#a8523f;font-size:11px;font-weight:800;letter-spacing:1.5px">ARABIC TRANSLATION MISSING</p><p style="margin:0;font-size:13.5px;line-height:1.7">No Arabic version was produced for this draft, so the proposal has been saved with the English half only. Do not publish until Arabic is added: the customer's page offers both languages and the Arabic side would be empty. Re-run the draft or translate it by hand in the reviewer tool.</p></div>`;
-  const isClean = /^no issues found/i.test(selfCheck.trim());
+  const { clean: isClean, body: selfCheckBody } = readSelfCheckVerdict(selfCheck);
+  // A clean result gets one sentence rather than the model's own wording, so
+  // green always looks the same and is read in a glance.
+  const selfCheckText = isClean
+    ? (selfCheckBody || "No issues found. The translation is faithful and both versions are consistent with the grounded facts and research notes.")
+    : selfCheckBody;
   const selfCheckSection = selfCheck
-    ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheck)}</div></div>`
+    ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS${isClean ? " · CLEAN" : " · NEEDS A LOOK"}</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheckText)}</div></div>`
     : "";
   const proposalSection = proposalUrl
     ? `<div style="margin:0 30px 24px"><a href="${proposalUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700;font-size:13px">Open this draft in the reviewer tool →</a><p style="margin:8px 0 0;font-size:12px;color:#6a746f">Already saved as a draft proposal, pre-filled from this sketch. Nothing is sent to the customer until you edit and publish it there.</p></div>`
@@ -1175,7 +1222,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         // generated text surviving intact.
 
         const internalNotesParts = [
-          selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
+          // Same reading as the email banner, so the reviewer tool and the
+          // email can never disagree about whether a draft came back clean.
+          selfCheck
+            ? (readSelfCheckVerdict(selfCheck).clean
+                ? "AI self-check: CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes."
+                : `AI self-check, needs a look before publishing:\n${readSelfCheckVerdict(selfCheck).body}`)
+            : "",
           englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
           arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
         ].filter(Boolean);
@@ -1217,7 +1270,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       to: [reviewEmail],
       subject: `[AI DRAFT] ${reference} | ${cityLabelEn} itinerary sketch`,
       html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft, selfCheck, proposalUrl),
-      text: [proposalUrl ? `Open in reviewer tool: ${proposalUrl}` : "", selfCheck ? `AI SELF-CHECK:\n${selfCheck}` : "", englishDraft, arabicDraft].filter(Boolean).join("\n\n===\n\n"),
+      text: [
+        proposalUrl ? `Open in reviewer tool: ${proposalUrl}` : "",
+        selfCheck
+          ? (readSelfCheckVerdict(selfCheck).clean
+              ? "AI SELF-CHECK: CLEAN, nothing to act on."
+              : `AI SELF-CHECK, NEEDS A LOOK:\n${readSelfCheckVerdict(selfCheck).body}`)
+          : "",
+        englishDraft,
+        arabicDraft,
+      ].filter(Boolean).join("\n\n===\n\n"),
       tags: [{ name: "email_type", value: "draft_guide" }],
     }, { idempotencyKey: `draft-guide/${submission.submissionId}` });
 

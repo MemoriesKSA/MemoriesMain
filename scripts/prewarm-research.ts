@@ -48,10 +48,26 @@ const SPEND = has("--spend");
 const CAP = Number(valueOf("--cap") ?? 25);
 const ONLY = valueOf("--only")?.split(",").map((s) => s.trim()).filter(Boolean);
 const TIER = valueOf("--tier");
+// Re-researches a city that is already warm, from scratch, throwing away what
+// is stored rather than resuming it. Needed when the notes are not stale but
+// are WRONG in a way age doesn't express: Istanbul and Cappadocia were warmed
+// before the pre-warm stopped inventing a trip window, so their notes carried
+// "your trip starts 21 September" into every later draft.
+//
+// It overwrites in place instead of deleting first, so the row is never
+// missing. A run that dies halfway leaves the city holding fewer categories
+// than it had, which is thinner but still real, and the next run resumes.
+//
+// Only ever with --only, so this can never be pointed at everything at once.
+const FORCE = has("--force");
 const PAUSE_MS = 2000;
 
 if (!Number.isFinite(CAP) || CAP <= 0) {
   console.error("--cap must be a positive number of dollars.");
+  process.exit(1);
+}
+if (FORCE && !ONLY?.length) {
+  console.error("--force re-buys research that already exists, so it only works with --only <city[,city]>.");
   process.exit(1);
 }
 
@@ -78,7 +94,10 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
     if (!row) { cold.push(target("never cached")); continue; }
     // Curated rows are hand-written and cacheResearch refuses to overwrite
     // them, so researching one would spend money and throw the result away.
+    // --force does not change that: it is about notes that are wrong, and a
+    // curated row is the one kind we know is right.
     if (row.curated) { warm.push(target("curated")); continue; }
+    if (FORCE) { cold.push(target("forced, stored notes discarded")); continue; }
     const { version } = readScopeVersion(row.research_notes as string);
     const expired = Date.now() - new Date(row.updated_at as string).getTime() > ttlMs;
     if (version !== RESEARCH_SCOPE_VERSION) cold.push(target(`scope v${version}, now v${RESEARCH_SCOPE_VERSION}`));
@@ -193,8 +212,9 @@ async function main() {
     // handed to the drafting pass as though it were one answer.
     const stored = (row?.research_notes as string | null) ?? "";
     const sameScope = stored ? readScopeVersion(stored).version === RESEARCH_SCOPE_VERSION : false;
-    const existing = sameScope ? readScopeVersion(stored).notes : "";
-    if (stored && !sameScope) console.log("previous notes are from an older research scope, starting fresh");
+    const existing = FORCE || !sameScope ? "" : readScopeVersion(stored).notes;
+    if (FORCE && stored) console.log(`--force: discarding ${stored.length} stored characters and researching every category again`);
+    else if (stored && !sameScope) console.log("previous notes are from an older research scope, starting fresh");
     const had = categoriesPresent(existing);
     if (had.size) console.log(`resuming: already have ${[...had].join(", ")}`);
 
