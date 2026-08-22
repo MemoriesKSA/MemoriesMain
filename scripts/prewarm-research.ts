@@ -27,6 +27,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import {
   researchOperationalFacts,
   cacheResearch,
+  categoriesPresent,
   readScopeVersion,
   RESEARCH_SCOPE_VERSION,
   RESEARCH_CACHE_TTL_DAYS,
@@ -183,20 +184,35 @@ async function main() {
     if (!guide) { console.log(`skip ${t.citySlug}: no city data`); continue; }
 
     console.log(`\n--- ${t.label} (${t.countrySlug}) ---`);
-    const notes = await researchOperationalFacts(anthropic, guide, submissionFor(t.countrySlug, t.citySlug), t.label, (d) => { spent += d; });
 
-    // researchOperationalFacts swallows its own errors and returns "". That
-    // is right inside a draft, where a missing note is better than a failed
-    // plan, but here it would quietly march through every remaining city
-    // achieving nothing. One empty result ends the run.
-    if (!notes) {
-      console.error(`\nStopping: research for ${t.label} came back empty. Check the error above.`);
+    // Anything already stored for this city is handed back in, so a city
+    // that failed halfway last time pays only for the categories it still
+    // needs. Cappadocia failed three times and kept nothing; that is the
+    // shape this exists to prevent.
+    const { data: row } = await supabase.from("city_research_cache").select("research_notes, curated").eq("city_slug", t.citySlug).maybeSingle();
+    if (row?.curated) { console.log("skip: curated, hand-written research is never overwritten"); continue; }
+    const existing = row?.research_notes ? readScopeVersion(row.research_notes as string).notes : "";
+    const had = categoriesPresent(existing);
+    if (had.size) console.log(`resuming: already have ${[...had].join(", ")}`);
+
+    const notes = await researchOperationalFacts(
+      anthropic, guide, submissionFor(t.countrySlug, t.citySlug), t.label, (d) => { spent += d; },
+      existing,
+      // Written after every category rather than once at the end, so an
+      // interrupted city keeps what it managed.
+      async (soFar) => { await cacheResearch(supabase, t.citySlug, soFar); },
+    );
+
+    // Comes back unchanged when the first category failed. Everything
+    // already stored is safe either way; the run stops rather than marching
+    // through the remaining cities hitting the same wall.
+    if (!notes || notes === existing) {
+      console.error(`\nStopping: research for ${t.label} added nothing. Check the error above.`);
       break;
     }
 
-    await cacheResearch(supabase, t.citySlug, notes);
     done++;
-    console.log(`cached ${notes.length} characters. Running total $${spent.toFixed(2)}.`);
+    console.log(`cached ${notes.length} characters across ${categoriesPresent(notes).size} categories. Running total $${spent.toFixed(2)}.`);
     console.log(`  first lines: ${notes.split(/\r?\n/).filter((l) => l.trim()).slice(0, 2).join(" / ").slice(0, 160)}`);
 
     if (done < cold.length) await new Promise((r) => setTimeout(r, PAUSE_MS));

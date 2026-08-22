@@ -252,132 +252,221 @@ ${groundedFacts}${researchSection}
 Draft the day-by-day sketch now.`;
 }
 
-// Runs once, before the draft is written, so the draft can cite live
-// findings instead of guessing. Covers hours/season/pricing for named
-// attractions, which airlines/routes exist, real restaurants when our own
-// curated dining list is thin, real private drivers when we hold none for
-// the city, and real rental car companies, all of which a plain web search
-// can genuinely confirm, plus review-site and official-registry trust
-// signals for restaurants/drivers/rental cars (always attributed, never asserted as a verified
-// fact, a web search can't independently confirm real regulatory status,
-// only report what a genuine source actually says). Stays away from live
-// flight times or prices, which a generic web search can't honestly
-// verify, that needs a real flight-search API and isn't in scope here, see
-// the flight rule below for why.
-export async function researchOperationalFacts(anthropic: Anthropic, guide: FlagshipCityGuide, submission: DraftGuideSubmission, cityLabelEn: string, onSpend?: (dollars: number) => void): Promise<string> {
+// Runs before the draft is written, so the draft cites live findings instead
+// of guessing. Covers hours/season/pricing for named attractions, airlines
+// and routes, real restaurants when our curated dining list is thin, real
+// private drivers when we hold none, more things to do when our own list is
+// short, halal food and prayer everywhere, and real rental car companies.
+// Everything here is what a plain web search can genuinely confirm, plus
+// review-site and registry trust signals (always attributed, never asserted:
+// a search cannot confirm regulatory status, only report what a source says).
+// Stays away from live flight times and prices, which need a real
+// flight-search system rather than a web search.
+//
+// ONE CALL PER CATEGORY, NOT ONE CALL PER CITY.
+//
+// It used to be a single request covering everything, and that request was
+// the longest in the pipeline: up to 45 server-side searches, ten to fifteen
+// minutes, with the connection carrying nothing the whole time. Idle
+// connections get closed by whatever sits in the middle, and the server
+// bills for work it finished whether or not the answer reached us.
+// Cappadocia cost about $20 that way and returned nothing, twice.
+//
+// Splitting it fixes more than the drop:
+//   - each call is two or three minutes, too short to go stale on the wire
+//   - a category that fails costs a dollar, not a city
+//   - finished categories are saved, so a re-run fills only the gaps
+//   - each category gets its own search budget, so the last one on the list
+//     no longer loses out to the first, which the old prompt had to
+//     apologise for in writing
+//   - less context piles up per call, and re-reading piled-up search results
+//     was 82% of the old cost
+//
+// The system prompt is deliberately free of city, dates and category so it
+// is byte-identical on every call and every city, which lets prompt caching
+// actually hit. Everything specific lives in the user message.
+
+type ResearchCategory = {
+  key: string;
+  header: string;
+  searches: number;
+  scope: (context: { cityLabelEn: string; countryName: string; guide: FlagshipCityGuide; purpose: string }) => string;
+};
+
+const RESEARCH_CATEGORIES: ResearchCategory[] = [
+  {
+    key: "dining",
+    header: "Restaurants",
+    searches: 12,
+    scope: ({ cityLabelEn, purpose }) => `A genuinely price-tier-diverse set of real, currently-operating restaurants in ${cityLabelEn} that fit a ${purpose} trip: at least 2 budget/cheap, at least 2 normal/mid-range, and 1-2 upscale if the city genuinely has them, roughly 8-12 in total. For each: name, cuisine, one line on what it is known for, and a rough price tier. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run differently-worded searches covering each tier, e.g. "best restaurants in ${cityLabelEn}", "cheap eats ${cityLabelEn}", "fine dining ${cityLabelEn}", and "popular places to eat near [a landmark]". Well-known national chains count.`,
+  },
+  {
+    key: "drivers",
+    header: "Private drivers",
+    searches: 10,
+    scope: ({ cityLabelEn, countryName }) => `Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, full-day hire with a driver, or both), roughly how they price it if published, and whatever you can genuinely find on reputation and standing. We have no drivers of our own for this city, so this is the only source the plan will have. Search "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for names that come up. A hotel concierge arrangement or a well-reviewed local tour operator providing a car and driver counts, say which it is.`,
+  },
+  {
+    key: "sights",
+    header: "More to do",
+    searches: 12,
+    scope: ({ cityLabelEn, guide }) => `More real, currently-open things to do in and around ${cityLabelEn}, beyond these, which we already hold: ${guide.attractions.map((a) => a.nameEn).join(", ")}. Aim for 6-8 that a visitor would spend half a day or more on, deliberately mixing the kinds: a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it is ticketed or free. Our own list is short and a long stay here has to be filled with real places rather than vague afternoons. Don't repeat what we hold, and don't pad with restaurants.`,
+  },
+  {
+    key: "halal",
+    header: "Halal food and prayer",
+    searches: 8,
+    scope: ({ cityLabelEn }) => `How straightforward halal food is in ${cityLabelEn}, in a few lines. Say plainly whether it is the default (a Muslim-majority country) or something to seek out, name the districts, markets or restaurants where it clusters if it is the latter, and name 2-3 specific places that are genuinely halal, halal-certified or otherwise safe (a seafood or vegetarian kitchen counts, say which). If pork or alcohol are common on ordinary menus, say so plainly, that is useful rather than rude. Then prayer: the main mosque or mosques visitors actually use, with the district, and any prayer room at the airport or main sights if documented. Don't certify anything yourself, "listed as halal-certified by X" and "widely described as halal" are different claims and stay different.`,
+  },
+  {
+    key: "hours",
+    header: "Attractions",
+    searches: 12,
+    scope: ({ cityLabelEn, guide }) => `Opening hours, seasonal operating status (open or closed) and ticket pricing for these places in ${cityLabelEn}: ${guide.attractions.map((a) => a.nameEn).join(", ")}. If a place is a free, unticketed public site with no formal hours (a trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best early morning" - that IS a real finding, don't leave it as "unconfirmed" because there is no ticket office. Spend the budget where the answer could plausibly change with the season or over time: a fixed historic site's hours barely move, a seasonal park or festival venue does, so check the seasonal and newly-opened ones first.`,
+  },
+  {
+    key: "rentals",
+    header: "Rental cars",
+    searches: 10,
+    scope: ({ cityLabelEn, countryName }) => `A price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: at least one budget, one mid-range, and one premium if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo and so on, wherever they actually operate there) and real local operators; the chains are easier to verify as legitimate, so don't skip them in favour of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation. Search "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" for names that come up.`,
+  },
+  {
+    key: "flights",
+    header: "Airlines and routes",
+    searches: 6,
+    scope: ({ cityLabelEn }) => `Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub first. Airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never a specific flight time, schedule or price: that is not something search can honestly confirm, it changes constantly, and the team prices it separately regardless of what you find.`,
+  },
+];
+
+// Which categories a city needs. Gated on our own data rather than on this
+// customer's trip, because the answer is cached per city and reused by every
+// later customer, whose trip will be different.
+function categoriesFor(guide: FlagshipCityGuide): ResearchCategory[] {
+  const holdsDriver = !![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
+  return RESEARCH_CATEGORIES.filter((c) => {
+    if (c.key === "dining") return guide.dining.length < 3;
+    if (c.key === "drivers") return !holdsDriver;
+    if (c.key === "sights") return guide.attractions.length < 6;
+    return true;
+  });
+}
+
+// Byte-identical on every call and every city, so the cache can hit.
+function researchSystemPrompt(): string {
+  return `You are a research assistant checking current, real-world facts for an internal trip-planning team. You have web search. Use it properly: this team relies on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants, private drivers and rental cars are extremely findable in any real city with an ordinary search, so a "nothing found" report on them is far more likely to mean the search wasn't tried hard enough than that nothing exists.
+
+You will be asked about ONE category at a time. Stay inside it. Don't drift into other categories even if you notice something interesting, another pass covers them.
+
+Rules that apply to everything you report:
+- Report only what you actually find, with enough detail a planner could act on. If search genuinely turns up nothing conclusive after a real attempt, say so plainly in one line for that item, don't guess or extrapolate, but don't give up after a single search either.
+- Third-party trust signals matter for any business you name: review sites (Google, Trustpilot, TripAdvisor) with BOTH the score and the number of ratings it rests on, and any official government or tourism-authority registry listing. A company genuinely appearing on an official registry is a verifiable finding, report it plainly with the source named. A company's own website claiming to be "licensed" or "certified" is NOT verification of that: report it only as an attributed, hedged claim, e.g. "their website states they are licensed by X", never as settled fact and never as your own assessment. If you find nothing on licensing or reviews after a real attempt, leave that part out for that company; an unknown quantity is not the same as an unsafe one.
+- Prices and hours are facts that go stale. Give them as you found them and say where they came from where that is not obvious.
+- If you run out of search budget partway, report everything you DID find, then list the rest as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure.
+- Output short plain-text lines. No markdown, no preamble, no closing summary, no restating the question.`;
+}
+
+// Categories are stored with a marker each, so a later run can see which are
+// present and research only what is missing. Stripped before the drafting
+// pass ever sees the notes.
+const CATEGORY_MARKER = /^##cat:([a-z]+)$/gm;
+
+export function categoriesPresent(notes: string): Set<string> {
+  const found = new Set<string>();
+  for (const match of notes.matchAll(CATEGORY_MARKER)) found.add(match[1]);
+  return found;
+}
+
+export function stripCategoryMarkers(notes: string): string {
+  return notes.replace(CATEGORY_MARKER, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/**
+ * Researches one category. Returns null on any failure, which the caller
+ * treats as "stop, keep what we have" rather than as an empty result.
+ */
+async function researchOneCategory(
+  anthropic: Anthropic,
+  category: ResearchCategory,
+  context: { cityLabelEn: string; countryName: string; guide: FlagshipCityGuide; purpose: string; fromDate: string; toDate: string },
+  onSpend?: (dollars: number) => void,
+): Promise<string | null> {
   try {
-    const attractionNames = guide.attractions.map((a) => a.nameEn).join(", ");
-    if (!attractionNames) return "";
-
-    // Always research flights and rental cars, not just when this specific
-    // customer asked for one. This result gets cached per city (see
-    // generateDraftGuide) and reused across every future customer for that
-    // city regardless of what they personally requested, so the cached copy
-    // needs to be useful to all of them, not just whoever happened to
-    // trigger the cache refresh. The drafting pass still only mentions what
-    // this customer actually asked for, per its own system prompt rules.
-    const wantsFlights = true;
-    const wantsRentalCar = true;
-    const needsDining = guide.dining.length < 3;
-    // Private drivers only ever came from our own curated provider list,
-    // which held while every city was Saudi and hand-researched. Of the 47
-    // cities here, 30 now have no provider at all, and "private driver" is
-    // one of the most-picked transport options on the form. A customer who
-    // ticks it for Tbilisi would otherwise get days that talk around the
-    // driver without naming one, or a name the drafting pass reached for
-    // because the grounding had none. Researched like rental cars, on the
-    // same always-on basis: the result is cached per city and reused by
-    // customers who did tick it.
-    const needsDrivers = ![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
-    // Our own attraction lists run three to six deep, which is a comfortable
-    // two or three days and not much more. A customer who spends nine nights
-    // in one city is asking the drafting pass to fill nine days from six
-    // sights, and the pass is told never to invent a place, so the days it
-    // cannot fill honestly go vague. Researched like dining, gated on our own
-    // depth rather than on this customer's trip length, because the result is
-    // cached per city and the next customer's trip will be a different
-    // length. Worth being plain about it: 45 of the 47 cities clear this
-    // threshold, so in practice this runs almost everywhere. That is the
-    // honest reading of the data rather than an accident of the number, and
-    // it costs one cached research pass per city per week.
-    const needsMoreSights = guide.attractions.length < 6;
-
-    const flightScope = wantsFlights
-      ? `\n- Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub airports first. Report airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never state a specific flight time, schedule or price, that's not something search can honestly confirm, it changes constantly and needs an actual flight-search system, not a web search, the team prices this separately regardless of what you find here.`
-      : "";
-    const diningScope = needsDining
-      ? `\n- A genuinely price-tier-diverse set of real, currently-operating restaurants in ${cityLabelEn} that fit a ${readable(submission.purpose)} trip: aim for at least 2 budget/cheap options, at least 2 normal/mid-range options, and 1-2 upscale/expensive options if the city genuinely has them (roughly 8-12 total, this category is worth real search budget). For each: name, cuisine, one line on what it's known for, and a rough price tier (budget / normal / upscale) based on what you find. Our own curated list has little or nothing here, so this is the primary source for dining in this draft. Run multiple differently-worded searches covering each tier, e.g. "best restaurants in ${cityLabelEn}", "cheap eats ${cityLabelEn}", "fine dining ${cityLabelEn}", and "popular places to eat near [a specific landmark from the attractions list]", well-known national chains count too, not just standalone restaurants.`
-      : "";
-    const rentalScope = wantsRentalCar
-      ? `\n- A genuinely price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: aim for at least one budget/cheap option, one normal/mid-range option, and one upscale/premium option if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo, etc., wherever they actually operate there) and real local operators, international chains are generally easier to verify as legitimate so don't skip them in favor of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor review scores and counts, how long they've operated, whether an official Saudi tourism or transport-authority source lists them). The customer asked for a rental car and we have no rental providers in our own data. Run multiple differently-worded searches, e.g. "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${submission.countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" / "[company name] trustpilot" for whichever names come up, before concluding a tier or a reputation signal isn't findable.`
-      : "";
-    const driverScope = needsDrivers
-      ? `\n- Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, or full-day hire with a driver, or both), roughly how they price it if that's published (per transfer, per hour, per day), and whatever you can genuinely find on reputation and standing (Google/Trustpilot/TripAdvisor scores and counts, how long they've operated, any national tourism or transport-authority registration they're listed under). We have no drivers of our own for this city, so this is the only source the plan will have. Run multiple differently-worded searches, e.g. "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${submission.countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for whichever names come up. A hotel concierge arrangement or a well-reviewed local tour operator that provides a car and driver counts, say which it is.`
-      : "";
-    const sightsScope = needsMoreSights
-      ? `\n- More real, currently-open things to do in and around ${cityLabelEn}, beyond the ones listed at the bottom of this message. Aim for 6-8 that a visitor would genuinely spend half a day or more on, and deliberately mix the kinds: a museum or gallery, a market or shopping street, a park, garden or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours of the city (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it's ticketed or free. Our own list is short, and a long stay in this city has to be filled with real places rather than vague afternoons, so this matters. Don't repeat the ones we already have, and don't pad the list with restaurants, those are covered separately.`
-      : "";
-    // Every customer this pipeline writes for is travelling from Saudi
-    // Arabia, and 28 of the 32 cities outside it carried nothing at all on
-    // halal food or where to pray. In Malaysia that is a one-line answer; in
-    // Russia, Georgia and Thailand it is the difference between a plan
-    // somebody can follow and one they have to redo themselves over dinner.
-    // Always on, and deliberately short: four or five lines, not a category
-    // to spend half the search budget on.
-    const halalScope = `\n- How straightforward halal food is in ${cityLabelEn}, in a few lines. Say plainly whether it is the default (a Muslim-majority country) or something to seek out, name the districts, markets or restaurants where it clusters if it is the latter, and name 2-3 specific places that are genuinely halal, halal-certified or otherwise safe (a seafood or vegetarian kitchen counts, say which it is). If pork or alcohol are common on ordinary menus, say so plainly, that is useful rather than rude. Then the practical side of prayer: the main mosque or mosques visitors actually use, with the district, and any prayer room at the airport or main sights if that is documented. Report only what you find, and don't certify anything yourself, "listed as halal-certified by X" and "widely described as halal" are different claims and should stay different.`;
-
-    // Streamed for the same reason the drafts are, and this call needed it
-    // more than they did: it is the longest request in the pipeline. While
-    // the server runs up to 45 searches the connection has nothing to carry,
-    // and an idle HTTP connection held open for ten or fifteen minutes gets
-    // closed by something in the middle. That is what killed Cappadocia
-    // twice - not the token ceiling, not the timeout, just silence on the
-    // wire. The server finishes and bills either way, so a dropped
-    // connection here is money spent for nothing.
-    //
-    // The note above generateEnglishDraft already said this: "a
-    // non-streaming request this size can outlive the SDK's own request
-    // timeout". The research call was left on messages.create anyway.
     const response = await anthropic.messages.stream({
       model: "claude-opus-5",
-      // Raised from 6000 when private drivers became a fourth researched
-      // category. Nothing checks this call for truncation the way the draft
-      // does, so hitting the ceiling here would quietly drop whichever
-      // category came last rather than failing loudly.
-      max_tokens: 9000,
+      max_tokens: 4000,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 45 }],
-      system: `You are a research assistant checking current, real-world facts for an internal trip-planning team, for ${cityLabelEn}, ${submission.countryName}. You have web search, use it properly and thoroughly, this team is relying on you to actually find things, not to give up after one query and call everything unconfirmed. Restaurants, private drivers and rental cars in particular are extremely findable in any real city with an ordinary web search, so a "nothing found" report on any of them is far more likely to mean the search wasn't tried hard enough than that nothing exists, don't let that happen. Budget is generous here, spend it, depth and coverage matter more than finishing quickly.
-
-Scope, stay inside it. Do the categories below in this order, so the ones most likely to otherwise get shortchanged are covered first:${diningScope}${driverScope}${sightsScope}${halalScope}${rentalScope}
-- Opening hours, seasonal operating status (open or closed for the trip's dates) and ticket pricing, for the attractions listed below. If a place turns out to be a free, unticketed public site with no formal opening hours (a public trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best done in early morning before the heat", that IS a real, useful finding, don't leave it as "unconfirmed" just because there's no ticket office to look up.${flightScope}
-- For restaurants, private drivers and rental cars specifically, also look for real third-party trust signals: review sites (Google reviews, Trustpilot, TripAdvisor - report the score and how many ratings it's based on), and any official government source (Saudi Ministry of Tourism, Ministry of Transport / general transport authority licensed-operator listings, municipal directories). A company genuinely appearing on an official government registry is a verifiable finding, report it plainly with the source named, e.g. "listed on [authority]'s registered operator directory". A company's own website or marketing merely claiming to be "licensed" or "certified" is NOT independently verified by that, report that only as an attributed, hedged claim, e.g. "their website states they're licensed by [X]", never as a confirmed fact and never as your own assessment, you cannot personally verify regulatory status, only report what a genuine source actually says. If you find nothing on licensing or reviews for a company after a real attempt, don't guess or imply anything, just leave that part out for that company, an unknown quantity is not the same as "unsafe", say only what you actually found.
-- For the attractions: only spend search budget where the answer could plausibly change with the season or over time, a fixed historic site's opening hours barely matter, a seasonal park or festival venue does. Check the most likely-to-be-seasonal or newly-opened places first, in case you run low on search budget before finishing everything.
-- Report only what you actually find, with enough detail a planner could act on. If search genuinely turns up nothing conclusive after a real attempt for a place, say so plainly in one line for that place, don't guess or extrapolate, but don't give up after a single search either, try more than one query before concluding something isn't findable.
-- If you run out of search budget partway through, report everything you DID find for what you finished checking, then list the rest as "not checked, ran out of search budget". Never discard partial findings and report a blanket failure for everything, half real findings is much more useful to the team than nothing.
-- Output short plain-text lines, no markdown, no preamble, no closing summary. Group under short plain headers if that helps (e.g. "Attractions:", "More to do:", "Restaurants:", "Halal food and prayer:", "Private drivers:", "Rental cars:").`,
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: category.searches }],
+      system: cachedSystem(researchSystemPrompt()),
       messages: [{
         role: "user",
-        content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${needsDrivers ? `\nAlso find real private-driver, chauffeur and airport-transfer companies, we hold none of our own for this city.` : ""}${needsMoreSights ? `\nAlso find more real things to do beyond the ${guide.attractions.length} listed above, including day trips, since a long stay here has to be filled with real places.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
+        content: `City: ${context.cityLabelEn}, ${context.countryName}\nTrip dates being planned: ${context.fromDate} to ${context.toDate}\nTrip style: ${context.purpose}\n\nCategory to research now: ${category.header}\n\n${category.scope(context)}\n\nSearch and report now.`,
       }],
     }, RESEARCH_REQUEST_OPTIONS).finalMessage();
 
-    onSpend?.(logResearchSpend(cityLabelEn, response));
+    onSpend?.(logResearchSpend(`${context.cityLabelEn} / ${category.header}`, response));
 
     // A web-search turn comes back as many short text blocks interleaved
-    // with the search calls themselves (one burst of prose between each
-    // search), not one final block. Taking only the last one, as this used
-    // to, silently threw away everything the model found and reported
-    // before its final sentence, which in practice was most of it,
-    // including entire categories like restaurants and rental cars.
-    const textBlocks = response.content.filter((block): block is Anthropic.TextBlock => block.type === "text");
-    return textBlocks.map((block) => block.text).join("\n").trim();
+    // with the searches themselves, not one final block. Taking only the
+    // last one, as this once did, threw away most of what was found.
+    const text = response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
+      .join("\n")
+      .trim();
+    return text || null;
   } catch (error) {
-    console.error("Operational research failed", error);
-    return "";
+    console.error(`Research failed for ${context.cityLabelEn} / ${category.header}`, error);
+    return null;
   }
 }
+
+/**
+ * Researches every category a city needs, one call each, appending as it
+ * goes. `existing` lets a re-run skip what is already stored and fill only
+ * the gaps, which is what makes a failed run cheap: whatever succeeded is
+ * kept, and the next attempt pays only for the rest.
+ *
+ * `onCategory` fires after each success with the notes so far, so a caller
+ * can persist partial progress rather than risking it all on the last one.
+ */
+export async function researchOperationalFacts(
+  anthropic: Anthropic,
+  guide: FlagshipCityGuide,
+  submission: DraftGuideSubmission,
+  cityLabelEn: string,
+  onSpend?: (dollars: number) => void,
+  existing = "",
+  onCategory?: (notesSoFar: string) => Promise<void>,
+): Promise<string> {
+  if (!guide.attractions.length) return existing;
+
+  const context = {
+    cityLabelEn,
+    countryName: submission.countryName ?? "",
+    guide,
+    purpose: readable(submission.purpose),
+    fromDate: submission.fromDate,
+    toDate: submission.toDate,
+  };
+
+  const already = categoriesPresent(existing);
+  const todo = categoriesFor(guide).filter((c) => !already.has(c.key));
+  if (!todo.length) return existing;
+
+  let notes = existing;
+  for (const category of todo) {
+    const found = await researchOneCategory(anthropic, category, context, onSpend);
+    // One failure ends the run rather than ploughing on. Everything already
+    // gathered is returned and, if the caller persists it, picked up next
+    // time without being paid for again.
+    if (!found) break;
+    notes = `${notes ? `${notes}\n\n` : ""}##cat:${category.key}\n${category.header}:\n${found}`;
+    await onCategory?.(notes);
+  }
+  return notes;
+}
+
 
 // Headroom for the longest trip the planner will accept: three stops across
 // a long stay, in Arabic, which is the heaviest case by some distance.
@@ -720,7 +809,7 @@ export const RESEARCH_CACHE_TTL_DAYS = 30;
 // themselves rather than in a new column, so it needs no migration, and a
 // mismatch counts as staleness rather than as a reason to bin the entry,
 // matching how the TTL already behaves: old real findings still beat none.
-export const RESEARCH_SCOPE_VERSION = 4;
+export const RESEARCH_SCOPE_VERSION = 5;
 const SCOPE_MARKER = /^#scope:v(\d+)\n/;
 
 export function readScopeVersion(notes: string): { version: number; notes: string } {
@@ -740,7 +829,7 @@ export function readScopeVersion(notes: string): { version: number; notes: strin
 // Curated entries (hand-researched and verified, see the curated column
 // migration) never go stale on a timer, so the automated pass never
 // overwrites them. They're refreshed deliberately instead.
-type CachedResearch = { notes: string; stale: boolean };
+type CachedResearch = { notes: string; stale: boolean; raw: string };
 
 async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<CachedResearch | null> {
   try {
@@ -751,9 +840,9 @@ async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdmin
     // pass is forbidden from overwriting it, so marking it stale would only
     // buy a live search whose result gets thrown away. It stays fresh, and a
     // scope change to a curated city is a job for a person.
-    if (data.curated) return { notes, stale: false };
+    if (data.curated) return { notes: stripCategoryMarkers(notes), stale: false, raw: notes };
     const ageMs = Date.now() - new Date(data.updated_at).getTime();
-    return { notes, stale: ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000 || version !== RESEARCH_SCOPE_VERSION };
+    return { notes: stripCategoryMarkers(notes), stale: ageMs > RESEARCH_CACHE_TTL_DAYS * 86_400_000 || version !== RESEARCH_SCOPE_VERSION, raw: notes };
   } catch {
     return null;
   }
@@ -844,7 +933,15 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const researchPerStop = await Promise.all(resolved.map(async (stop, i) => {
       const cached = supabase ? await getCachedResearch(supabase, stop.slug) : null;
       if (cached && !cached.stale) return { label: stopLabelsEn[i], notes: cached.notes };
-      const fresh = await researchOperationalFacts(anthropic, stop.guide, submission, stopLabelsEn[i]);
+      const fresh = await researchOperationalFacts(
+        anthropic, stop.guide, submission, stopLabelsEn[i], undefined,
+        // Whatever is already stored is reused rather than re-bought: a
+        // stale row is usually stale in one category, not all of them.
+        cached?.raw ?? "",
+        // Persist after each category, so a failure halfway keeps the half
+        // that worked instead of paying for it again next time.
+        supabase ? async (soFar) => { await cacheResearch(supabase, stop.slug, soFar); } : undefined,
+      );
       if (fresh) {
         if (supabase) await cacheResearch(supabase, stop.slug, fresh);
         return { label: stopLabelsEn[i], notes: fresh };
