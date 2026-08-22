@@ -125,14 +125,22 @@ if (!testCase) {
   process.exit(1);
 }
 
-// A real submission sends crypto.randomUUID(), and the reference is the
-// first eight characters of it uppercased. A predictable id like
-// "turkey-1787..." makes that reference "TURKEY-1" every single time, so
-// the second run of this test collides with the first on the proposals
-// table's unique constraint - the draft succeeds, the insert fails, and
-// the script reports a failure that has nothing to do with the pipeline.
-const submissionId = `${countrySlug}-${randomUUID()}`;
-const TEST_NAME = `${testCase.countryName} Test ${submissionId}`;
+// A real submission sends crypto.randomUUID() and nothing else, and the
+// reference is the first eight characters of it uppercased. So this has to
+// send the same shape, with no prefix at all.
+//
+// Prefixing looked harmless and was not. "turkey-" is seven characters, so
+// the reference kept exactly ONE character of the UUID: every run was
+// TURKEY-<hex digit>, sixteen possible references, and the second Türkiye
+// run of the night duplicated TURKEY-9. The draft is written and paid for,
+// then the insert fails on the unique constraint and the whole run is lost.
+// Worse for the other countries: "thailand-" is nine, so every Thailand run
+// produces the literal reference THAILAND.
+//
+// This is the second time this bug has been fixed. The first fix added the
+// UUID and kept the prefix, which is why it came back.
+const submissionId = randomUUID();
+const TEST_NAME = `${testCase.countryName} Test ${countrySlug}-${submissionId}`;
 
 if (!process.env.RESEND_API_KEY) {
   process.env.RESEND_API_KEY = "local-test-placeholder-no-email-will-send";
