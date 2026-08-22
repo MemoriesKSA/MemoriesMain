@@ -80,7 +80,7 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character] ?? character);
 }
 
-function serializeGuideForDraft(guide: FlagshipCityGuide, ar: boolean): string {
+export function serializeGuideForDraft(guide: FlagshipCityGuide, ar: boolean): string {
   const lines: string[] = [];
   lines.push(`${ar ? "المعالم" : "Attractions"}: ${guide.attractions.map((a) => `${ar ? a.nameAr : a.nameEn} (${ar ? a.categoryAr : a.categoryEn}): ${ar ? a.descriptionAr : a.descriptionEn}`).join(" | ")}`);
   if (guide.dining.length) lines.push(`${ar ? "المطاعم" : "Dining"}: ${guide.dining.map((d) => `${ar ? d.nameAr : d.nameEn} (${ar ? d.cuisineAr : d.cuisineEn}): ${ar ? d.descriptionAr : d.descriptionEn}`).join(" | ")}`);
@@ -158,6 +158,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Only use the real, named places (attractions, dining, hotels, private drivers, rental car companies) given to you in the grounded facts or the live research notes below, both are equally real, sourced information, not a guess. Never invent a business name, address or price. If a category (e.g. restaurants) genuinely isn't covered by either, say plainly that the team should research it, don't guess, but check the research notes first, they often cover exactly this now.
 - Never state or imply a specific proximity, walking distance or travel time between two named real places (e.g. a hotel and a restaurant) unless the grounded facts explicitly say so. Two places both being in the same district or area is NOT the same as being close to each other, don't write "walking distance" or "a short walk" or similar just because they share a neighbourhood, that's inventing a specific, checkable-sounding fact you don't actually have. Describe the place on its own merits and let the driver or logistics handle getting there, or say plainly the distance isn't known.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
+- No unsourced superlative or ranking, about anything, including places that aren't businesses. "One of the world's biggest hubs", "the busiest airport in Europe", "the oldest bazaar in the world", "the most famous mosque in the city", "world-renowned", "the largest of its kind" and anything of that shape are checkable factual claims dressed as description, which is exactly why they get written by reflex: they feel like colour and they read like a fact. Unless the grounded facts or research notes actually make that comparison, describe the place on its own terms instead, what it is, what's there, what it's like to stand in it. "Istanbul Airport, the main gateway to the country" is fine; "one of the world's biggest hubs" is a ranking nobody sourced. A concrete sourced number always beats a superlative anyway: "Turkish Airlines holds close to 80% of the traffic there" tells them more than "huge".
 - Treat opening hours, seasonal operation and ticket pricing as always needing confirmation, unless the grounded facts or the live research notes below give a specific, current answer, in which case state it plainly without the hedge. The research notes come from an actual web search run just now, trust them the same way you trust the grounded facts; if they're inconclusive or don't cover a place, keep flagging it.
 - If the research notes mention flights (which airlines serve the destination, general connection patterns like "usually via Riyadh or Jeddah"), you can state that route/airline existence plainly, it's real research, not a guess. But never state or imply a specific flight time, schedule or price.
 - When they asked for flights, give them a short "Getting there" block in the overview that makes the search easy for them, since they are the ones booking it. Include, and only from the grounded facts or research notes: which airport to fly into and its code; which airlines serve it; and, for a city with no major airport of its own, the realistic routing (e.g. AlUla is normally reached by connecting through Riyadh or Jeddah, Makkah has no airport and is reached via Jeddah). Tell them plainly what to type into a booking site, e.g. "search Cairo to RUH".
@@ -504,6 +505,17 @@ export async function researchOperationalFacts(
 // translation is always the first to run out.
 const DRAFT_MAX_TOKENS = 32_000;
 
+// The self-check only ever writes a short bullet list or one clean line, so
+// 1200 looked generous. It was not. This call runs with adaptive thinking,
+// thinking tokens ARE output tokens, and a two-stop trip hands it 55,000
+// characters of research plus two full drafts to reason over. Measured on the
+// first real Türkiye draft: two runs in three spent the whole 1200 budget
+// thinking and returned no text at all. The pass swallowed that, so the
+// reviewer's email simply had no self-check section and nothing said why.
+//
+// Big enough that the reasoning fits and the verdict still gets written.
+const SELF_CHECK_MAX_TOKENS = 8_000;
+
 /**
  * Rejects a response that stopped because it ran out of room.
  *
@@ -810,7 +822,7 @@ Check for, and only for:
 Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`;
 }
 
-async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, tripCalendar: string, onSpend?: (dollars: number) => void): Promise<string> {
+export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, tripCalendar: string, onSpend?: (dollars: number) => void): Promise<string> {
   try {
     if (!englishDraft && !arabicDraft) return "";
 
@@ -825,7 +837,7 @@ async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabic
       // publishing, so a missed flag costs a reviewer a second look rather
       // than reaching a customer.
       model: "claude-sonnet-5",
-      max_tokens: 1200,
+      max_tokens: SELF_CHECK_MAX_TOKENS,
       thinking: { type: "adaptive" },
       output_config: { effort: "low" },
       system: cachedSystem(buildSelfCheckSystemPrompt()),
@@ -842,7 +854,19 @@ async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabic
     onSpend?.(sonnetSpend(response));
 
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
-    return textBlock?.text?.trim() ?? "";
+    const text = textBlock?.text?.trim() ?? "";
+    // A self-check that produces nothing is indistinguishable, downstream,
+    // from one that ran and found nothing: both leave the email with no
+    // self-check section. It stays non-fatal, because this pass advises the
+    // reviewer and must never block a finished draft from being delivered,
+    // but it says so loudly instead of disappearing.
+    if (!text) {
+      console.error(
+        `Draft self-check returned no text (stop_reason: ${response.stop_reason}, ` +
+        `output tokens ${response.usage.output_tokens} of ${SELF_CHECK_MAX_TOKENS}). ` +
+        `The draft is unaffected, but this email goes out without a self-check.`);
+    }
+    return text;
   } catch (error) {
     console.error("Draft self-check failed", error);
     return "";
@@ -924,7 +948,7 @@ export function readScopeVersion(notes: string): { version: number; notes: strin
 // overwrites them. They're refreshed deliberately instead.
 type CachedResearch = { notes: string; stale: boolean; raw: string };
 
-async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<CachedResearch | null> {
+export async function getCachedResearch(supabase: ReturnType<typeof createSupabaseAdminClient>, citySlug: string): Promise<CachedResearch | null> {
   try {
     const { data } = await supabase.from("city_research_cache").select("research_notes, updated_at, curated").eq("city_slug", citySlug).single();
     if (!data?.research_notes) return null;
