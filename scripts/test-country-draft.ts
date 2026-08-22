@@ -13,6 +13,7 @@
 // the per-city grounding at once, and a second stop is where a model that
 // has run out of real places will reach for a plausible-sounding one.
 
+import { randomUUID } from "crypto";
 import { generateDraftGuide } from "../app/draft-guide";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { applyPaywall } from "../app/journey/paywall";
@@ -124,7 +125,13 @@ if (!testCase) {
   process.exit(1);
 }
 
-const submissionId = `${countrySlug}-${Date.now()}`;
+// A real submission sends crypto.randomUUID(), and the reference is the
+// first eight characters of it uppercased. A predictable id like
+// "turkey-1787..." makes that reference "TURKEY-1" every single time, so
+// the second run of this test collides with the first on the proposals
+// table's unique constraint - the draft succeeds, the insert fails, and
+// the script reports a failure that has nothing to do with the pipeline.
+const submissionId = `${countrySlug}-${randomUUID()}`;
 const TEST_NAME = `${testCase.countryName} Test ${submissionId}`;
 
 if (!process.env.RESEND_API_KEY) {
