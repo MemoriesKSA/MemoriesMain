@@ -254,6 +254,39 @@ ${groundedFacts}${researchSection}
 Draft the day-by-day sketch now.`;
 }
 
+/**
+ * What the customer themselves told us, for the self-check.
+ *
+ * The self-check used to see only the grounded facts, the research notes and
+ * the two drafts, so every fact that came from the customer's own form looked
+ * like an invention. It flagged a Jeddah draft for stating the SAR 15,000
+ * budget and the 4-star preference, both of which the customer typed in.
+ *
+ * That fired on every draft ever checked, Saudi included, and it is the
+ * expensive kind of false positive: a reviewer who is told three times that
+ * a correct plan invented something stops reading the fourth warning.
+ *
+ * Deliberately only the customer-stated fields. Nothing here is evidence that
+ * a PLACE is real, which is the thing the check exists to police.
+ */
+export function customerRequestForCheck(submission: DraftGuideSubmission, cityLabel: string): string {
+  return [
+    `Name: ${submission.name}`,
+    `Destination: ${cityLabel}, ${submission.countryName ?? ""}`,
+    `Trip dates: ${submission.fromDate} to ${submission.toDate}`,
+    `Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}`,
+    `Purpose / style: ${readable(submission.purpose)}`,
+    `Requested transport: ${submission.transport.map(readable).join(", ") || "not specified"}`,
+    `Requested stay type: ${submission.stays.map(readable).join(", ") || "not specified"}`,
+    `Preferred accommodation rating: ${submission.stayRating && submission.stayRating !== "flexible" ? readable(submission.stayRating) : "flexible, no preference stated"}`,
+    `Flying from: ${submission.departureCity || "not stated"}`,
+    `Preferred flight timing: ${submission.flightTiming && submission.flightTiming !== "flexible" ? readable(submission.flightTiming) : "flexible, no preference stated"}`,
+    `Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}`,
+    `Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}`,
+    `Customer notes: ${submission.packageNotes || "none"}`,
+  ].join("\n");
+}
+
 // Runs before the draft is written, so the draft cites live findings instead
 // of guessing. Covers hours/season/pricing for named attractions, airlines
 // and routes, real restaurants when our curated dining list is thin, real
@@ -814,8 +847,10 @@ export function buildSelfCheckSystemPrompt() {
 
 The research notes are cached per city and reused for every customer, so any trip window named inside them is whatever window the research happened to be run for, NOT this customer's dates. That difference is our plumbing. It is never a finding, it never "undermines" the draft, and reporting it spends the reviewer's attention on the one thing working as designed. Read day-of-week and seasonal facts in the notes as general ones ("closed Sundays", "summer timetable until 1 October", "the Friday market") and check them against the TRIP CALENDAR below, which is the authority on which weekday each of the customer's real dates falls on.
 
+The CUSTOMER REQUEST below is a source too, and it is the customer's own words from the form they filled in. Their budget, dates, traveller count, departure city, requested stay type, preferred star rating, stated interests and their own notes are all facts the draft is entitled to state plainly, and the draft is SUPPOSED to build on them. Never flag one of those as invented or unsourced just because it isn't in the grounded facts. What the request never establishes is anything about a real place: that a named hotel actually holds four stars, that a restaurant is halal, that a driver is licensed. A customer asking for a 4-star hotel makes "you asked for 4-star" sourced; it does not make "this hotel is 4-star" sourced.
+
 Check for, and only for:
-- Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts or research notes below, that's likely invented and must be flagged.
+- Any specific claim in the draft (hotel name, driver name, price, hours, licensing/certification, rating, "the best/top") that does NOT trace back to the grounded facts, the research notes, or the customer's own request below, that's likely invented and must be flagged.
 - Any weekday the draft names for a date that contradicts the TRIP CALENDAR, and any place scheduled on a day it is shut: a museum on its closed weekday, a market on a day it doesn't run, a mosque at Friday noon prayer. Judge this against the calendar and the customer's real dates only, never against the window the research notes were run for.
 - Any claim the grounded facts or research notes hedged ("positioned as", "worth confirming", "said to be", inconclusive) but the draft states flatly, dropping the hedge, anywhere in the draft including its own closing section.
 - Any way the Arabic translation actually disagrees with the English, a different hotel or driver named, a different day order, a place appearing on a different day, a flag present in one but not the other. Minor phrasing or word-order differences don't count, only substantive disagreements a translation should never have introduced.
@@ -833,7 +868,7 @@ Use ISSUES only when something is actually wrong, then a short plain-text bullet
 Don't manufacture issues to seem thorough, and don't soften a real one into an observation. If you are unsure whether something is a defect, it is: say it in one line and let the reviewer decide.`;
 }
 
-export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, tripCalendar: string, onSpend?: (dollars: number) => void): Promise<string> {
+export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, tripCalendar: string, customerRequest: string, onSpend?: (dollars: number) => void): Promise<string> {
   try {
     if (!englishDraft && !arabicDraft) return "";
 
@@ -854,7 +889,7 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
       system: cachedSystem(buildSelfCheckSystemPrompt()),
       messages: [{
         role: "user",
-        content: `TRIP CALENDAR (the customer's real dates, and the only authority on which weekday each one is):\n${tripCalendar || "no dates were given for this trip"}\n\nGROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES (cached per city, any window named inside is our plumbing, not this customer's dates):\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
+        content: `CUSTOMER REQUEST (their own words from the form, a source in its own right):\n${customerRequest || "not available"}\n\nTRIP CALENDAR (the customer's real dates, and the only authority on which weekday each one is):\n${tripCalendar || "no dates were given for this trip"}\n\nGROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES (cached per city, any window named inside is our plumbing, not this customer's dates):\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
       }],
     });
 
@@ -1193,7 +1228,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
 
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, dayByDayCalendar(submission.fromDate, submission.toDate), (d) => { draftSpend += d; });
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, dayByDayCalendar(submission.fromDate, submission.toDate), customerRequestForCheck(submission, cityLabelEn), (d) => { draftSpend += d; });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;

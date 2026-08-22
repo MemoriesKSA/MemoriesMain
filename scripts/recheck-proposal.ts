@@ -23,7 +23,10 @@ import {
   getCachedResearch,
   dayByDayCalendar,
   readSelfCheckVerdict,
+  customerRequestForCheck,
+  type DraftGuideSubmission,
 } from "../app/draft-guide";
+import { readFileSync } from "fs";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../app/flagship-city-data";
 import { travelCountries } from "../app/components/planner-data";
@@ -33,6 +36,13 @@ const args = process.argv.slice(2);
 const reference = (args[0] ?? "").toUpperCase();
 const repeatIndex = args.indexOf("--repeat");
 const REPEAT = repeatIndex >= 0 ? Number(args[repeatIndex + 1] ?? 1) : 1;
+// The self-check reads the customer's own request as a source, because their
+// budget and preferences are facts the draft is entitled to state. The
+// proposals table doesn't keep those fields, so for a faithful re-check they
+// come from a JSON file holding the original submission. Without one this
+// still runs, but it is checking a slightly easier draft than production did.
+const requestIndex = args.indexOf("--request");
+const REQUEST_FILE = requestIndex >= 0 ? args[requestIndex + 1] : undefined;
 
 if (!reference || !Number.isFinite(REPEAT) || REPEAT < 1) {
   console.error("Usage: npx tsx --env-file=.env.local scripts/recheck-proposal.ts <REFERENCE> [--repeat N]");
@@ -102,9 +112,20 @@ async function main() {
 
   const calendar = dayByDayCalendar(String(data.from_date ?? ""), String(data.to_date ?? ""));
 
+  const submission = {
+    name: "", countryName: "", travellers: "", travellerCount: "", purpose: "",
+    transport: [], stays: [], planIncludes: [], currency: "SAR", budget: "0",
+    stayRating: "flexible", departureCity: "", flightTiming: "flexible", packageNotes: "",
+    ...(REQUEST_FILE ? JSON.parse(readFileSync(REQUEST_FILE, "utf8")) : {}),
+    fromDate: String(data.from_date ?? ""),
+    toDate: String(data.to_date ?? ""),
+  } as DraftGuideSubmission;
+  const customerRequest = customerRequestForCheck(submission, String(data.city));
+
   console.log(`${reference}  ${data.city}  ${data.from_date} to ${data.to_date}`);
   console.log(`stops: ${slugs.join(", ")}  ·  research ${operationalResearch.length} chars  ·  en ${(data.itinerary_en ?? "").length}  ar ${(data.itinerary_ar ?? "").length}`);
-  console.log(`calendar: ${calendar || "(none)"}\n`);
+  console.log(`calendar: ${calendar || "(none)"}`);
+  console.log(REQUEST_FILE ? `customer request: from ${REQUEST_FILE}\n` : `customer request: NOT SUPPLIED, pass --request <file.json> for a faithful re-check\n`);
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, maxRetries: 2 });
   let spent = 0;
@@ -119,6 +140,7 @@ async function main() {
       groundedFactsAr,
       operationalResearch,
       calendar,
+      customerRequest,
       (d) => { spent += d; },
     );
     const ok = isGreen(result);
