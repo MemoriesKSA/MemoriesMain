@@ -349,7 +349,7 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
         role: "user",
         content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${needsDrivers ? `\nAlso find real private-driver, chauffeur and airport-transfer companies, we hold none of our own for this city.` : ""}${needsMoreSights ? `\nAlso find more real things to do beyond the ${guide.attractions.length} listed above, including day trips, since a long stay here has to be filled with real places.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
       }],
-    });
+    }, RESEARCH_REQUEST_OPTIONS);
 
     onSpend?.(logResearchSpend(cityLabelEn, response));
 
@@ -402,6 +402,19 @@ function assertNotTruncated(response: Anthropic.Message, label: string) {
     throw new Error(`${label} hit the token ceiling and came back truncated, so it was discarded rather than saved half-finished.`);
   }
 }
+
+// The streamed draft calls got a bounded timeout; this one was left on the
+// SDK's ten-minute default, and Cappadocia's research needed longer than
+// that. Up to 45 server-side searches, each result read in full, is simply
+// not a ten-minute job for every city.
+//
+// maxRetries is 0 on purpose, and it is the more important half. A timeout
+// here does not mean the work didn't happen: the server may well have
+// finished and billed for it, so an automatic retry can quietly buy the same
+// $4 of research twice. The caller already degrades gracefully - the draft
+// falls back to older notes, the pre-warm script stops and says so - and a
+// human deciding to run it again is cheaper than a client deciding for them.
+const RESEARCH_REQUEST_OPTIONS = { timeout: 20 * 60 * 1000, maxRetries: 0 };
 
 // List prices for what this pass uses, in dollars: Opus 5 input and output
 // per million tokens, and the web search tool per thousand searches. Kept
