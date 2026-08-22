@@ -23,19 +23,22 @@ export const runtime = "nodejs";
 // research and skip the expensive half, which is why nothing surfaced this
 // until the new countries went in.
 //
-// 800 was tried and the deploy failed: this account is on Vercel's Hobby
-// plan, which caps below that, and the failure happens after a successful
-// build while deploying outputs. Four commits sat undeployed before anyone
-// noticed, so the number here is not a free dial - it is whatever the plan
-// permits, and 300 is the highest value this project has actually deployed.
+// 800 seconds, which is the maximum Vercel makes generally available on the
+// Pro plan. Hobby's maximum IS 300, not a default that can be raised, so an
+// earlier attempt at 800 failed the deploy after a clean build and four
+// commits sat unshipped before anyone noticed. Do not raise this past 800
+// without checking the plan first: above that is a per-function beta.
 //
-// That makes the deadline the real mechanism rather than the ceiling.
-// Research stops starting new categories once RESEARCH_DEADLINE_MS has
-// passed (see draft-guide.ts) and the plan is written with what arrived, so
-// the worst case is a thinner plan that lands rather than a good one cut off
-// mid-sentence. Measured runs went well past 300s when every city was cold,
-// which is the case pre-warming exists to remove.
-export const maxDuration = 300;
+// It needs to be this high because the work genuinely takes that long. A
+// warm two-stop Türkiye draft measured about 450 seconds and was killed at
+// 300 partway through the Arabic translation, losing the translation and
+// the email. Single-city Saudi drafts run about 200 and never hit it, which
+// is why this only surfaced when multi-stop trips outside Saudi began.
+//
+// Work scheduled with after() counts against this, which is the whole point:
+// Vercel's docs are explicit that if the function times out, those promises
+// are cancelled.
+export const maxDuration = 800;
 
 type JourneySubmission = {
   submissionId?: unknown;

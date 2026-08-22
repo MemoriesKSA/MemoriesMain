@@ -13,15 +13,14 @@ import { flagshipCityGuideBySlug } from "../../../flagship-city-data";
 import { travelCountries } from "../../../components/planner-data";
 
 export const runtime = "nodejs";
-// 300, not 800: this account is on Vercel's Hobby plan and 800 fails the
-// deploy after a clean build. A full city is five or six categories and does
-// not fit in five minutes, which is fine here and nowhere else - each
-// category is stored as it finishes, so the next night resumes where this
-// one stopped and a city warms over a few runs instead of one.
-export const maxDuration = 300;
+// 800 seconds, the Pro plan's generally-available maximum. A full city is
+// five to seven categories at roughly two and a half minutes each, so most
+// now finish in a single run; any that do not are resumed the next night,
+// because every category is stored the moment it lands.
+export const maxDuration = 800;
 
 // Leaves a margin under maxDuration for the request itself to return.
-const CRON_RESEARCH_DEADLINE_MS = 240 * 1000;
+const CRON_RESEARCH_DEADLINE_MS = 700 * 1000;
 
 // Keeps the cities we actually sell warm, so no customer ever triggers
 // research inside their own request.
