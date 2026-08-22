@@ -1042,46 +1042,28 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       .join("\n\n");
     const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn, (d) => { draftSpend += d; });
     if (!englishDraft) return;
-    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, (d) => { draftSpend += d; });
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    let proposalUrl: string | null = null;
+    // The English draft is saved here, before the translation runs, rather
+    // than with everything else at the end.
+    //
+    // The route has a hard ceiling and a warm two-stop Türkiye draft measured
+    // 400 seconds against it. Writing everything at the end means crossing
+    // that line loses the lot: the research, the English draft, the
+    // translation, all of it paid for and gone, and the team gets nothing.
+    // Saving in stages makes the worst case an English-only draft sitting in
+    // the reviewer tool - thinner than intended, but real, and the reviewer
+    // can work from it.
+    //
+    // Same shape as the research batching: store progress as it happens
+    // rather than betting the whole run on the last step.
+    let proposalId: string | null = null;
+    const publicToken = randomBytes(24).toString("hex");
+    const englishSplit = splitDraftForStorage(englishDraft);
+    const planStops = stopsFromNights(stopLabelsEn, submission.stopNights ?? [])
+      ?? parseStopMarkers(englishSplit.internalOnly);
 
-    // Best-effort: a failure here should never stop the email from going
-    // out, the reviewer can still work from the email content alone if
-    // this doesn't succeed for some reason.
-    try {
-      if (supabase) {
-        const publicToken = randomBytes(24).toString("hex");
-
-        // The full drafts (still used for the reviewer email above) mix
-        // customer-facing plan with internal-only "Needs a decision" / "For
-        // the planner" sections. Split those apart here: only the
-        // customer-facing half goes into itinerary_en/itinerary_ar, which
-        // the customer's own page renders verbatim once published, the
-        // internal half goes into notes instead, alongside the self-check.
-        const englishSplit = splitDraftForStorage(englishDraft);
-        const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
-        // Read the machine stop line before anything strips it, so the customer's
-        // page knows which day each stop begins on and can show the first day
-        // of every stop for free.
-        // Prefer the mapping computed from the customer's own night counts.
-        // The model's STOPS line is only the fallback now, for older shapes
-        // and single-stop trips: it used to be the sole source, and when it
-        // came back missing the fallback below recorded firstDay 0 for every
-        // stop, which meant a paying multi-stop customer saw no free day at
-        // all. Anything the form already knows should not depend on
-        // generated text surviving intact.
-        const planStops = stopsFromNights(stopLabelsEn, submission.stopNights ?? [])
-          ?? parseStopMarkers(englishSplit.internalOnly);
-        const internalNotesParts = [
-          selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
-          englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
-          arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
-        ].filter(Boolean);
-        const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
-
+    if (supabase) {
+      try {
         const { data, error } = await supabase
           .from("proposals")
           .insert({
@@ -1102,15 +1084,69 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             // to day one being free, which is the safe direction to fail in.
             stops: planStops,
             itinerary_en: englishSplit.customerFacing || englishDraft,
-            itinerary_ar: arabicSplit?.customerFacing || arabicDraft || null,
-            notes,
           })
           .select("id")
           .single();
-
         if (error) console.error("Auto-create proposal failed", error.message);
-        else if (data) {
-          proposalUrl = `${siteUrl}/internal/journeys/${data.id}`;
+        else proposalId = data?.id ?? null;
+      } catch (error) {
+        console.error("Auto-create proposal failed", error);
+      }
+    }
+
+    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
+    const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+    if (supabase && proposalId && arabicSplit?.customerFacing) {
+      const { error } = await supabase
+        .from("proposals")
+        .update({ itinerary_ar: arabicSplit.customerFacing })
+        .eq("id", proposalId);
+      if (error) console.error("Storing the Arabic draft failed", error.message);
+    }
+
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, (d) => { draftSpend += d; });
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    let proposalUrl: string | null = null;
+
+    // Best-effort: a failure here should never stop the email from going
+    // out, the reviewer can still work from the email content alone if
+    // this doesn't succeed for some reason.
+    try {
+      if (supabase && proposalId) {
+        // The full drafts (still used for the reviewer email above) mix
+        // customer-facing plan with internal-only "Needs a decision" / "For
+        // the planner" sections. Split those apart here: only the
+        // customer-facing half goes into itinerary_en/itinerary_ar, which
+        // the customer's own page renders verbatim once published, the
+        // internal half goes into notes instead, alongside the self-check.
+
+        // Read the machine stop line before anything strips it, so the customer's
+        // page knows which day each stop begins on and can show the first day
+        // of every stop for free.
+        // Prefer the mapping computed from the customer's own night counts.
+        // The model's STOPS line is only the fallback now, for older shapes
+        // and single-stop trips: it used to be the sole source, and when it
+        // came back missing the fallback below recorded firstDay 0 for every
+        // stop, which meant a paying multi-stop customer saw no free day at
+        // all. Anything the form already knows should not depend on
+        // generated text surviving intact.
+
+        const internalNotesParts = [
+          selfCheck ? `AI self-check (read before publishing):\n${selfCheck}` : "",
+          englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
+          arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
+        ].filter(Boolean);
+        const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
+
+        const { error } = await supabase
+          .from("proposals")
+          .update({ notes })
+          .eq("id", proposalId);
+
+        if (error) console.error("Storing the internal notes failed", error.message);
+        {
+          proposalUrl = `${siteUrl}/internal/journeys/${proposalId}`;
           // Written separately, and allowed to fail, rather than included in
           // the insert above. Migrations in this project are applied by hand
           // (see supabase/migrations), so a deploy can reach production
@@ -1121,7 +1157,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
           const { error: costError } = await supabase
             .from("proposals")
             .update({ draft_cost_usd: Number(draftSpend.toFixed(4)) })
-            .eq("id", data.id);
+            .eq("id", proposalId);
           if (costError) console.warn("Draft cost not recorded, has 20260822_add_draft_cost.sql been run?", costError.message);
           else console.log(`Draft ${reference} cost roughly $${draftSpend.toFixed(2)} to produce.`);
         }
