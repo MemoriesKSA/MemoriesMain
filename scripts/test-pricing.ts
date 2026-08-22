@@ -5,17 +5,17 @@ import { applyPaywall } from "../app/journey/paywall";
 const shortPlan = ["Your Riyadh trip", "An overview of the stay.", "Day 1 · Monday", "Breakfast somewhere.", "Day 2 · Tuesday", "Fly home."].join("\n");
 
 const cases: [string, unknown, unknown][] = [
-  ["rate is 20", NIGHT_RATE, 20],
+  ["rate is 15", NIGHT_RATE, 15],
   ["extra stop is 20", EXTRA_STOP_FEE, 20],
 
   // Per night, plus each destination after the first.
-  ["1 night, 1 city", planFee(1, 1), 20],
-  ["5 nights, 1 city", planFee(5, 1), 100],
-  ["7 nights, 2 cities", planFee(7, 2), 160],
-  ["9 nights, 3 cities", planFee(9, 3), 220],
-  ["14 nights, 1 city", planFee(14, 1), 280],
+  ["1 night, 1 city", planFee(1, 1), 15],
+  ["5 nights, 1 city", planFee(5, 1), 75],
+  ["7 nights, 2 cities", planFee(7, 2), 125],
+  ["9 nights, 3 cities", planFee(9, 3), 175],
+  ["14 nights, 1 city", planFee(14, 1), 210],
   // The first destination is never surcharged, only the ones after it.
-  ["one city carries no stop fee", planFee(9, 1), 180],
+  ["one city carries no stop fee", planFee(9, 1), 135],
 
   ["no dates means no fee", planFee(0, 1), 0],
   ["negative nights cannot bill", planFee(-4, 1), 0],

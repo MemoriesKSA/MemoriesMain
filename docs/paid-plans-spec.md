@@ -13,18 +13,18 @@ A complete, personalised trip plan for **one trip with up to three stops**
 inside Saudi Arabia, written to the customer, with the directions to book it
 themselves.
 
-**SAR 20 per night, plus SAR 20 per destination after the first.**
+**SAR 15 per night, plus SAR 20 per destination after the first.**
 
 | Trip | Price |
 |---|---|
-| 3 nights, 1 city | SAR 60 |
-| 5 nights, 1 city | SAR 100 |
-| 7 nights, 2 cities | SAR 160 |
-| 9 nights, 3 cities | SAR 220 |
-| 14 nights, 1 city | SAR 280 |
+| 3 nights, 1 city | SAR 45 |
+| 5 nights, 1 city | SAR 75 |
+| 7 nights, 2 cities | SAR 125 |
+| 9 nights, 3 cities | SAR 175 |
+| 14 nights, 1 city | SAR 210 |
 
 There is deliberately **no minimum**. Priced per night, a one-night trip is
-a small piece of work and costs SAR 20. What protects it from being bought
+a small piece of work and costs SAR 15. What protects it from being bought
 for the free preview alone is the paywall, not a price floor: see section 3.
 
 Per night rather than per destination because it tracks what the customer

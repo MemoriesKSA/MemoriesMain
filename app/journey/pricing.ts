@@ -6,8 +6,8 @@
 // table, which is fine right up until one of them is edited alone and the
 // site quotes two different numbers for the same trip.
 
-/** Per night of the trip. */
-export const NIGHT_RATE = 20;
+/** Per night of the trip. Was 20 until 2026-08-22. */
+export const NIGHT_RATE = 15;
 
 /**
  * Per destination after the first. A second city is a second set of
