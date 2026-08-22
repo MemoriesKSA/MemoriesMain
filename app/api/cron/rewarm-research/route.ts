@@ -97,8 +97,6 @@ export async function GET(request: Request) {
 
   const country = travelCountries.find((c) => c.value === countrySlug);
   const label = country?.cities.find((c) => c.value === target.citySlug)?.en ?? target.citySlug;
-  const from = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
-  const to = new Date(Date.now() + 37 * 86_400_000).toISOString().slice(0, 10);
 
   // A stale row is thrown away rather than resumed. Resuming is right when a
   // run was interrupted; here the whole point is that the facts have aged,
@@ -121,8 +119,11 @@ export async function GET(request: Request) {
       purpose: "leisure",
       travellers: "couple",
       travellerCount: "2",
-      fromDate: from,
-      toDate: to,
+      // Empty on purpose: there is no customer and no trip. The research
+      // prompt asks for year-round answers when it sees no dates, so the
+      // cached notes are not pinned to a window that was never real.
+      fromDate: "",
+      toDate: "",
       transport: ["flights", "private-driver"],
       stays: ["hotel"],
       planIncludes: ["attractions", "restaurants"],

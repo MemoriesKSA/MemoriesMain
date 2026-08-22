@@ -55,14 +55,6 @@ if (!Number.isFinite(CAP) || CAP <= 0) {
   process.exit(1);
 }
 
-// Dates matter to the research only for seasonal questions ("is this open
-// during the trip"). A pre-warm has no customer and no dates, so it asks
-// about a week roughly a month out, which is when people actually travel
-// relative to booking. The cached answer is reused for every later customer
-// regardless, which the research prompt already accounts for.
-const from = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
-const to = new Date(Date.now() + 37 * 86_400_000).toISOString().slice(0, 10);
-
 type Target = { countrySlug: string; citySlug: string; label: string; state: string };
 
 async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
@@ -123,8 +115,11 @@ function submissionFor(countrySlug: string, citySlug: string): DraftGuideSubmiss
     purpose: "leisure",
     travellers: "couple",
     travellerCount: "2",
-    fromDate: from,
-    toDate: to,
+  
+    // year-round instead of pinning itself to an invented window, which
+    // every later draft would then have to reason around.
+    fromDate: "",
+    toDate: "",
     transport: ["flights", "private-driver"],
     stays: ["hotel"],
     planIncludes: ["attractions", "restaurants"],

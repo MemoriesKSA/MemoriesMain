@@ -228,7 +228,7 @@ function buildUserPrompt(submission: DraftGuideSubmission, cityLabel: string, gr
       ].filter(Boolean).join("\n")
     : "";
   const researchSection = operationalResearch
-    ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These may also include review scores or licensing signals for restaurants/rental cars, always keep whatever hedge the note itself uses (an attributed claim like "their website states..." stays attributed, it never becomes a flat "licensed" statement). If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
+    ? `\n\nLive research notes (gathered just now via web search, not a guess, trust these the same as the grounded facts above): hours, seasonal status and ticket pricing for the attractions, real restaurants if our own dining list was thin, real rental car companies if requested, and flight routes if requested. These may also include review scores or licensing signals for restaurants/rental cars, always keep whatever hedge the note itself uses (an attributed claim like "their website states..." stays attributed, it never becomes a flat "licensed" statement). These notes are cached per city and reused, so any trip dates mentioned inside them are whatever window the research happened to be run for, NOT this customer's dates. Read day-of-week and seasonal facts as general ones ("closed Sundays", "summer timetable", "closed for renovation until March") and apply them to the real dates at the top of this brief. Don't re-flag the window difference to the reviewer as though something were wrong, and don't tell the customer which window the research used, that is our plumbing and it means nothing to them. If a genuinely seasonal claim would land differently on these dates, say so as a thing to confirm, not as a mismatch. If a place isn't covered here or the notes are inconclusive after a real search attempt, fall back to flagging it as needing confirmation, or leaving it out of the day plan rather than inventing something:\n${operationalResearch}`
     : "";
   const calendar = dayByDayCalendar(submission.fromDate, submission.toDate);
   return `Customer request summary:
@@ -400,7 +400,15 @@ async function researchOneCategory(
       system: cachedSystem(researchSystemPrompt()),
       messages: [{
         role: "user",
-        content: `City: ${context.cityLabelEn}, ${context.countryName}\nTrip dates being planned: ${context.fromDate} to ${context.toDate}\nTrip style: ${context.purpose}\n\nCategory to research now: ${category.header}\n\n${category.scope(context)}\n\nSearch and report now.`,
+        // A pre-warm has no customer and therefore no real dates. Saying so
+        // beats inventing a window: the answer is stored and reused for
+        // months, so a note pinned to "21-28 September" makes every later
+        // draft either re-apply findings to dates they were never checked
+        // against, or flag the mismatch to the reviewer as though something
+        // had gone wrong. The first Istanbul plan did exactly that.
+        content: `City: ${context.cityLabelEn}, ${context.countryName}\n${context.fromDate && context.toDate
+          ? `Trip dates being planned: ${context.fromDate} to ${context.toDate}`
+          : "No specific trip dates. This research is stored and reused for every later customer, so answer for general year-round use, and say plainly what changes by season, month or day of week rather than fixing on one window."}\nTrip style: ${context.purpose}\n\nCategory to research now: ${category.header}\n\n${category.scope(context)}\n\nSearch and report now.`,
       }],
     }, RESEARCH_REQUEST_OPTIONS).finalMessage();
 
@@ -728,6 +736,7 @@ function buildTranslationSystemPrompt() {
 
 Your only job is faithful translation, not re-drafting:
 - Same hotel pick, same driver pick, same day count, same day order, same activity or meal on each day as the English original. Never swap which day something happens on, never substitute a different hotel, driver, restaurant or attraction than the one named in the English draft, never reorder the days.
+- Keep airport codes exactly as they are, in Latin letters: IST, SAW, RUH, JED. The English draft gives "Istanbul Airport (IST)" and the Arabic dropped the code, which is the one part of that sentence a traveller actually types into a flight search. Same for anything else that is really an identifier rather than a word: booking references, flight numbers, licence numbers, road numbers, tram lines like T1, and the Latin name of a website. Transliterating an identifier makes it useless.
 - For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never invent an Arabic name that contradicts the grounded facts. If a business genuinely has no Arabic name anywhere in the grounded facts, transliterate it into Arabic script the way a Saudi reader would normally say it aloud, and do it for every such name, don't transliterate some and leave others in Latin letters in the middle of an Arabic sentence, that inconsistency is what makes a page look machine-made.
 - Religious terms must be exactly right for a Muslim reader. The Friday congregational prayer is صلاة الجمعة, and on a Friday it takes the place of صلاة الظهر, so never write صلاة الظهر for it even if the English says something loose like "Friday midday prayer". Translate the meaning correctly, not the English word by word.
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
