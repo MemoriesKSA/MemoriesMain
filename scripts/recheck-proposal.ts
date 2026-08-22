@@ -120,7 +120,7 @@ async function main() {
     fromDate: String(data.from_date ?? ""),
     toDate: String(data.to_date ?? ""),
   } as DraftGuideSubmission;
-  const customerRequest = customerRequestForCheck(submission, String(data.city));
+  const customerRequest = customerRequestForCheck(submission, String(data.city), guides.map((g) => g.label));
 
   console.log(`${reference}  ${data.city}  ${data.from_date} to ${data.to_date}`);
   console.log(`stops: ${slugs.join(", ")}  ·  research ${operationalResearch.length} chars  ·  en ${(data.itinerary_en ?? "").length}  ar ${(data.itinerary_ar ?? "").length}`);

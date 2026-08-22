@@ -269,10 +269,18 @@ Draft the day-by-day sketch now.`;
  * Deliberately only the customer-stated fields. Nothing here is evidence that
  * a PLACE is real, which is the thing the check exists to police.
  */
-export function customerRequestForCheck(submission: DraftGuideSubmission, cityLabel: string): string {
+export function customerRequestForCheck(submission: DraftGuideSubmission, cityLabel: string, stopLabels: string[] = []): string {
+  // A multi-stop trip's night split is the customer's own choice, and the day
+  // each stop begins on follows from it arithmetically. Without this the check
+  // can see the draft put Cappadocia on Day 6 and has no way to tell whether
+  // that is right, which is precisely the sum a drafting pass gets wrong.
+  const plan = stopDayPlan(stopLabels, submission.stopNights ?? []);
   return [
     `Name: ${submission.name}`,
     `Destination: ${cityLabel}, ${submission.countryName ?? ""}`,
+    plan.length
+      ? `Stops in order, with the nights the customer chose and the day numbers those produce: ${plan.map((s) => `${s.label}, ${s.nights} nights, ${s.range}`).join("; ")}`
+      : "",
     `Trip dates: ${submission.fromDate} to ${submission.toDate}`,
     `Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}`,
     `Purpose / style: ${readable(submission.purpose)}`,
@@ -284,7 +292,7 @@ export function customerRequestForCheck(submission: DraftGuideSubmission, cityLa
     `Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}`,
     `Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}`,
     `Customer notes: ${submission.packageNotes || "none"}`,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 // Runs before the draft is written, so the draft cites live findings instead
@@ -1228,7 +1236,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
 
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, dayByDayCalendar(submission.fromDate, submission.toDate), customerRequestForCheck(submission, cityLabelEn), (d) => { draftSpend += d; });
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, dayByDayCalendar(submission.fromDate, submission.toDate), customerRequestForCheck(submission, cityLabelEn, stopLabelsEn), (d) => { draftSpend += d; });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;
