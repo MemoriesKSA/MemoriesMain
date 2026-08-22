@@ -958,7 +958,7 @@ export function readSelfCheckVerdict(selfCheck: string): { clean: boolean; body:
   return { clean: false, body: text };
 }
 
-function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
+export function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
   // An absent Arabic half has to announce itself. Silence here reads as "no
   // Arabic was needed" rather than "the translation was thrown away for

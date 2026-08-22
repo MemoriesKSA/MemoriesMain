@@ -60,3 +60,44 @@ for (const [name, got, want] of cases) {
 }
 console.log(`\n${pass}/${cases.length} passed`);
 if (pass !== cases.length) process.exit(1);
+
+// The banner itself. The whole point of the verdict token is the colour the
+// reviewer sees, and nothing tested that the CLEAN path actually paints
+// green - the one thing they look at before reading a word.
+import { wrapEmailHtml } from "../app/draft-guide";
+
+const GREEN_BG = "#f2f8f5";
+const YELLOW_BG = "#fdf6e8";
+const emailFor = (selfCheck: string) =>
+  wrapEmailHtml("ABC12345", "Istanbul → Cappadocia", "Habib", "Day 1 — arrive", "اليوم 1", selfCheck, "https://memories.tours/x");
+
+const cleanEmail = emailFor("VERDICT: CLEAN");
+const issuesEmail = emailFor("VERDICT: ISSUES\n- the fountain hours dropped their hedge");
+const narratedEmail = emailFor(jeddahNarrated);
+
+const bannerCases: [string, unknown, unknown][] = [
+  ["a clean verdict paints the banner green", cleanEmail.includes(GREEN_BG), true],
+  ["and never the warning colour", cleanEmail.includes(YELLOW_BG), false],
+  ["and is labelled CLEAN", cleanEmail.includes("SECOND PASS · CLEAN"), true],
+  ["and says so in a full sentence, not the raw token", cleanEmail.includes("No issues found."), true],
+  ["and never shows the token itself", cleanEmail.includes("VERDICT:"), false],
+
+  ["an issues verdict paints the banner yellow", issuesEmail.includes(YELLOW_BG), true],
+  ["and is labelled as needing a look", issuesEmail.includes("NEEDS A LOOK"), true],
+  ["and shows the finding", issuesEmail.includes("dropped their hedge"), true],
+  ["and strips the token from the body", issuesEmail.includes("VERDICT:"), false],
+
+  ["a narrated clean result still warns rather than reassures", narratedEmail.includes(YELLOW_BG), true],
+
+  // An ISSUES verdict with no bullets must not render an empty warning box.
+  ["an empty finding list still says something", emailFor("VERDICT: ISSUES").includes("gave no detail"), true],
+];
+
+let bannerPass = 0;
+for (const [name, got, want] of bannerCases) {
+  const ok = got === want;
+  if (ok) bannerPass++;
+  console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : `  got=${JSON.stringify(got)} want=${JSON.stringify(want)}`}`);
+}
+console.log(`\n${bannerPass}/${bannerCases.length} banner checks passed`);
+if (bannerPass !== bannerCases.length) process.exit(1);
