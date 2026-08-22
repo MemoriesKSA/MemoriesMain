@@ -542,6 +542,45 @@ export const RESEARCH_DEADLINE_MS = 4 * 60 * 1000;
 // published rates and will drift, so treat the printed figure as an order of
 // magnitude rather than an invoice.
 const OPUS_IN_PER_M = 5;
+const SONNET_IN_PER_M = 3;
+const SONNET_OUT_PER_M = 15;
+// Cached input reads at a tenth of the input rate and writing to the cache
+// costs a quarter more than reading fresh. Worth modelling rather than
+// folding into one number: this pipeline caches every system prompt, so
+// treating a cached read as full price would overstate every figure.
+const CACHE_READ_MULTIPLIER = 0.1;
+const CACHE_WRITE_MULTIPLIER = 1.25;
+
+/**
+ * What one API call cost, in dollars at list prices. An estimate, not an
+ * invoice - the rates drift and this does not know about discounts - but
+ * accurate enough to notice a call that cost ten times what it should,
+ * which is the entire job. Before this existed, "what did that cost" could
+ * only be answered by arithmetic on the pricing page, and a $15 mistake went
+ * unnoticed until the bill.
+ */
+function messageSpend(response: Anthropic.Message, inPerM: number, outPerM: number): number {
+  const usage = response.usage as Anthropic.Usage & {
+    server_tool_use?: { web_search_requests?: number };
+    cache_read_input_tokens?: number | null;
+    cache_creation_input_tokens?: number | null;
+  };
+  return (
+    (usage.input_tokens / 1_000_000) * inPerM +
+    ((usage.cache_read_input_tokens ?? 0) / 1_000_000) * inPerM * CACHE_READ_MULTIPLIER +
+    ((usage.cache_creation_input_tokens ?? 0) / 1_000_000) * inPerM * CACHE_WRITE_MULTIPLIER +
+    (usage.output_tokens / 1_000_000) * outPerM +
+    ((usage.server_tool_use?.web_search_requests ?? 0) / 1_000) * SEARCH_PER_K
+  );
+}
+
+export function opusSpend(response: Anthropic.Message): number {
+  return messageSpend(response, OPUS_IN_PER_M, OPUS_OUT_PER_M);
+}
+
+export function sonnetSpend(response: Anthropic.Message): number {
+  return messageSpend(response, SONNET_IN_PER_M, SONNET_OUT_PER_M);
+}
 const OPUS_OUT_PER_M = 25;
 const SEARCH_PER_K = 10;
 
@@ -565,10 +604,7 @@ function logResearchSpend(cityLabelEn: string, response: Anthropic.Message): num
   const cached = usage.cache_read_input_tokens ?? 0;
   const fresh = usage.input_tokens;
   const out = usage.output_tokens;
-  const dollars =
-    (fresh / 1_000_000) * OPUS_IN_PER_M +
-    (out / 1_000_000) * OPUS_OUT_PER_M +
-    (searches / 1_000) * SEARCH_PER_K;
+  const dollars = opusSpend(response);
   console.log(
     `Research for ${cityLabelEn}: ${searches} searches, ${fresh} input tokens` +
     `${cached ? ` (+${cached} cached)` : ""}, ${out} output. Roughly $${dollars.toFixed(2)}.`,
@@ -642,7 +678,7 @@ async function retryOnDroppedConnection<T>(label: string, run: () => Promise<T>)
   }
 }
 
-async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string, stopLabels: string[] = []): Promise<string> {
+async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuideSubmission, cityLabelEn: string, groundedFactsEn: string, operationalResearch: string, stopLabels: string[] = [], onSpend?: (dollars: number) => void): Promise<string> {
   // Streamed, not because anything watches the stream, but because a
   // non-streaming request this size can outlive the SDK's own request
   // timeout. finalMessage() still gives the whole message back.
@@ -658,6 +694,7 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     system: cachedSystem(buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
   }, STREAM_REQUEST_OPTIONS).finalMessage());
+  onSpend?.(opusSpend(response));
   assertNotTruncated(response, "The English draft");
   const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlock?.text?.trim() ?? "";
@@ -691,7 +728,7 @@ ${englishDraft}
 Translate now.`;
 }
 
-async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string, groundedFactsAr: string): Promise<string> {
+async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string, groundedFactsAr: string, onSpend?: (dollars: number) => void): Promise<string> {
   if (!englishDraft) return "";
   try {
     const response = await retryOnDroppedConnection("The Arabic translation", () => anthropic.messages.stream({
@@ -717,6 +754,7 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
     // absent translation is obvious to the reviewer and harmless to the
     // customer's page, whereas one that stops mid-sentence on day eleven
     // looks finished until somebody reads to the end.
+    onSpend?.(opusSpend(response));
     assertNotTruncated(response, "The Arabic translation");
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
     return textBlock?.text?.trim() ?? "";
@@ -742,7 +780,7 @@ Check for, and only for:
 Output format: if you find genuine issues, a short plain-text bullet list, one line each, specific enough the reviewer can act on it. If you find nothing wrong, output exactly this line and nothing else: "No issues found, the translation is faithful and both are consistent with the grounded facts and research notes." Don't manufacture issues to seem thorough, only flag real problems you can point to.`;
 }
 
-async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string): Promise<string> {
+async function selfCheckDraft(anthropic: Anthropic, englishDraft: string, arabicDraft: string, groundedFactsEn: string, groundedFactsAr: string, operationalResearch: string, onSpend?: (dollars: number) => void): Promise<string> {
   try {
     if (!englishDraft && !arabicDraft) return "";
 
@@ -918,6 +956,11 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       return;
     }
 
+    // Totalled across all four stages and stored on the proposal, so what a
+    // draft cost is a column somebody can look at rather than a question for
+    // whoever reads the bill.
+    let draftSpend = 0;
+
     const stopLabelsEn = resolved.map((s) => s.option?.en ?? readable(s.slug));
     const stopLabelsAr = resolved.map((s) => s.option?.ar ?? s.option?.en ?? readable(s.slug));
     const multiStop = resolved.length > 1;
@@ -953,7 +996,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       const cached = supabase ? await getCachedResearch(supabase, stop.slug) : null;
       if (cached && !cached.stale) return { label: stopLabelsEn[i], notes: cached.notes };
       const fresh = await researchOperationalFacts(
-        anthropic, stop.guide, submission, stopLabelsEn[i], undefined,
+        anthropic, stop.guide, submission, stopLabelsEn[i], (d) => { draftSpend += d; },
         // Whatever is already stored is reused rather than re-bought: a
         // stale row is usually stale in one category, not all of them.
         cached?.raw ?? "",
@@ -979,10 +1022,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       .filter((r) => r.notes)
       .map((r) => (multiStop ? `--- RESEARCH FOR ${r.label} ---\n${r.notes}` : r.notes))
       .join("\n\n");
-    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn);
+    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn, (d) => { draftSpend += d; });
     if (!englishDraft) return;
-    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr);
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch);
+    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, (d) => { draftSpend += d; });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;
@@ -1048,7 +1091,22 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
           .single();
 
         if (error) console.error("Auto-create proposal failed", error.message);
-        else if (data) proposalUrl = `${siteUrl}/internal/journeys/${data.id}`;
+        else if (data) {
+          proposalUrl = `${siteUrl}/internal/journeys/${data.id}`;
+          // Written separately, and allowed to fail, rather than included in
+          // the insert above. Migrations in this project are applied by hand
+          // (see supabase/migrations), so a deploy can reach production
+          // before the column exists. In the insert that would fail the whole
+          // row and take every draft down; here the worst case is a plan that
+          // arrives without a cost recorded, which is what happened before
+          // this column existed anyway.
+          const { error: costError } = await supabase
+            .from("proposals")
+            .update({ draft_cost_usd: Number(draftSpend.toFixed(4)) })
+            .eq("id", data.id);
+          if (costError) console.warn("Draft cost not recorded, has 20260822_add_draft_cost.sql been run?", costError.message);
+          else console.log(`Draft ${reference} cost roughly $${draftSpend.toFixed(2)} to produce.`);
+        }
       }
     } catch (error) {
       console.error("Auto-create proposal failed", error);
