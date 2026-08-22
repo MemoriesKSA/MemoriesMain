@@ -972,7 +972,9 @@ function wrapEmailHtml(reference: string, cityLabel: string, customerName: strin
   // green always looks the same and is read in a glance.
   const selfCheckText = isClean
     ? (selfCheckBody || "No issues found. The translation is faithful and both versions are consistent with the grounded facts and research notes.")
-    : selfCheckBody;
+    // A verdict of ISSUES with nothing under it would otherwise render as an
+    // empty warning box, which tells the reviewer to worry and not about what.
+    : (selfCheckBody || "The check flagged this draft but gave no detail. Read it through yourself before publishing.");
   const selfCheckSection = selfCheck
     ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS${isClean ? " · CLEAN" : " · NEEDS A LOOK"}</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheckText)}</div></div>`
     : "";

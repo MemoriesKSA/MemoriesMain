@@ -44,9 +44,12 @@ const submission = {
 const request = customerRequestForCheck(submission, "Istanbul → Cappadocia", ["Istanbul", "Cappadocia"]);
 const prompt = buildSelfCheckSystemPrompt();
 
-// A single-stop trip must not grow a stops line out of nowhere.
+// A single-stop trip must not grow a stops line out of nowhere. Built by
+// dropping stopNights entirely rather than setting it undefined, because
+// that is the shape a one-city submission actually arrives in.
+const { stopNights: _dropped, ...withoutNights } = submission;
 const soloRequest = customerRequestForCheck(
-  { ...submission, stops: ["istanbul"], stopNights: undefined } as DraftGuideSubmission,
+  { ...withoutNights, stops: ["istanbul"] } as DraftGuideSubmission,
   "Istanbul",
   ["Istanbul"],
 );
