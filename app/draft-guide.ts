@@ -326,7 +326,19 @@ export async function researchOperationalFacts(anthropic: Anthropic, guide: Flag
     // to spend half the search budget on.
     const halalScope = `\n- How straightforward halal food is in ${cityLabelEn}, in a few lines. Say plainly whether it is the default (a Muslim-majority country) or something to seek out, name the districts, markets or restaurants where it clusters if it is the latter, and name 2-3 specific places that are genuinely halal, halal-certified or otherwise safe (a seafood or vegetarian kitchen counts, say which it is). If pork or alcohol are common on ordinary menus, say so plainly, that is useful rather than rude. Then the practical side of prayer: the main mosque or mosques visitors actually use, with the district, and any prayer room at the airport or main sights if that is documented. Report only what you find, and don't certify anything yourself, "listed as halal-certified by X" and "widely described as halal" are different claims and should stay different.`;
 
-    const response = await anthropic.messages.create({
+    // Streamed for the same reason the drafts are, and this call needed it
+    // more than they did: it is the longest request in the pipeline. While
+    // the server runs up to 45 searches the connection has nothing to carry,
+    // and an idle HTTP connection held open for ten or fifteen minutes gets
+    // closed by something in the middle. That is what killed Cappadocia
+    // twice - not the token ceiling, not the timeout, just silence on the
+    // wire. The server finishes and bills either way, so a dropped
+    // connection here is money spent for nothing.
+    //
+    // The note above generateEnglishDraft already said this: "a
+    // non-streaming request this size can outlive the SDK's own request
+    // timeout". The research call was left on messages.create anyway.
+    const response = await anthropic.messages.stream({
       model: "claude-opus-5",
       // Raised from 6000 when private drivers became a fourth researched
       // category. Nothing checks this call for truncation the way the draft
@@ -349,7 +361,7 @@ Scope, stay inside it. Do the categories below in this order, so the ones most l
         role: "user",
         content: `Trip dates: ${submission.fromDate} to ${submission.toDate}\nTrip purpose/style: ${readable(submission.purpose)}\nAttractions to check: ${attractionNames}${needsDining ? `\nAlso find real restaurants, our curated list is thin for this city.` : ""}${needsDrivers ? `\nAlso find real private-driver, chauffeur and airport-transfer companies, we hold none of our own for this city.` : ""}${needsMoreSights ? `\nAlso find more real things to do beyond the ${guide.attractions.length} listed above, including day trips, since a long stay here has to be filled with real places.` : ""}${wantsRentalCar ? `\nAlso find real rental car companies, the customer requested one.` : ""}${wantsFlights ? `\nAlso check general airline/route info for reaching ${cityLabelEn} (no times or prices).` : ""}\n\nSearch and report now.`,
       }],
-    }, RESEARCH_REQUEST_OPTIONS);
+    }, RESEARCH_REQUEST_OPTIONS).finalMessage();
 
     onSpend?.(logResearchSpend(cityLabelEn, response));
 
