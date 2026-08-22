@@ -439,6 +439,11 @@ export async function researchOperationalFacts(
   existing = "",
   onCategory?: (notesSoFar: string) => Promise<void>,
   deadlineAt?: number,
+  // Asked between categories; return a reason to stop, or null to continue.
+  // The pre-warm script uses it for a dollar cap, which its own loop could
+  // only check between cities - no protection at all when one city is the
+  // whole run, which is exactly the shape that spent $20 on Cappadocia.
+  shouldStop?: () => string | null,
 ): Promise<string> {
   if (!guide.attractions.length) return existing;
 
@@ -457,6 +462,11 @@ export async function researchOperationalFacts(
 
   let notes = existing;
   for (const category of todo) {
+    const stopReason = shouldStop?.();
+    if (stopReason) {
+      console.warn(`Research for ${cityLabelEn} stopped: ${stopReason}. What is already stored stays, and a re-run resumes from there.`);
+      break;
+    }
     // Checked between categories, never mid-call: a category already paid
     // for is always allowed to finish and be stored.
     if (deadlineAt && Date.now() > deadlineAt) {

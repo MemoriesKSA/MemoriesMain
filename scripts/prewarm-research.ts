@@ -191,7 +191,15 @@ async function main() {
     // shape this exists to prevent.
     const { data: row } = await supabase.from("city_research_cache").select("research_notes, curated").eq("city_slug", t.citySlug).maybeSingle();
     if (row?.curated) { console.log("skip: curated, hand-written research is never overwritten"); continue; }
-    const existing = row?.research_notes ? readScopeVersion(row.research_notes as string).notes : "";
+    // Only resume notes written under the CURRENT scope. Notes from an older
+    // one have no category markers, so categoriesPresent reads them as
+    // "nothing done", every category gets researched again, and the old text
+    // would be kept underneath the new - a doubled blob, half of it stale,
+    // handed to the drafting pass as though it were one answer.
+    const stored = (row?.research_notes as string | null) ?? "";
+    const sameScope = stored ? readScopeVersion(stored).version === RESEARCH_SCOPE_VERSION : false;
+    const existing = sameScope ? readScopeVersion(stored).notes : "";
+    if (stored && !sameScope) console.log("previous notes are from an older research scope, starting fresh");
     const had = categoriesPresent(existing);
     if (had.size) console.log(`resuming: already have ${[...had].join(", ")}`);
 
@@ -201,6 +209,11 @@ async function main() {
       // Written after every category rather than once at the end, so an
       // interrupted city keeps what it managed.
       async (soFar) => { await cacheResearch(supabase, t.citySlug, soFar); },
+      undefined,
+      // The cap, enforced between categories rather than between cities.
+      // Checking it in this loop alone was useless for a single-city run,
+      // which is how Cappadocia managed to cost $20 under a $6 cap.
+      () => (spent >= CAP ? `$${spent.toFixed(2)} spent, cap is $${CAP}` : null),
     );
 
     // Comes back unchanged when the first category failed. Everything
