@@ -212,6 +212,9 @@ THE ACCURACY RULES ARE THE SAME AS EVER, and they matter more here than on a hol
 - Every figure carries where it came from and how current it is, exactly as the notes give it. "The university's own 2026 estimate", "a 2025 government page". If the notes say a figure is undated or two sources disagree, say that in your own sentence rather than picking one and sounding certain.
 - Never state a visa rule as settled fact. Entry and student-visa rules change without notice, they differ by passport, and the research is a snapshot. Write what the current published route appears to be, attribute it, and tell them plainly to confirm with the embassy or the official portal before they act on it. This is the single most damaging thing in the document to get wrong.
 - Never promise an admission outcome, a visa outcome, or a scholarship outcome. Say what the requirements are and what makes an application competitive; the decision is never ours.
+- Never promise an ACTION EITHER. You are writing a plan, not scheduling work, and nobody reads this document and then does what it said we would. A real Manchester draft told a customer "we will write to pgt.compsci@manchester.ac.uk on your behalf", "you will get that as a short addendum" and "we are running a second, dedicated pass". None of that was scheduled or true, and every one of them is a commitment made to a customer in our name that only a human can honour. So: no "we will contact", no "we are running", no "comes to you as an addendum", no "before departure we will", no timeline for a thing we have not done.
+  What to write instead, when the research genuinely did not cover something: say plainly in the customer's plan that this part is not covered here and why it matters, with no undertaking attached. Then put the follow-up in "Team to confirm before booking" as an instruction to a colleague, naming exactly what to chase and where. That way the gap is visible to the customer, the work is assigned to a person who can actually decide whether to do it, and we have promised nothing we might not deliver.
+  Being honest about a gap is right and you should keep doing it. Covering the gap with a promise is what turns an honest draft into one that creates an obligation nobody agreed to.
 - No unsourced superlative or ranking. "One of the world's top universities" is a checkable claim; "consistently placed in the UK's top ten for engineering by [named source]" is a sourced one. If the notes do not rank it, describe what it is actually known for instead.
 - Don't interpolate between two sourced figures and state the result as fact, and don't state a star rating, a score or a cost you were not given.
 
@@ -252,6 +255,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - When they asked for flights, give them a short "Getting there" block in the overview that makes the search easy for them, since they are the ones booking it. Include, and only from the grounded facts or research notes: which airport to fly into and its code; which airlines serve it; and, for a city with no major airport of its own, the realistic routing (e.g. AlUla is normally reached by connecting through Riyadh or Jeddah, Makkah has no airport and is reached via Jeddah). Tell them plainly what to type into a booking site, e.g. "search Cairo to RUH".
 - Their stated departure city is in the request summary. Use it to make that guidance concrete, but be careful about one thing: unless the research notes actually say a direct route exists from THAT city, do not claim one. Say instead that it's worth checking for a direct option and, if there isn't one, that they'd connect through the hub the notes name. You know which airlines serve the destination; you do not know their schedule from an arbitrary origin, and guessing it would be exactly the kind of confident, checkable, wrong claim that does us the most damage.
 - Never invent a flight number, a departure time, a duration or a fare, in any circumstance, even if it would make the plan feel more complete. Flights are the one part of this plan where we hand them the search and let them book it.
+- Don't commit us to work nobody has scheduled. You are writing a plan, not assigning tasks, and no one reads this document afterwards and does what it said we would. So no "we'll call ahead and confirm", no "we're checking that and will send it over", no "your final list follows before you travel". Where something genuinely isn't covered, say so plainly to the customer with no undertaking attached, and put the chase-up in "Team to confirm before booking" as an instruction to a colleague. Saying "we'll happily reprice it if you'd rather have the other hotel" is fine, because that is us responding to a choice they make; inventing a piece of research we will deliver by a date is not.
 - If they stated a preferred flight timing (daytime or night), acknowledge it in that block as something to filter for when they search, e.g. "you said you'd rather fly at night, so filter for late departures". Never claim a specific night flight exists on their route unless the notes say so.
 - A hedge word you use anywhere in this draft (e.g. "typically", "positioned as", "worth confirming") must stay attached to that same claim EVERY time you reference it again, including in the closing "For the planner" section. Don't state something with a hedge once and then restate it as settled fact later in the same draft, that's as much a mistake as never hedging it at all.
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
@@ -588,14 +592,14 @@ const CATEGORY_MARKER = /^##cat:([a-z]+)$/gm;
  * Resuming is cheap: whatever is stored is kept and only the missing
  * categories are bought.
  */
-export function researchIsComplete(guide: FlagshipCityGuide, notes: string): boolean {
+export function researchIsComplete(guide: FlagshipCityGuide | undefined, notes: string, isStudy = false): boolean {
   const present = categoriesPresent(notes);
-  return categoriesFor(guide).every((c) => present.has(c.key));
+  return categoriesFor(guide, isStudy).every((c) => present.has(c.key));
 }
 
-export function missingCategories(guide: FlagshipCityGuide, notes: string): string[] {
+export function missingCategories(guide: FlagshipCityGuide | undefined, notes: string, isStudy = false): string[] {
   const present = categoriesPresent(notes);
-  return categoriesFor(guide).filter((c) => !present.has(c.key)).map((c) => c.key);
+  return categoriesFor(guide, isStudy).filter((c) => !present.has(c.key)).map((c) => c.key);
 }
 
 export function categoriesPresent(notes: string): Set<string> {

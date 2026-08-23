@@ -37,7 +37,7 @@ import {
 } from "../app/draft-guide";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { flagshipCityKeys, flagshipCityGuideBySlug } from "../app/flagship-city-data";
-import { travelCountries } from "../app/components/planner-data";
+import { travelCountries, studyCountries } from "../app/components/planner-data";
 
 const args = process.argv.slice(2);
 const has = (flag: string) => args.includes(flag);
@@ -62,6 +62,16 @@ const TIER = valueOf("--tier");
 //
 // Only ever with --only, so this can never be pointed at everything at once.
 const FORCE = has("--force");
+// Warms the study cities instead of the tourism ones. They are a separate
+// world: none is in the flagship data, their notes live under a "study:" key
+// so a study city and a tourism city of the same name cannot collide, and
+// they research four categories of their own rather than the trip seven.
+//
+// It matters more here than for a trip. Four study categories cannot fit the
+// in-request research deadline, so a cold study city produces a plan missing
+// housing and halal entirely - which is exactly what the first real Manchester
+// draft did.
+const STUDY = has("--study");
 const PAUSE_MS = 2000;
 
 if (!Number.isFinite(CAP) || CAP <= 0) {
@@ -84,13 +94,20 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
   const warm: Target[] = [];
   const cold: Target[] = [];
 
-  for (const { countrySlug, citySlug } of flagshipCityKeys()) {
+  const cityKeys = STUDY
+    ? studyCountries.flatMap((c) => c.cities.filter((city) => !city.value.startsWith("other-")).map((city) => ({ countrySlug: c.value, citySlug: city.value })))
+    : flagshipCityKeys();
+
+  for (const { countrySlug, citySlug } of cityKeys) {
     if (ONLY && !ONLY.includes(citySlug)) continue;
     if (TIER === "saudi" && countrySlug !== "saudi-arabia") continue;
     if (TIER === "abroad" && countrySlug === "saudi-arabia") continue;
 
-    const label = travelCountries.find((c) => c.value === countrySlug)?.cities.find((c) => c.value === citySlug)?.en ?? citySlug;
-    const row = rows.get(citySlug);
+    const countryList = STUDY ? studyCountries : travelCountries;
+    const label = countryList.find((c) => c.value === countrySlug)?.cities.find((c) => c.value === citySlug)?.en ?? citySlug;
+    // Study notes are namespaced so they cannot collide with a tourism city
+    // of the same name, which Tokyo already is.
+    const row = rows.get(STUDY ? `study:${citySlug}` : citySlug);
     const target = (state: string): Target => ({ countrySlug, citySlug, label, state });
 
     if (!row) { cold.push(target("never cached")); continue; }
@@ -105,7 +122,9 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
     const guide = flagshipCityGuideBySlug(countrySlug, citySlug);
     // A city researched inside a customer request only gets the categories
     // that fit the in-request deadline, and then looked "fresh" forever.
-    const missing = guide ? missingCategories(guide, readScopeVersion(row.research_notes as string).notes) : [];
+    // A study city has no guide at all and is measured against the study set.
+    const storedNotes = readScopeVersion(row.research_notes as string).notes;
+    const missing = STUDY ? missingCategories(undefined, storedNotes, true) : guide ? missingCategories(guide, storedNotes) : [];
     if (version !== RESEARCH_SCOPE_VERSION) cold.push(target(`scope v${version}, now v${RESEARCH_SCOPE_VERSION}`));
     else if (expired) cold.push(target(`past ${RESEARCH_CACHE_TTL_DAYS} days`));
     else if (missing.length) cold.push(target(`incomplete, missing ${missing.join(", ")}`));
@@ -131,7 +150,39 @@ async function apiIsReachable(anthropic: Anthropic): Promise<string | null> {
 }
 
 function submissionFor(countrySlug: string, citySlug: string): DraftGuideSubmission {
-  const country = travelCountries.find((c) => c.value === countrySlug);
+  const country = (STUDY ? studyCountries : travelCountries).find((c) => c.value === countrySlug);
+  if (STUDY) {
+    // A warm study city is researched for the general case, since the notes
+    // are reused by every later student in that city. No named university and
+    // no named field: those narrow the research to one applicant, and the
+    // next one reading this cache will have a different answer to both. The
+    // level is the one thing that genuinely changes what is researched, so
+    // master's is used as the middle case rather than left blank.
+    return {
+      submissionId: `prewarm-study-${citySlug}`,
+      city: citySlug,
+      countrySlug,
+      countryName: country?.en ?? countrySlug,
+      stops: [citySlug],
+      journeyType: "study",
+      purpose: "master",
+      saudiCitizen: "yes",
+      hasSpecificField: "no",
+      hasSpecificUniversity: "no",
+      studySupport: "complete",
+      travellers: "solo",
+      travellerCount: "1",
+      fromDate: "",
+      toDate: "",
+      transport: ["flights"],
+      stays: ["student-stay"],
+      planIncludes: [],
+      currency: "SAR",
+      name: "Pre-warm (no customer)",
+      email: "mixedhopes2022@gmail.com",
+      phone: "+966500000000",
+    } as unknown as DraftGuideSubmission;
+  }
   return {
     submissionId: `prewarm-${citySlug}`,
     city: citySlug,
@@ -202,7 +253,8 @@ async function main() {
     }
 
     const guide = flagshipCityGuideBySlug(t.countrySlug, t.citySlug);
-    if (!guide) { console.log(`skip ${t.citySlug}: no city data`); continue; }
+    // A study city has no guide by design, so only a tourism city needs one.
+    if (!STUDY && !guide) { console.log(`skip ${t.citySlug}: no city data`); continue; }
 
     console.log(`\n--- ${t.label} (${t.countrySlug}) ---`);
 
@@ -210,7 +262,8 @@ async function main() {
     // that failed halfway last time pays only for the categories it still
     // needs. Cappadocia failed three times and kept nothing; that is the
     // shape this exists to prevent.
-    const { data: row } = await supabase.from("city_research_cache").select("research_notes, curated").eq("city_slug", t.citySlug).maybeSingle();
+    const cacheKey = STUDY ? `study:${t.citySlug}` : t.citySlug;
+    const { data: row } = await supabase.from("city_research_cache").select("research_notes, curated").eq("city_slug", cacheKey).maybeSingle();
     if (row?.curated) { console.log("skip: curated, hand-written research is never overwritten"); continue; }
     // Only resume notes written under the CURRENT scope. Notes from an older
     // one have no category markers, so categoriesPresent reads them as
@@ -230,7 +283,7 @@ async function main() {
       existing,
       // Written after every category rather than once at the end, so an
       // interrupted city keeps what it managed.
-      async (soFar) => { await cacheResearch(supabase, t.citySlug, soFar); },
+      async (soFar) => { await cacheResearch(supabase, cacheKey, soFar); },
       undefined,
       // The cap, enforced between categories rather than between cities.
       // Checking it in this loop alone was useless for a single-city run,
@@ -246,14 +299,14 @@ async function main() {
     //
     // A city that needs nothing is a success. Only a city that still has gaps
     // and gained nothing is a wall worth stopping at.
-    if (notes && researchIsComplete(guide, notes)) {
+    if (notes && researchIsComplete(guide, notes, STUDY)) {
       done++;
       console.log(`nothing to do: already holds all ${categoriesPresent(notes).size} categories it needs.`);
       if (done < cold.length) await new Promise((r) => setTimeout(r, PAUSE_MS));
       continue;
     }
     if (!notes || notes === existing) {
-      console.error(`\nStopping: research for ${t.label} added nothing and is still missing ${missingCategories(guide, notes).join(", ")}. Check the error above.`);
+      console.error(`\nStopping: research for ${t.label} added nothing and is still missing ${missingCategories(guide, notes, STUDY).join(", ")}. Check the error above.`);
       break;
     }
 

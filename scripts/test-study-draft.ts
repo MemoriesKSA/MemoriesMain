@@ -12,7 +12,7 @@
 // This asserts the wiring, since the writing itself is a model output and
 // belongs in a real end-to-end run.
 
-import { categoriesFor, buildStudySystemPrompt, type DraftGuideSubmission } from "../app/draft-guide";
+import { categoriesFor, buildStudySystemPrompt, missingCategories, researchIsComplete, type DraftGuideSubmission } from "../app/draft-guide";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 import { studyCountries } from "../app/components/planner-data";
 
@@ -79,12 +79,38 @@ const cases: [string, unknown, unknown][] = [
   ["it keeps the internal headings our tooling parses", /Team to confirm before booking/.test(prompt), true],
 ];
 
+
+// A study city is measured for completeness against the STUDY categories, not
+// the trip ones, and has no guide to measure against. The first real study
+// draft ran cold and got two of four categories - universities and the visa
+// route - so it published with no housing and no halal detail at all. It was
+// honest about the gap, which is right, but the gap should not have been
+// there: four categories cannot fit the in-request research deadline, so
+// study cities need warming ahead of time like any other.
+
+const partial = "##cat:universities\n...\n##cat:studyvisa\n...";
+const full = "##cat:universities\n.\n##cat:studyvisa\n.\n##cat:living\n.\n##cat:studentlife\n.";
+
+const warmCases: [string, unknown, unknown][] = [
+  ["the real Manchester shape is incomplete", researchIsComplete(undefined, partial, true), false],
+  ["and names exactly what is missing", missingCategories(undefined, partial, true).join(","), "living,studentlife"],
+  ["all four categories is complete", researchIsComplete(undefined, full, true), true],
+  ["with nothing left to buy", missingCategories(undefined, full, true).length, 0],
+  ["empty notes need all four", missingCategories(undefined, "", true).length, 4],
+  // Measured against the wrong set, a study city would look complete on
+  // categories it never researched, which is how it read as fresh before.
+  ["study notes are NOT judged by the trip categories", researchIsComplete(undefined, full, false), true],
+];
+
+// One run, one exit code. Kept together deliberately: an early exit after the
+// first block would have skipped every warming check and still reported a pass.
+const all = [...cases, ...warmCases];
 let pass = 0;
-for (const [name, got, want] of cases) {
+for (const [name, got, want] of all) {
   const ok = got === want;
   if (ok) pass++;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : `  got=${JSON.stringify(got)} want=${JSON.stringify(want)}`}`);
 }
 if (studyCityWithData.length) console.log("\nunexpectedly has flagship data:", studyCityWithData.join(", "));
-console.log(`\n${pass}/${cases.length} passed  ·  study researches: ${studyCats.join(", ")}`);
-if (pass !== cases.length) process.exit(1);
+console.log(`\n${pass}/${all.length} passed  ·  study researches: ${studyCats.join(", ")}`);
+if (pass !== all.length) process.exit(1);
