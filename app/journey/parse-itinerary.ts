@@ -177,7 +177,17 @@ export function splitDraftForStorage(text: string): { customerFacing: string; in
   }
 
   return {
-    customerFacing: customer.join("\n").trim(),
+    // Belt and braces on the machine lines. STOPS / PICKS / PLACES are written
+    // after "For the planner", so the heading rules above already land them in
+    // the internal half. But a draft that forgets the heading, or writes one a
+    // line early, would print "PICKS: Jodd Fairs Ratchada | ..." straight at
+    // the customer. They are tooling, so strip them from the customer half
+    // wherever they ended up, and never from the internal half, which is where
+    // they are read back from.
+    customerFacing: customer.filter((line) => !MACHINE_LINE.test(line)).join("\n").trim(),
     internalOnly: internal.join("\n").trim(),
   };
 }
+
+// The machine-readable lines the drafting pass appends for our own tooling.
+const MACHINE_LINE = /^\s*(STOPS|PICKS|PLACES):/i;

@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, stayNamesForCity } from "./place-links";
-import { applyPaywall, shouldPaywall, redactStayNames } from "./paywall";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, redactableNamesForCity } from "./place-links";
+import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import type { PlanStop } from "./plan-stops";
+import { parseAllNamedPlaces, parsePickNames, type PlanStop } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -26,8 +26,15 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   const questions = t.questions("memoriesksasupport@gmail.com");
   // Real place names for this city, per language, so the itinerary can link
   // each one to a Maps search. Empty list simply means nothing gets linked.
-  const placesEn = placeNamesForCity(proposal.city, false);
-  const placesAr = placeNamesForCity(proposal.city, true);
+  //
+  // Two sources, because our own city data only ever held a fraction of what a
+  // plan actually names. The rest - the airport, the rail link, the districts,
+  // the researched restaurants - comes from the PICKS/PLACES lines the drafting
+  // pass now writes, so "Jodd Fairs Ratchada" and "Soi Arab" are tappable too
+  // rather than sitting as dead text beside the one hotel we happened to hold.
+  const namedInDraft = parseAllNamedPlaces(proposal.notes ?? "");
+  const placesEn = [...new Set([...placeNamesForCity(proposal.city, false), ...namedInDraft])].sort((a, b) => b.length - a.length);
+  const placesAr = [...new Set([...placeNamesForCity(proposal.city, true), ...namedInDraft])].sort((a, b) => b.length - a.length);
   // Verified official sites where we have them; everything else falls back
   // to a Maps search inside the linkifier.
   const officialUrls = officialUrlMapForCity(proposal.city);
@@ -50,8 +57,17 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // The chosen hotel names come out of the overview while it is unpaid, with
   // every reason for choosing them left in place. Done here, on the server,
   // so the name is genuinely absent rather than merely hidden.
-  const visibleEn = locked ? redactStayNames(en.visibleText, stayNamesForCity(proposal.city, false)) : en.visibleText;
-  const visibleAr = locked ? redactStayNames(ar.visibleText, stayNamesForCity(proposal.city, true)) : ar.visibleText;
+  //
+  // What gets hidden is everything the plan RECOMMENDS: the hotels, the
+  // restaurants, the drivers and the attractions, both from our own data and
+  // from the draft's own PICKS line. What stays readable is the context a
+  // reader needs to judge the work without being able to act on it: the
+  // airport, the districts, the transit, every price, the halal and prayer
+  // guidance.
+  const hiddenEn = [...new Set([...redactableNamesForCity(proposal.city, false), ...parsePickNames(proposal.notes ?? "")])];
+  const hiddenAr = [...new Set([...redactableNamesForCity(proposal.city, true), ...parsePickNames(proposal.notes ?? "")])];
+  const visibleEn = locked ? redactPlaceNames(en.visibleText, hiddenEn) : en.visibleText;
+  const visibleAr = locked ? redactPlaceNames(ar.visibleText, hiddenAr) : ar.visibleText;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFee(nights, stopCount);
 

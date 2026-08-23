@@ -112,6 +112,58 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string, offici
   );
 }
 
+// A line the draft wrote as a labelled item rather than as prose: "Food:
+// roughly 1,000-1,500 per person per day", "Bangkok tickets: Grand Palace 500
+// THB each". The draft is plain text with no markdown by design, so the shape
+// is all we have to go on, and these read as a list whatever the renderer
+// does with them. Rendering them as separate paragraphs made "Where the
+// budget goes" a wall of six unrelated sentences.
+//
+// Deliberately tight, because the alternative failure is bulleting ordinary
+// prose: the label must be short, must come first, and must not be a time of
+// day (those already lead the day lines) or a sentence that merely contains a
+// colon somewhere.
+const LABELLED_ITEM = /^[^:\n]{2,34}:\s+\S/;
+
+function isLabelledItem(line: string): boolean {
+  const trimmed = line.trim();
+  if (!LABELLED_ITEM.test(trimmed)) return false;
+  // "09:00 — Topkapi" and "Evening: dinner at..." both start a day line, and
+  // the day list already bullets those.
+  if (/^\d{1,2}:\d{2}/.test(trimmed)) return false;
+  return true;
+}
+
+/**
+ * Splits an overview group into runs of prose and runs of labelled items, so
+ * a section that is really a list renders as one.
+ *
+ * A single labelled line on its own is left as prose: one "Bangkok: The Siam"
+ * under a heading is a sentence, not a list, and bulleting it just adds a dot.
+ * Two or more in a row is a list and reads far better as one.
+ */
+export function groupOverviewLines(lines: string[]): { kind: "prose" | "items"; lines: string[] }[] {
+  const blocks: { kind: "prose" | "items"; lines: string[] }[] = [];
+  for (const line of lines) {
+    const kind = isLabelledItem(line) ? "items" : "prose";
+    const last = blocks[blocks.length - 1];
+    if (last && last.kind === kind) last.lines.push(line);
+    else blocks.push({ kind, lines: [line] });
+  }
+  // A lone "item" is a sentence that happens to carry a colon ("One trap to
+  // avoid: Bangkok's two airports..."), so demote it. Then merge neighbours,
+  // because a demoted line sitting between two prose blocks should join them
+  // rather than leave the caller three blocks that all render identically.
+  const demoted = blocks.map((b) => (b.kind === "items" && b.lines.length < 2 ? { kind: "prose" as const, lines: b.lines } : b));
+  const merged: { kind: "prose" | "items"; lines: string[] }[] = [];
+  for (const block of demoted) {
+    const last = merged[merged.length - 1];
+    if (last && last.kind === block.kind) last.lines.push(...block.lines);
+    else merged.push({ kind: block.kind, lines: [...block.lines] });
+  }
+  return merged;
+}
+
 function BulletLines({ lines, places, cityLabel, officialUrls, placeCities, ar }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string>; placeCities?: Record<string, string>; ar?: boolean }) {
   return (
     <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "grid", gap: 9 }}>
@@ -227,11 +279,21 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
                       <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--gold)" }}>{label}</p>
                     )}
                     <div style={{ display: "grid", gap: 4 }}>
-                      {lines.map((line, li) => (
-                        <p key={li} style={{ margin: 0, fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-2)" }}>
-                          {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}
-                        </p>
-                      ))}
+                      {/* Labelled items ("Food: roughly ...") become bullets;
+                          the lead sentence above them stays a paragraph. Runs
+                          of items are grouped so one list renders, not one
+                          list per line. */}
+                      {groupOverviewLines(lines).map((block, bi) =>
+                        block.kind === "items" ? (
+                          <BulletLines key={bi} lines={block.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} placeCities={placeCities} ar={ar} />
+                        ) : (
+                          block.lines.map((line, li) => (
+                            <p key={`${bi}-${li}`} style={{ margin: 0, fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-2)" }}>
+                              {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}
+                            </p>
+                          ))
+                        ),
+                      )}
                     </div>
                   </div>
                 );

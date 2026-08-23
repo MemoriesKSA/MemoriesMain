@@ -164,16 +164,47 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
 }
 
 /**
- * Just the hotels, for the paywall's name redaction. Restaurants and
- * attractions stay readable: it is the chosen hotel that is worth teasing,
- * and blurring everything would leave the overview meaningless rather than
- * tantalising.
+ * Just the hotels. Kept because the reviewer tooling and the tests still ask
+ * for exactly the stays; the paywall itself now redacts far more than this,
+ * see redactableNamesForCity.
  */
 export function stayNamesForCity(cityLabel: string, ar: boolean): string[] {
   const names = guidesForLabel(cityLabel).flatMap(({ guide }) =>
     [...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
   );
   return [...new Set(names.filter((n) => n && n.trim().length > 3))];
+}
+
+/**
+ * Every name an unpaid reader could act on: hotels, restaurants, drivers and
+ * attractions.
+ *
+ * The paywall used to hide only the hotels, arguing that blurring everything
+ * would leave the overview meaningless rather than tantalising. That drew the
+ * line in the wrong place. "Al Hussain, 75/8 Sukhumvit Soi 3/1, homely
+ * cooking with fresh naan" and "Koh Samui Taxis, fixed prices, over 20 years,
+ * flight tracking on airport pickups" are finished, actionable answers, and a
+ * reader can use every one of them without paying. The hotel was never the
+ * only thing being sold.
+ *
+ * What stays readable is everything that proves the work is real and none of
+ * which can be acted on: the reasoning, every price and range, the halal and
+ * prayer guidance, the districts to look in, the day structure, the warnings
+ * and the hedges. The reader sees that there is a Muslim-run kitchen in a
+ * named district at a known price and that we have a reason for it. They just
+ * cannot see which one it is.
+ *
+ * Longest first, so a name containing another is redacted whole rather than
+ * leaving the shorter one's fragment behind.
+ */
+export function redactableNamesForCity(cityLabel: string, ar: boolean): string[] {
+  const names = guidesForLabel(cityLabel).flatMap(({ guide }) => [
+    ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
+    ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
+    ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
+    ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
+  ]);
+  return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
 }
 
 /**

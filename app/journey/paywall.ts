@@ -95,30 +95,31 @@ const REDACTION = (length: number) => `⟦R:${length}⟧`;
 export const REDACTION_PATTERN = /⟦R:(\d+)⟧/g;
 
 /**
- * Hides every hotel the plan names, while leaving the reasons, the tiers and
- * the prices readable.
+ * Hides every name an unpaid reader could act on, while leaving the reasons,
+ * the tiers and the prices readable.
  *
- * It began as the picks only, on the reasoning that the alternatives work as
- * aspiration precisely because you can read them. That was wrong about what
- * is being sold: "swap the AlUla leg for The Chedi Hegra, from about SAR
- * 3,915 a night" is a researched, actionable recommendation, and someone can
- * act on it without paying. The picks and the alternatives are the same kind
- * of answer, so both are held back.
+ * It began as the hotel picks only, then the alternatives too, on the
+ * reasoning that "swap the AlUla leg for The Chedi Hegra, from about SAR
+ * 3,915 a night" is a researched recommendation somebody can act on without
+ * paying. That reasoning was right and the scope was too narrow: the
+ * restaurants, the drivers and the attractions are the same kind of answer.
+ * A Bangkok teaser that named the Muslim-run kitchen, its street address and
+ * the fixed-price transfer company had already given away the work.
  *
- * What stays is everything that proves the work is real: "an outdoor pool and
- * garden after dusty desert mornings, well-reviewed, a mid-range base that
- * keeps your budget in good shape", the star ratings, and every figure. A
- * reader can see there is a property at SAR 3,915 a night and that we have a
- * reason for it. They just cannot see which one.
+ * What stays is everything that proves the work is real and none of which can
+ * be acted on: the reasoning, every figure, the halal and prayer guidance, the
+ * districts to look in, the warnings and the hedges. A reader can see there is
+ * a property at SAR 3,915 a night, and a halal kitchen in a named quarter, and
+ * that we have a reason for both. They cannot see which ones.
  *
  * Done here rather than with a blur in the browser for the same reason as the
  * days: a name blurred in CSS is still a name sitting in the page source.
  */
-export function redactStayNames(text: string, stayNames: string[]): string {
-  if (!text || !stayNames.length) return text;
+export function redactPlaceNames(text: string, placeNames: string[]): string {
+  if (!text || !placeNames.length) return text;
 
-  // Longest first, so a hotel whose name contains another's is matched whole.
-  const ordered = [...stayNames].filter(Boolean).sort((a, b) => b.length - a.length);
+  // Longest first, so a name containing another is matched whole.
+  const ordered = [...placeNames].filter(Boolean).sort((a, b) => b.length - a.length);
   const escape = (name: string) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   let out = text;
@@ -133,6 +134,9 @@ export function redactStayNames(text: string, stayNames: string[]): string {
     CARRIES_A_FIGURE.test(inner) ? whole : `${marker} ${REDACTION(inner.length + 2)}`,
   );
 }
+
+// Old name, kept so the reviewer tooling and existing tests keep compiling.
+export const redactStayNames = redactPlaceNames;
 
 // A parenthetical that quotes money or a rate, which stays readable.
 const CARRIES_A_FIGURE = /SAR|USD|ريال|دولار|\d[\d,.]*\s*(a night|per night|لليلة)/i;

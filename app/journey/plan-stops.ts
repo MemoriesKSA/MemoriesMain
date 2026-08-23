@@ -97,3 +97,65 @@ export function stopsFromNights(labels: string[], nights: number[]): PlanStop[] 
     return stop;
   });
 }
+
+// Two more machine lines the drafting pass writes beside STOPS, listing every
+// real named thing in the plan so the page can turn each into a map link:
+//
+//   PICKS:  Jodd Fairs Ratchada | Nara Thai Cuisine | Koh Samui Taxis
+//   PLACES: Suvarnabhumi Airport | Airport Rail Link | Soi Arab | Bang Rak
+//
+// Before these, only names already in our own city data could be linked, so a
+// Bangkok plan linked the one hotel we happened to hold and left the airport,
+// the rail link, the districts and every researched restaurant as dead text.
+// The draft knows which words in it are places; these lines are how it says so.
+//
+// They are split because the paywall treats them differently. PICKS are the
+// answers being sold and are redacted from an unpaid teaser; PLACES are the
+// context a reader needs either way and stay readable.
+//
+// Pipe separated, because place names contain commas ("Hua Thanon, Samui").
+const PICKS_LINE = /^\s*PICKS:/i;
+const PLACES_LINE = /^\s*PLACES:/i;
+export const NAME_MARKER_LINE = /^\s*(PICKS|PLACES):/i;
+
+function readMarkerList(internalText: string, pattern: RegExp): string[] {
+  if (!internalText) return [];
+  const line = internalText.split(/\r?\n/).find((l) => pattern.test(l));
+  if (!line) return [];
+  return [...new Set(
+    line
+      .replace(pattern, "")
+      .split("|")
+      .map((part) => part.trim())
+      // "none" is the draft saying the line is empty, not a place called None.
+      // Anything very short is punctuation noise rather than a name, and
+      // linkifying it would match fragments all over the prose.
+      .filter((name) => name.length > 3 && name.toLowerCase() !== "none"),
+  )];
+}
+
+/** The things the plan recommends. Redacted from an unpaid teaser. */
+export function parsePickNames(internalText: string): string[] {
+  return readMarkerList(internalText, PICKS_LINE);
+}
+
+/** Airports, transit, districts and geography. Readable whether or not they paid. */
+export function parseContextPlaceNames(internalText: string): string[] {
+  return readMarkerList(internalText, PLACES_LINE);
+}
+
+/** Both, longest first, for linkifying. */
+export function parseAllNamedPlaces(internalText: string): string[] {
+  const all = [...parsePickNames(internalText), ...parseContextPlaceNames(internalText)];
+  return [...new Set(all)].sort((a, b) => b.length - a.length);
+}
+
+/** Tooling, not prose: never shown to a human. */
+export function stripNameMarkers(text: string): string {
+  if (!text) return text;
+  return text
+    .split(/\r?\n/)
+    .filter((line) => !NAME_MARKER_LINE.test(line))
+    .join("\n")
+    .trim();
+}
