@@ -30,6 +30,7 @@ import {
   categoriesPresent,
   readScopeVersion,
   missingCategories,
+  researchIsComplete,
   RESEARCH_SCOPE_VERSION,
   RESEARCH_CACHE_TTL_DAYS,
   type DraftGuideSubmission,
@@ -237,11 +238,22 @@ async function main() {
       () => (spent >= CAP ? `$${spent.toFixed(2)} spent, cap is $${CAP}` : null),
     );
 
-    // Comes back unchanged when the first category failed. Everything
-    // already stored is safe either way; the run stops rather than marching
-    // through the remaining cities hitting the same wall.
+    // "Nothing was added" has two very different causes, and treating them
+    // the same cost a whole run. Ankara was already finished by the time the
+    // loop reached it, because an earlier run was still alive in the
+    // background, so there was nothing left to buy. That read as a failure
+    // and the run aborted with seven cities still to do.
+    //
+    // A city that needs nothing is a success. Only a city that still has gaps
+    // and gained nothing is a wall worth stopping at.
+    if (notes && researchIsComplete(guide, notes)) {
+      done++;
+      console.log(`nothing to do: already holds all ${categoriesPresent(notes).size} categories it needs.`);
+      if (done < cold.length) await new Promise((r) => setTimeout(r, PAUSE_MS));
+      continue;
+    }
     if (!notes || notes === existing) {
-      console.error(`\nStopping: research for ${t.label} added nothing. Check the error above.`);
+      console.error(`\nStopping: research for ${t.label} added nothing and is still missing ${missingCategories(guide, notes).join(", ")}. Check the error above.`);
       break;
     }
 
