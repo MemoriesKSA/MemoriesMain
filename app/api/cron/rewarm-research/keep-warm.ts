@@ -6,6 +6,22 @@
 // to find out, and this project has already lost four deploys to a route file
 // that built locally and failed on the way out.
 
+// PAUSED. The site is not selling yet, so refreshing research nobody reads
+// is money spent on nothing. While this is true the cron returns immediately:
+// it does not read the cache, does not call Anthropic, and cannot spend.
+//
+// Set it to false to resume. Nothing else needs changing - the city list and
+// the schedule below are already sized for each other, and
+// test-rewarm-capacity keeps them that way whether or not this is paused.
+//
+// What pausing costs: cached research expires after RESEARCH_CACHE_TTL_DAYS.
+// The roughly $49 of research warmed on 2026-08-23 therefore decays over the
+// following month, and a city that has gone stale is re-researched inside the
+// next customer's request. If launch is more than a month out, re-warm with
+// scripts/prewarm-research.ts before going live rather than resuming this and
+// waiting for it to catch up.
+export const PAUSED = true;
+
 // Every city we offer, minus the five curated Saudi ones.
 //
 // This list was deliberately narrow for most of its life - "add a city when it

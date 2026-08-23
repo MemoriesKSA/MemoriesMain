@@ -12,7 +12,7 @@ import {
 import { createSupabaseAdminClient } from "../../../supabase-admin";
 import { flagshipCityGuideBySlug } from "../../../flagship-city-data";
 import { travelCountries } from "../../../components/planner-data";
-import { KEEP_WARM, REFRESH_WHEN_DAYS_LEFT } from "./keep-warm";
+import { KEEP_WARM, REFRESH_WHEN_DAYS_LEFT, PAUSED } from "./keep-warm";
 
 export const runtime = "nodejs";
 // 800 seconds, the Pro plan's generally-available maximum. A full city is
@@ -50,6 +50,13 @@ const CRON_RESEARCH_DEADLINE_MS = 700 * 1000;
 // options. See the note at the top of that file.
 
 export async function GET(request: Request) {
+  // Checked before anything else, and before the auth check does any work:
+  // a paused cron must not read the cache, must not reach Anthropic, and
+  // must not be able to spend a cent. See PAUSED in ./keep-warm.
+  if (PAUSED) {
+    return Response.json({ ok: true, paused: true, refreshed: null, message: "Re-warming is paused; nothing was read or spent." });
+  }
+
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     console.error("Re-warm skipped: CRON_SECRET is not set");

@@ -16,7 +16,7 @@
 // schedule out of vercel.json rather than trusting a constant next to it.
 
 import { readFileSync } from "fs";
-import { KEEP_WARM, RUNS_PER_DAY, KEEP_WARM_CAPACITY } from "../app/api/cron/rewarm-research/keep-warm";
+import { KEEP_WARM, RUNS_PER_DAY, KEEP_WARM_CAPACITY, PAUSED } from "../app/api/cron/rewarm-research/keep-warm";
 import { flagshipCityKeys } from "../app/flagship-city-data";
 
 const vercel = JSON.parse(readFileSync("vercel.json", "utf8")) as {
@@ -61,4 +61,7 @@ for (const [name, got, want] of cases) {
 }
 if (unknownCities.length) console.log("\nnot in the deep data:", unknownCities.join(", "));
 console.log(`\n${pass}/${cases.length} passed  ·  ${KEEP_WARM.length} cities listed, capacity ${KEEP_WARM_CAPACITY} at ${scheduled} runs a day`);
+console.log(PAUSED
+  ? "re-warming is PAUSED: the cron returns immediately and spends nothing. Set PAUSED = false in keep-warm.ts to resume."
+  : "re-warming is LIVE: roughly $2 a city every ~25 days.");
 if (pass !== cases.length) process.exit(1);
