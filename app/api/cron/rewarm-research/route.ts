@@ -11,6 +11,7 @@ import {
 import { createSupabaseAdminClient } from "../../../supabase-admin";
 import { flagshipCityGuideBySlug } from "../../../flagship-city-data";
 import { travelCountries } from "../../../components/planner-data";
+import { KEEP_WARM, REFRESH_WHEN_DAYS_LEFT } from "./keep-warm";
 
 export const runtime = "nodejs";
 // 800 seconds, the Pro plan's generally-available maximum. A full city is
@@ -31,22 +32,21 @@ const CRON_RESEARCH_DEADLINE_MS = 700 * 1000;
 // Istanbul today just means doing it again next month, forever, and
 // forgetting one month means a customer gets the slow path.
 //
-// Deliberately narrow. It only refreshes cities on the list below, only when
-// they are actually going cold, and only ONE per run. A cron that can spend
-// $20 in a night is a cron nobody should trust, and the daily schedule means
-// a list of ten stays warm comfortably at one a day.
+// Deliberately narrow. It only refreshes cities on the list, only when they
+// are actually going cold, and only ONE per run. A cron that can spend $20 in
+// a night is a cron nobody should trust.
 //
-// Curated cities are not here and never should be: those are hand-written
-// and cacheResearch refuses to overwrite them anyway.
+// One per run is a throughput limit as well as a spend limit, so the schedule
+// has to keep up with the length of the list. It runs every six hours, which
+// drains twelve cities well inside the refresh margin; see KEEP_WARM_CAPACITY
+// for the arithmetic and test-rewarm-capacity for the assertion.
+//
+// Curated cities are not on the list and never should be: those are
+// hand-written and cacheResearch refuses to overwrite them anyway.
 
-// The cities worth keeping permanently warm. Add one when it starts selling,
-// not before: a cold city costs nothing until somebody books it, and this
-// list is the only thing here that spends money.
-const KEEP_WARM = ["istanbul", "cappadocia"];
-
-// Refresh a few days before expiry rather than after, so there is no window
-// where a customer arrives to find it cold.
-const REFRESH_WHEN_DAYS_LEFT = 5;
+// The list, the refresh margin and the capacity arithmetic live in
+// ./keep-warm because a route file may only export handlers and segment
+// options. See the note at the top of that file.
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
