@@ -812,6 +812,37 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
 // driver, the day order or anything else. That's what makes it impossible
 // for Arabic to disagree with English on a decision, there's only one
 // decision-making step in the whole pipeline.
+// Arabic and Latin letters running together INSIDE a word, with no space
+// between them. A Kazbegi plan reached the reviewer reading
+// "أشهر التزلج في غودauri — وأصححها: أشهر التزلج في غودوري": the name came out
+// half-transliterated, the model noticed, and wrote the correction into the
+// document instead of replacing the mistake.
+//
+// The self-check caught that one, but it is a sampled model pass and this is
+// a deterministic property of the text, so it is worth checking directly.
+//
+// Deliberately narrow: it looks for the two scripts GLUED together, never for
+// Latin text as such. Airport codes, tram lines like T1, website addresses and
+// a business's own Latin name are all correct Arabic-document content and all
+// separated by a space or a bracket, so none of them trip it.
+//
+// A warning, not a rejection. A translation with one fused word is still worth
+// far more to the reviewer than no Arabic at all, and this pass is expensive
+// to re-run.
+export function mixedScriptFragments(arabic: string): string[] {
+  const matches = arabic.match(/[؀-ۿ][A-Za-z]|[A-Za-z][؀-ۿ]/g) ?? [];
+  return [...new Set(matches)];
+}
+
+function warnOnMixedScript(arabic: string) {
+  const fragments = mixedScriptFragments(arabic);
+  if (!fragments.length) return;
+  console.warn(
+    `The Arabic translation fuses Arabic and Latin letters inside a word (${fragments.length} place(s): ` +
+    `${fragments.slice(0, 5).join(", ")}). That is usually a half-transliterated name, sometimes followed by ` +
+    `the model correcting itself in the text. The draft is kept; read the Arabic before publishing.`);
+}
+
 function buildTranslationSystemPrompt() {
   return `You are translating an already-finished internal itinerary draft from English into Arabic, for the same MEMORIES planning team. This is NOT a message to the customer, same internal-only rules apply.
 
@@ -823,7 +854,8 @@ Your only job is faithful translation, not re-drafting:
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
 - Keep the same section headings: "Needs the customer's input" becomes "يحتاج إلى رأي العميل", "Team to confirm before booking" becomes "على الفريق تأكيده قبل الحجز", "For the planner" becomes "للمخطط". Keep whichever of the two decision headings the English draft actually used, in the same order, don't add one that isn't there.
 - Translate the day headers into Arabic: "Day 1" becomes "اليوم 1", "Day 2" becomes "اليوم 2", and so on, same numbering and order as the English. Use Western digits (1, 2, 3). This is a customer-facing Arabic document, so no English may survive in it: a day referred to mid-sentence ("missed on Day 2") becomes "اليوم 2" there too. The only English that may remain anywhere is a business's own name where it genuinely has no Arabic form in the grounded facts.
-- Plain text only, no markdown: no "#"/"##" headings, no asterisks, no numbered-list syntax, even if the English draft you're translating slipped and used some, translate it back to plain text, don't carry the markdown over. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.`;
+- Plain text only, no markdown: no "#"/"##" headings, no asterisks, no numbered-list syntax, even if the English draft you're translating slipped and used some, translate it back to plain text, don't carry the markdown over. This doesn't need to be robotically literal, natural and fluent is good, but every fact, decision and hedge must match the English exactly.
+- Output only the finished Arabic. Never correct yourself in the text. A Kazbegi plan went out reading "أشهر التزلج في غودauri — وأصححها: أشهر التزلج في غودوري": a name came out half in Latin letters, you noticed, and the fix was written into the document instead of replacing the mistake. If you catch an error mid-sentence, write the sentence correctly and move on. Nothing like "وأصححها", "أي", "بمعنى" as a repair, no alternative rendering in brackets, no note about a name you were unsure of, and never a word with Arabic and Latin letters run together inside it. There is no reader on the other side of a correction, only the finished page.`;
 }
 
 function buildTranslationUserPrompt(englishDraft: string, groundedFactsAr: string) {
@@ -865,7 +897,9 @@ async function translateDraftToArabic(anthropic: Anthropic, englishDraft: string
     onSpend?.(opusSpend(response));
     assertNotTruncated(response, "The Arabic translation");
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
-    return textBlock?.text?.trim() ?? "";
+    const arabic = textBlock?.text?.trim() ?? "";
+    warnOnMixedScript(arabic);
+    return arabic;
   } catch (error) {
     console.error("Arabic translation failed", error);
     return "";
