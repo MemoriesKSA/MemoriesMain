@@ -8,3 +8,4 @@ out
 .DS_Store
 .deploy-payload.json
 tsconfig.tsbuildinfo
+scripts/tmp-*.ts
