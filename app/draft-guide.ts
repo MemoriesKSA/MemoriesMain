@@ -385,7 +385,7 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
 // Which categories a city needs. Gated on our own data rather than on this
 // customer's trip, because the answer is cached per city and reused by every
 // later customer, whose trip will be different.
-function categoriesFor(guide: FlagshipCityGuide): ResearchCategory[] {
+export function categoriesFor(guide: FlagshipCityGuide): ResearchCategory[] {
   const holdsDriver = !![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
   return RESEARCH_CATEGORIES.filter((c) => {
     if (c.key === "dining") return guide.dining.length < 3;
@@ -413,6 +413,31 @@ Rules that apply to everything you report:
 // present and research only what is missing. Stripped before the drafting
 // pass ever sees the notes.
 const CATEGORY_MARKER = /^##cat:([a-z]+)$/gm;
+
+/**
+ * Is a city's cached research actually finished?
+ *
+ * Warmth was measured by scope version and age alone, which quietly answers a
+ * different question. A city researched inside a customer's request only gets
+ * whatever fits RESEARCH_DEADLINE_MS, so Antalya came back holding two of its
+ * seven categories - no drivers, no halal or prayer, no opening hours, no
+ * rental cars, no flights - and then read as "fresh" to both the pre-warm and
+ * the cron. Nothing would ever have filled the other five, and every later
+ * Antalya customer would have got the thin plan and handed their reviewer the
+ * same four things to verify by hand.
+ *
+ * Resuming is cheap: whatever is stored is kept and only the missing
+ * categories are bought.
+ */
+export function researchIsComplete(guide: FlagshipCityGuide, notes: string): boolean {
+  const present = categoriesPresent(notes);
+  return categoriesFor(guide).every((c) => present.has(c.key));
+}
+
+export function missingCategories(guide: FlagshipCityGuide, notes: string): string[] {
+  const present = categoriesPresent(notes);
+  return categoriesFor(guide).filter((c) => !present.has(c.key)).map((c) => c.key);
+}
 
 export function categoriesPresent(notes: string): Set<string> {
   const found = new Set<string>();

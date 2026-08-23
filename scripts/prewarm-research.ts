@@ -29,6 +29,7 @@ import {
   cacheResearch,
   categoriesPresent,
   readScopeVersion,
+  missingCategories,
   RESEARCH_SCOPE_VERSION,
   RESEARCH_CACHE_TTL_DAYS,
   type DraftGuideSubmission,
@@ -100,8 +101,13 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
     if (FORCE) { cold.push(target("forced, stored notes discarded")); continue; }
     const { version } = readScopeVersion(row.research_notes as string);
     const expired = Date.now() - new Date(row.updated_at as string).getTime() > ttlMs;
+    const guide = flagshipCityGuideBySlug(countrySlug, citySlug);
+    // A city researched inside a customer request only gets the categories
+    // that fit the in-request deadline, and then looked "fresh" forever.
+    const missing = guide ? missingCategories(guide, readScopeVersion(row.research_notes as string).notes) : [];
     if (version !== RESEARCH_SCOPE_VERSION) cold.push(target(`scope v${version}, now v${RESEARCH_SCOPE_VERSION}`));
     else if (expired) cold.push(target(`past ${RESEARCH_CACHE_TTL_DAYS} days`));
+    else if (missing.length) cold.push(target(`incomplete, missing ${missing.join(", ")}`));
     else warm.push(target("fresh"));
   }
   return { warm, cold };

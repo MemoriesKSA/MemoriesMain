@@ -4,6 +4,7 @@ import {
   cacheResearch,
   categoriesPresent,
   readScopeVersion,
+  researchIsComplete,
   RESEARCH_SCOPE_VERSION,
   RESEARCH_CACHE_TTL_DAYS,
   type DraftGuideSubmission,
@@ -78,7 +79,14 @@ export async function GET(request: Request) {
     const notes = (row?.research_notes as string | null) ?? "";
     const ageDays = row ? (Date.now() - new Date(row.updated_at as string).getTime()) / 86_400_000 : Infinity;
     const version = notes ? readScopeVersion(notes).version : -1;
-    const stale = version !== RESEARCH_SCOPE_VERSION || ageDays > RESEARCH_CACHE_TTL_DAYS - REFRESH_WHEN_DAYS_LEFT;
+    // Age and scope are not the only ways to be cold. A city researched
+    // inside a customer's request keeps only the categories that fit the
+    // in-request deadline, and without this it reads as fresh forever while
+    // every later customer gets the thin plan.
+    const countryForCity = travelCountries.find((c) => c.cities.some((city) => city.value === citySlug))?.value;
+    const guideForCity = countryForCity ? flagshipCityGuideBySlug(countryForCity, citySlug) : undefined;
+    const incomplete = !!guideForCity && !!notes && !researchIsComplete(guideForCity, readScopeVersion(notes).notes);
+    const stale = version !== RESEARCH_SCOPE_VERSION || incomplete || ageDays > RESEARCH_CACHE_TTL_DAYS - REFRESH_WHEN_DAYS_LEFT;
     if (stale) due.push({ citySlug, notes, ageDays });
   }
   due.sort((a, b) => b.ageDays - a.ageDays);
