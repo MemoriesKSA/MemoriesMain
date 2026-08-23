@@ -6,37 +6,41 @@
 // to find out, and this project has already lost four deploys to a route file
 // that built locally and failed on the way out.
 
-// The cities worth keeping permanently warm. Add one when it starts selling,
-// not before: a cold city costs nothing until somebody books it, and this
-// list is the only thing in the cron that spends money.
+// Every city we offer, minus the five curated Saudi ones.
 //
-// The ten Saudi cities are here because they were warmed by hand for about
-// $23 and nothing was scheduled to keep them that way, so all of it would
-// have quietly expired thirty days later and had to be bought again. The five
-// curated Saudi cities are deliberately absent: they never expire, and
-// cacheResearch refuses to overwrite them, so listing one would schedule a
-// purchase whose result is then thrown away.
+// This list was deliberately narrow for most of its life - "add a city when it
+// starts selling, not before" - because it is the only thing here that spends
+// money. Widening it to everything is a real decision with a real price, so it
+// is written down rather than left implicit: each city is refreshed roughly
+// every 25 days at about $2, so 42 cities is on the order of $80 a month,
+// forever, whether or not anybody books them.
+//
+// What that buys is that no customer ever gets the thin version. A cold city
+// still produces a publishable, CLEAN draft - measured on Antalya - but
+// research inside a request only gets RESEARCH_DEADLINE_MS, so it lands two or
+// three categories out of six and hands the reviewer four things to confirm by
+// hand. Warm means the plan answers them itself.
+//
+// The five curated Saudi cities are absent and must stay absent: they never
+// expire, and cacheResearch refuses to overwrite them, so listing one would
+// schedule a purchase whose result is then thrown away.
+//
+// Still hand-written rather than derived from the catalogue. Deriving it would
+// mean adding a city to the site silently adds recurring spend, and silent
+// spend is the failure mode this whole file exists to prevent.
 export const KEEP_WARM = [
-  // Türkiye, all nine. The seven beyond Istanbul and Cappadocia were being
-  // warmed from a laptop and the laptop kept going to sleep mid-city, which
-  // is the whole argument for doing this here instead: the cron runs on
-  // Vercel, one city per run, and researchIsComplete means a city left
-  // half-finished is picked up again rather than read as warm.
-  "istanbul", "cappadocia", "antalya", "bodrum", "izmir",
-  "fethiye", "ankara", "bursa", "trabzon",
-  // The ten automated Saudi cities, warmed by hand for about $23.
-  "abha", "al-ahsa", "al-jouf", "aseer", "dammam",
-  "jazan", "red-sea", "tabuk", "taif", "yanbu",
-  // One flagship per remaining country: the city a first customer is most
-  // likely to pick. Each was verified end to end on 2026-08-23 and each came
-  // out of that verification holding about a third of its categories, so the
-  // cron finishes work already started rather than beginning from nothing.
-  //
-  // One each, not all six per country, because no non-Saudi trip has sold yet
-  // and cold is now measured rather than feared: a cold city produces a
-  // publishable draft for about $0.50 more and some checking by the reviewer.
-  // Add the second city in a country when that country starts selling.
-  "bangkok", "kuala-lumpur", "tbilisi", "moscow",
+  // Saudi Arabia, the ten automated ones
+  "red-sea", "abha", "aseer", "taif", "al-ahsa", "jazan", "al-jouf", "dammam", "tabuk", "yanbu",
+  // Türkiye
+  "istanbul", "cappadocia", "antalya", "bodrum", "izmir", "fethiye", "ankara", "bursa", "trabzon",
+  // Thailand
+  "bangkok", "phuket", "chiang-mai", "krabi", "koh-samui", "pattaya",
+  // Malaysia
+  "kuala-lumpur", "penang", "langkawi", "malacca", "kota-kinabalu", "cameron-highlands",
+  // Georgia
+  "tbilisi", "batumi", "kazbegi", "kutaisi", "borjomi", "mtskheta",
+  // Russia
+  "moscow", "saint-petersburg", "kazan", "sochi", "kaliningrad",
 ];
 
 // Refresh a few days before expiry rather than after, so there is no window
@@ -50,17 +54,14 @@ export const REFRESH_WHEN_DAYS_LEFT = 5;
 // a time, so the last one waits (list length / runs per day) days past the
 // moment it became due. It goes cold if that wait exceeds the margin above.
 //
-// Daily runs support six cities and this list has twenty-three. Rather than
-// weaken the spend guard or refresh earlier (which re-buys every city more
-// often and costs real money), vercel.json runs this every four hours. Same
-// spend per city per year, six times the drain rate: a run with nothing due
-// returns immediately and bills nothing, so frequency is close to free and
-// only the list length costs anything.
-//
 //   safe list length = REFRESH_WHEN_DAYS_LEFT * runs per day + 1
 //
-// test-rewarm-capacity asserts this against the schedule in vercel.json,
-// because the failure is silent: nothing errors, a city just goes cold and
-// the next customer for it pays for research and waits for it.
-export const RUNS_PER_DAY = 6;
+// Forty-two cities needs at least nine runs a day, so vercel.json runs this
+// every two hours. Frequency is close to free - a run with nothing due reads
+// one table and returns - so only the list length above costs anything.
+//
+// test-rewarm-capacity asserts this against the real schedule in vercel.json,
+// because the failure is silent: nothing errors, a city just goes cold and the
+// next customer for it pays for research and waits for it.
+export const RUNS_PER_DAY = 12;
 export const KEEP_WARM_CAPACITY = REFRESH_WHEN_DAYS_LEFT * RUNS_PER_DAY + 1;
