@@ -1077,6 +1077,23 @@ function warnOnMixedScript(arabic: string) {
     `the model correcting itself in the text. The draft is kept; read the Arabic before publishing.`);
 }
 
+// A customer-facing draft that is a small fraction of what the model wrote
+// means the internal/customer split went wrong, whatever the cause. Cheap to
+// check, and the alternative is finding out from a customer.
+export function splitLooksLopsided(customerFacing: string, whole: string): boolean {
+  if (whole.length < 2_000) return false;
+  return customerFacing.length < whole.length * 0.4;
+}
+
+function warnOnLopsidedSplit(label: string, split: { customerFacing: string; internalOnly: string }, whole: string) {
+  if (!splitLooksLopsided(split.customerFacing, whole)) return;
+  const pct = Math.round((split.customerFacing.length / whole.length) * 100);
+  console.warn(
+    `The ${label} draft split badly: only ${split.customerFacing.length} of ${whole.length} characters (${pct}%) ` +
+    `are going to the customer, the rest went to the internal notes. That usually means a line of prose was read ` +
+    `as an internal heading. Read the stored draft before publishing.`);
+}
+
 function buildTranslationSystemPrompt() {
   return `You are translating an already-finished internal itinerary draft from English into Arabic, for the same MEMORIES planning team. This is NOT a message to the customer, same internal-only rules apply.
 
@@ -1175,7 +1192,14 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
   try {
     if (!englishDraft && !arabicDraft) return "";
 
-    const response = await anthropic.messages.create({
+    // Streamed, not create(). The SDK refuses a non-streaming request whose
+    // max_tokens implies it could run past ten minutes, and raising this
+    // pass to 24,000 tokens crossed that line: every self-check threw
+    // immediately, the surrounding try/catch swallowed it, and the reviewer
+    // email went out with no self-check section and nothing saying why. The
+    // same silent-hole failure the token ceiling caused before, reintroduced
+    // by the fix for it. The other three model calls here already stream.
+    const response = await anthropic.messages.stream({
       // This was Sonnet at low effort, on the argument that the pass only
       // advises a reviewer so a missed flag is cheap. Re-measured on a real
       // stored Edinburgh study draft, all four variants given identical
@@ -1207,7 +1231,7 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
         role: "user",
         content: `CUSTOMER REQUEST (their own words from the form, a source in its own right):\n${customerRequest || "not available"}\n\nTRIP CALENDAR (the customer's real dates, and the only authority on which weekday each one is):\n${tripCalendar || "no dates were given for this trip"}\n\nGROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES (cached per city, any window named inside is our plumbing, not this customer's dates):\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
       }],
-    });
+    }).finalMessage();
 
     // This pass takes onSpend and never called it, so every recorded draft
     // cost was short by the self-check: a call carrying the grounded facts,
@@ -1572,6 +1596,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
 
     const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
     const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+    // The split decides what the customer sees, and it fails silently: a
+    // false internal heading sends the rest of the document to the planner's
+    // notes and the page still renders, just nearly empty. A Tokyo study
+    // draft published 995 characters of Arabic against 29,092 of English
+    // and nothing anywhere said so. Compare the halves and say something.
+    warnOnLopsidedSplit("English", englishSplit, englishDraft);
+    if (arabicSplit) warnOnLopsidedSplit("Arabic", arabicSplit, arabicDraft);
     if (supabase && proposalId && arabicSplit?.customerFacing) {
       const { error } = await supabase
         .from("proposals")

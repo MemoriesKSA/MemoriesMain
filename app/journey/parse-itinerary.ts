@@ -55,23 +55,51 @@ function stripBulletMarker(line: string) {
 // go confirm or book with no customer involvement. Both keep matching the
 // older single "Needs a decision before booking" heading too, in case a
 // draft written under the previous prompt still uses it.
+// The English headings are anchored, so only a line that IS the heading
+// matches. The Arabic ones could not be anchored the same way, because the
+// translation is free to word them slightly differently, so they matched on
+// keywords anywhere in the line. That is the difference between "is this the
+// heading" and "does this line mention the heading", and a real Tokyo draft
+// found the gap: the Arabic wrote, mid-paragraph and in quotation marks,
+// "وقد أُدرجت تحت "على الفريق تأكيده قبل الحجز"" - it has been listed under
+// "Team to confirm before booking" - which contains both keywords.
+//
+// splitDraftForStorage saw a heading, switched to internal, and only a day
+// heading switches it back. A study plan has no day headings. So everything
+// after that sentence went into the planner's notes: the customer's Arabic
+// plan was 995 characters against 29,092 of English, missing the universities,
+// the visa route and the costs, and nothing anywhere said so.
+//
+// A heading also has to LOOK like one. Short, no sentence-ending punctuation,
+// no quotation marks. Prose that mentions a heading is prose.
+const HEADING_MAX_CHARS = 60;
+const SENTENCE_END = /[.。؟?!！]\s*$/;
+const QUOTED = /["'«»“”‘’]/;
+
+function looksLikeHeadingLine(normalized: string) {
+  return normalized.length > 0 && normalized.length <= HEADING_MAX_CHARS && !SENTENCE_END.test(normalized) && !QUOTED.test(normalized);
+}
+
 function isCustomerInputHeading(line: string) {
   const normalized = line.trim().replace(/[:：]\s*$/, "");
   if (/^needs the customer'?s? input$/i.test(normalized)) return true;
   if (/^needs a decision before booking$/i.test(normalized)) return true;
+  if (!looksLikeHeadingLine(normalized)) return false;
   return normalized.includes("رأي العميل") || (normalized.includes("قرار") && normalized.includes("الحجز"));
 }
 
 function isTeamConfirmHeading(line: string) {
   const normalized = line.trim().replace(/[:：]\s*$/, "");
   if (/^team to confirm before booking$/i.test(normalized)) return true;
+  if (!looksLikeHeadingLine(normalized)) return false;
   return normalized.includes("الفريق") && normalized.includes("تأكيد");
 }
 
 function isPlannerHeading(line: string) {
   const normalized = line.trim().replace(/[:：]\s*$/, "");
   if (/^for the planner$/i.test(normalized)) return true;
-  return normalized === "للمخطط" || normalized.includes("للمخطط");
+  if (!looksLikeHeadingLine(normalized)) return false;
+  return normalized.includes("للمخطط");
 }
 
 export function parseItinerary(text: string): ItinerarySection[] | null {
