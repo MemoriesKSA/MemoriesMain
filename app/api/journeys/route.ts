@@ -302,7 +302,12 @@ export async function POST(request: Request) {
   // branch simply never ran.
   const countrySlug = submission.country;
   const countryName = travelCountries.find((c) => c.value === countrySlug)?.en ?? readable(countrySlug);
-  if (countrySlug === "saudi-arabia" || flagshipCityGuideBySlug(countrySlug, submission.city)) {
+  // Study is the third case: no study city is in the flagship data by design,
+  // and until this was added every study request produced the team email and
+  // no draft at all. Its plan is grounded in its own research categories
+  // instead - universities, the Saudi visa route, housing, halal and prayer.
+  const isStudyRequest = submission.journeyType === "study";
+  if (isStudyRequest || countrySlug === "saudi-arabia" || flagshipCityGuideBySlug(countrySlug, submission.city)) {
     after(() => generateDraftGuide({
       submissionId: submission.submissionId,
       city: submission.city,
@@ -328,6 +333,17 @@ export async function POST(request: Request) {
       packageNotes: submission.packageNotes,
       currency: submission.currency,
       budget: submission.budget,
+      budgetMode: submission.budgetMode,
+      // Study only. Without these the study brief has nothing to work from
+      // and would write a generic city guide instead of answering this
+      // student's actual question.
+      journeyType: submission.journeyType,
+      studySupport: submission.studySupport,
+      hasSpecificField: submission.hasSpecificField,
+      specificField: submission.specificField,
+      hasSpecificUniversity: submission.hasSpecificUniversity,
+      specificUniversity: submission.specificUniversity,
+      saudiCitizen: submission.saudiCitizen,
       name: submission.name,
       email: submission.email,
       phone: phoneDisplay,

@@ -59,6 +59,16 @@ export type DraftGuideSubmission = {
   budget: string;
   /** "fixed" | "unsure" | "open". See the budget rules in the system prompt. */
   budgetMode?: string;
+  // Study abroad only. "study" switches the whole pipeline: different
+  // research categories, a different drafting brief, and a Saudi-citizen
+  // assumption throughout.
+  journeyType?: string;
+  studySupport?: string;
+  hasSpecificField?: string;
+  specificField?: string;
+  hasSpecificUniversity?: string;
+  specificUniversity?: string;
+  saudiCitizen?: string;
   name: string;
   email: string;
   phone: string;
@@ -100,6 +110,22 @@ export function serializeGuideForDraft(guide: FlagshipCityGuide, ar: boolean): s
 // "unsure" is a figure they want judged, and "open" is a request for us to
 // propose one. Written as a sentence rather than a number so the drafting
 // pass cannot mistake an absent figure for a zero.
+// Everything the study questionnaire already asked. Written into the brief so
+// the plan answers THIS student rather than a generic one, and so the reviewer
+// can see at a glance which answers drove it.
+function studyBrief(submission: DraftGuideSubmission): string {
+  if (submission.journeyType !== "study") return "";
+  const lines = [
+    "",
+    "STUDY REQUEST. This is a study-abroad plan for a SAUDI CITIZEN (confirmed on the form), not a holiday.",
+    `Study level: ${readable(submission.purpose)}`,
+    `Specific field of study: ${submission.hasSpecificField === "yes" && submission.specificField ? submission.specificField : "none given, so cover each university's overall standing"}`,
+    `Specific university: ${submission.hasSpecificUniversity === "yes" && submission.specificUniversity ? `${submission.specificUniversity}, so cover it first and in most depth, then realistic alternatives` : "none given, so shortlist the realistic options yourself"}`,
+    `Support they asked for: ${readable(submission.studySupport ?? "") || "not specified"}`,
+  ];
+  return lines.join("\n");
+}
+
 function budgetLine(submission: DraftGuideSubmission): string {
   const amount = submission.budget ? `${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}` : "";
   if (submission.budgetMode === "open" || !amount) {
@@ -165,6 +191,48 @@ export function dayByDayCalendar(from: string, to: string): string {
 // this output (see translateDraftToArabic), so it can't disagree with it
 // on the hotel, the driver, the day order or anything else, there's only
 // one decision-making pass to disagree with itself.
+// A study plan is a different document from a holiday, so it gets its own
+// brief rather than a holiday brief with the word "student" in it. No day
+// list, no restaurant of the evening: the questions are which universities,
+// can I get the visa, where do I live, what does a year cost, and can I eat
+// and pray near campus.
+//
+// It shares the accuracy rules, the voice, the hedging discipline and the
+// section vocabulary with the trip prompt, because those are about honesty
+// rather than about holidays, and the reviewer tooling parses those headings.
+export function buildStudySystemPrompt() {
+  return `You are writing a study-abroad plan a MEMORIES customer will receive, in English. Write it finished, not as notes for someone else to rewrite. A human reviewer checks it before it is published, but their job is to spot-check facts, not to turn your notes into customer language. This English draft is translated into Arabic afterwards by a separate step, so make every decision here.
+
+WHO THIS IS FOR, and it changes almost every answer: a SAUDI CITIZEN. MEMORIES only offers this service to Saudi nationals, and the form has already confirmed it. So the visa route is the one that applies to a Saudi passport, the financial proof is the figure that applies to them, and where a Saudi government scholarship or a cultural attaché is relevant you say so. Never write generic "international student" guidance where the Saudi-specific answer is different and the research gives it.
+
+Voice: write directly to them as "you", warm and genuinely encouraging, like a well-travelled friend who has been through this and done the legwork. This is one of the biggest decisions of their life and often their first time living abroad, so be steady and practical rather than breezy. Never refer to them in the third person, and never use internal vocabulary at them.
+
+THE ACCURACY RULES ARE THE SAME AS EVER, and they matter more here than on a holiday, because a wrong entry requirement or a wrong deadline costs somebody a year:
+- Only name real universities, real neighbourhoods, real mosques and real figures that appear in the research notes below. Never invent a university, a fee, a rent, a test score, a deadline or a processing time.
+- Every figure carries where it came from and how current it is, exactly as the notes give it. "The university's own 2026 estimate", "a 2025 government page". If the notes say a figure is undated or two sources disagree, say that in your own sentence rather than picking one and sounding certain.
+- Never state a visa rule as settled fact. Entry and student-visa rules change without notice, they differ by passport, and the research is a snapshot. Write what the current published route appears to be, attribute it, and tell them plainly to confirm with the embassy or the official portal before they act on it. This is the single most damaging thing in the document to get wrong.
+- Never promise an admission outcome, a visa outcome, or a scholarship outcome. Say what the requirements are and what makes an application competitive; the decision is never ours.
+- No unsourced superlative or ranking. "One of the world's top universities" is a checkable claim; "consistently placed in the UK's top ten for engineering by [named source]" is a sourced one. If the notes do not rank it, describe what it is actually known for instead.
+- Don't interpolate between two sourced figures and state the result as fact, and don't state a star rating, a score or a cost you were not given.
+
+WHAT THE PLAN CONTAINS. Everything above the internal headings is customer-facing and gets copied straight to them, so it must read as finished. Write these in this order, as an overview with short bold-free labelled sections, no day list anywhere:
+- Open with the city and why it suits this student specifically: their level, their field if they gave one, and what kind of place it is to be a student in. Two or three sentences, warm, concrete.
+- The universities. Their named university first and in most depth if they gave one, then the realistic alternatives. For each: what it is known for, its standing where a source says so, where the campus sits in the city, and what it actually takes to get in at their level, including the English requirement and the tests accepted. If a foundation or pathway year is normally needed coming from a Saudi secondary qualification, say so plainly, it is the single most common surprise.
+- Applying: where applications go, the intake months, and the deadlines, with the caveat that deadlines are per course and must be checked on the university's own page.
+- The visa: the route for a Saudi passport at this study level, the documents, the financial proof figure, the processing time, the cost, work rights and whether family can come. Attributed, and ending in a plain instruction to confirm with the embassy.
+- Living there: halls versus private versus shared, what each costs, when housing applications open, which areas students live in, and a realistic monthly cost of living. Ranges, not single numbers.
+- Eating and praying: halal food near the campuses and in the student areas, prayer rooms on campus, the mosques nearby, and whether there is a Saudi or Muslim student community. Keep every hedge the notes use about certification, and never assume a place is halal.
+- What their budget covers, if they gave one, or what a realistic year costs if they asked us to propose it. Same budget rules as any other plan.
+- What happens next with us, in two or three lines, matched to the support they asked for: guidance, visa help, accommodation, flights and arrival, or the complete package. Concrete and modest, never a promise about an outcome.
+
+THEN the internal sections, exactly as on any other plan and with the same headings, since our tooling reads them:
+- "Needs the customer's input" for anything only they can answer, e.g. their actual test scores, whether they hold a scholarship, whether family are coming.
+- "Team to confirm before booking" for everything a human should verify before this is sent: every visa figure, every deadline, every fee, and anything the notes left inconclusive.
+- "For the planner" for what you were unsure about and why.
+
+FORMAT: plain text only, no markdown, no "#" headings, no asterisks, no numbered-list syntax. Short labelled lines rather than dense paragraphs, the same scannable rhythm as our trip plans. Never write a "Day 1" heading: this is not an itinerary and a day heading would make our tooling paywall it as one.`;
+}
+
 function buildSystemPrompt() {
   return `You are writing the actual travel plan a MEMORIES customer will receive, in English. Write it finished, not as a sketch for someone else to rewrite. A human reviewer checks it before it is published, but their job is to spot-check facts, not to translate your notes into customer language, so the customer-facing parts must already read as something you would be happy to send. This English draft is translated into Arabic afterward by a separate step, so make every decision here, don't leave anything for the translation to decide.
 
@@ -270,7 +338,7 @@ Name: ${submission.name}
 Destination: ${cityLabel}, ${submission.countryName}${stopsSummary}
 Trip dates: ${submission.fromDate} to ${submission.toDate} (${tripLength(submission.fromDate, submission.toDate)})
 ${calendar ? `Day-by-day calendar (correct, computed weekdays, use these exactly): ${calendar}\n` : ""}Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}
-Purpose / style: ${readable(submission.purpose)}
+Purpose / style: ${readable(submission.purpose)}${studyBrief(submission)}
 Requested transport: ${submission.transport.map(readable).join(", ") || "not specified"}
 Requested stay type: ${submission.stays.map(readable).join(", ") || "not specified"}
 Preferred accommodation rating: ${submission.stayRating && submission.stayRating !== "flexible" ? readable(submission.stayRating) : "flexible, no preference stated"}
@@ -361,11 +429,26 @@ export function customerRequestForCheck(submission: DraftGuideSubmission, cityLa
 // is byte-identical on every call and every city, which lets prompt caching
 // actually hit. Everything specific lives in the user message.
 
+type ResearchContext = {
+  cityLabelEn: string;
+  countryName: string;
+  // Absent for a study city: those are not in the flagship data at all, and a
+  // study plan is grounded in research rather than in a curated place list.
+  guide?: FlagshipCityGuide;
+  purpose: string;
+  // Study only. What the questionnaire already asked, so the research answers
+  // this student's question rather than a generic one.
+  studyLevel?: string;
+  studyField?: string;
+  studyUniversity?: string;
+  studySupport?: string;
+};
+
 type ResearchCategory = {
   key: string;
   header: string;
   searches: number;
-  scope: (context: { cityLabelEn: string; countryName: string; guide: FlagshipCityGuide; purpose: string }) => string;
+  scope: (context: ResearchContext) => string;
 };
 
 const RESEARCH_CATEGORIES: ResearchCategory[] = [
@@ -385,7 +468,7 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
     key: "sights",
     header: "More to do",
     searches: 12,
-    scope: ({ cityLabelEn, guide }) => `More real, currently-open things to do in and around ${cityLabelEn}, beyond these, which we already hold: ${guide.attractions.map((a) => a.nameEn).join(", ")}. Aim for 6-8 that a visitor would spend half a day or more on, deliberately mixing the kinds: a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it is ticketed or free. Our own list is short and a long stay here has to be filled with real places rather than vague afternoons. Don't repeat what we hold, and don't pad with restaurants.`,
+    scope: ({ cityLabelEn, guide }) => `More real, currently-open things to do in and around ${cityLabelEn}, beyond these, which we already hold: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. Aim for 6-8 that a visitor would spend half a day or more on, deliberately mixing the kinds: a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it is ticketed or free. Our own list is short and a long stay here has to be filled with real places rather than vague afternoons. Don't repeat what we hold, and don't pad with restaurants.`,
   },
   {
     key: "halal",
@@ -397,7 +480,7 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
     key: "hours",
     header: "Attractions",
     searches: 12,
-    scope: ({ cityLabelEn, guide }) => `Opening hours, seasonal operating status (open or closed) and ticket pricing for these places in ${cityLabelEn}: ${guide.attractions.map((a) => a.nameEn).join(", ")}. If a place is a free, unticketed public site with no formal hours (a trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best early morning" - that IS a real finding, don't leave it as "unconfirmed" because there is no ticket office. Spend the budget where the answer could plausibly change with the season or over time: a fixed historic site's hours barely move, a seasonal park or festival venue does, so check the seasonal and newly-opened ones first.`,
+    scope: ({ cityLabelEn, guide }) => `Opening hours, seasonal operating status (open or closed) and ticket pricing for these places in ${cityLabelEn}: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. If a place is a free, unticketed public site with no formal hours (a trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best early morning" - that IS a real finding, don't leave it as "unconfirmed" because there is no ticket office. Spend the budget where the answer could plausibly change with the season or over time: a fixed historic site's hours barely move, a seasonal park or festival venue does, so check the seasonal and newly-opened ones first.`,
   },
   {
     key: "rentals",
@@ -413,10 +496,55 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
   },
 ];
 
+// A study plan asks entirely different questions from a holiday, so it gets
+// its own categories rather than trying to bend the trip ones. Nothing here
+// touches the flagship city data: no UK, Canadian, Australian or Japanese
+// city is in it, and a student does not need our restaurant list, they need
+// to know which universities are there, whether they can get a visa, what a
+// year costs and whether they can eat and pray near campus.
+//
+// Every one is written for a SAUDI applicant, because that is who this
+// service is for and the answers genuinely differ by passport: visa route,
+// financial proof, dependants, scholarship recognition.
+const STUDY_RESEARCH_CATEGORIES: ResearchCategory[] = [
+  {
+    key: "universities",
+    header: "Universities and admission",
+    searches: 12,
+    scope: ({ cityLabelEn, countryName, studyLevel, studyField, studyUniversity }) => {
+      const named = studyUniversity ? `The student has named ${studyUniversity}, so cover that one FIRST and in most depth, then the realistic alternatives in the same city. ` : "";
+      const field = studyField ? `Their field is ${studyField}, so say which of these universities is actually strong in it rather than listing general reputation. ` : "No specific field was given, so cover each university's overall standing and what it is best known for. ";
+      return `${named}The real, currently-operating universities in ${cityLabelEn}, ${countryName} that take international students at ${studyLevel || "degree"} level. ${field}For each: full official name, what it is known for, roughly where it sits in the country's own rankings if a reputable source says so, and the campus location relative to the city. Then admission: typical entry requirements for an international applicant, the English-language requirement and the usual accepted tests and scores, whether a foundation or pathway year is normally needed for a Saudi secondary-school qualification, application deadlines and intake months, and where applications are actually submitted (the national portal, e.g. UCAS, or direct to the university). Attribute anything that varies by course rather than stating one number for the whole university, and never invent a score, a fee or a deadline: where the sources disagree or are undated, say so.`;
+    },
+  },
+  {
+    key: "studyvisa",
+    header: "Student visa route for a Saudi applicant",
+    searches: 10,
+    scope: ({ countryName, studyLevel }) => `The student visa route into ${countryName} for a SAUDI CITIZEN studying at ${studyLevel || "degree"} level. Cover: the exact visa name and category, whether Saudi nationals apply online or in person and where, the documents normally required, the financial-proof requirement and the figure sources give for it, tuberculosis or other medical screening if it applies, biometrics, typical processing times, the fee, and any health surcharge. Then the things a student actually gets caught by: how far ahead they may apply, whether the visa allows part-time work and how many hours, whether a spouse or children can accompany them at this study level, and what happens after the course ends. Also cover, separately and clearly, whether Saudi government scholarship students (the Custodian of the Two Holy Mosques programme, or a sponsoring ministry or university) follow a different route or need an attestation from the Saudi cultural attaché in that country, and name that attaché office if it exists. EVERYTHING here changes without notice and is specific to the passport, so attribute every figure to its source and its date, and state plainly where a source is undated or where two disagree. This research grounds a plan that tells the customer to verify with the embassy; it never replaces that.`,
+  },
+  {
+    key: "living",
+    header: "Housing and cost of living",
+    searches: 12,
+    scope: ({ cityLabelEn, countryName, studyLevel }) => `What it costs a ${studyLevel || "degree"} student to live in ${cityLabelEn}, ${countryName} for a year, and where they would live. Housing first: university halls versus private student accommodation versus a shared private flat, what each typically costs per week or per month in the local currency, whether halls are guaranteed for first-year international students, when applications open, and which areas students actually live in and why. Then the rest: a realistic monthly figure for food, transport, phone and utilities, the student transport pass and what it costs, and typical one-off setup costs on arrival (deposit, bedding, bank account, registration). Give ranges rather than single numbers, name the source and its date for each figure, and say clearly if a figure is the university's own estimate rather than an independent one. Also note whether the country requires a specific proven amount for living costs in the visa application, since that number and the real cost are often different.`,
+  },
+  {
+    key: "studentlife",
+    header: "Halal food, prayer and community",
+    searches: 10,
+    scope: ({ cityLabelEn, countryName }) => `Practical life in ${cityLabelEn}, ${countryName} for a Muslim Saudi student. Halal food: which areas or streets have halal restaurants and grocers, whether the universities' own catering offers halal options and whether it is certified, and the main halal butchers or supermarkets. Prayer: mosques near the universities and near the main student areas with their names and locations, whether the campuses have prayer rooms or a Muslim prayer space and where, and whether there is a Friday congregation on or near campus. Community: whether there is a Saudi students' club or society in the city, an Islamic society at the universities, and a Saudi cultural attaché or student office in the country. Also anything a Saudi student would practically want to know that a general guide omits: Ramadan arrangements on campus, whether the city has a significant Arab or Gulf community, and how far the nearest large mosque is from the main student districts. Name real places with real names, and keep every hedge the source uses about certification.`,
+  },
+];
+
 // Which categories a city needs. Gated on our own data rather than on this
 // customer's trip, because the answer is cached per city and reused by every
 // later customer, whose trip will be different.
-export function categoriesFor(guide: FlagshipCityGuide): ResearchCategory[] {
+export function categoriesFor(guide: FlagshipCityGuide | undefined, isStudy = false): ResearchCategory[] {
+  // A study city is researched from nothing: it has no flagship entry, and
+  // none of the trip categories would answer a student's question anyway.
+  if (isStudy) return STUDY_RESEARCH_CATEGORIES;
+  if (!guide) return [];
   const holdsDriver = !![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
   return RESEARCH_CATEGORIES.filter((c) => {
     if (c.key === "dining") return guide.dining.length < 3;
@@ -487,7 +615,7 @@ export function stripCategoryMarkers(notes: string): string {
 async function researchOneCategory(
   anthropic: Anthropic,
   category: ResearchCategory,
-  context: { cityLabelEn: string; countryName: string; guide: FlagshipCityGuide; purpose: string; fromDate: string; toDate: string },
+  context: ResearchContext & { fromDate: string; toDate: string },
   onSpend?: (dollars: number) => void,
 ): Promise<string | null> {
   try {
@@ -540,7 +668,8 @@ async function researchOneCategory(
  */
 export async function researchOperationalFacts(
   anthropic: Anthropic,
-  guide: FlagshipCityGuide,
+  // Undefined for a study city, which has no flagship entry at all.
+  guide: FlagshipCityGuide | undefined,
   submission: DraftGuideSubmission,
   cityLabelEn: string,
   onSpend?: (dollars: number) => void,
@@ -553,19 +682,29 @@ export async function researchOperationalFacts(
   // whole run, which is exactly the shape that spent $20 on Cappadocia.
   shouldStop?: () => string | null,
 ): Promise<string> {
-  if (!guide.attractions.length) return existing;
+  const isStudy = submission.journeyType === "study";
+  // A trip is grounded in our own place list, so no list means nothing to
+  // research around. A study city has no list by design and is researched
+  // from nothing, so the same check would skip every study plan.
+  if (!isStudy && !guide?.attractions.length) return existing;
 
-  const context = {
+  const context: ResearchContext & { fromDate: string; toDate: string } = {
     cityLabelEn,
     countryName: submission.countryName ?? "",
     guide,
     purpose: readable(submission.purpose),
+    // The questionnaire already asked all of this, so the research answers
+    // this student's question rather than a generic one about the city.
+    studyLevel: isStudy ? readable(submission.purpose) : undefined,
+    studyField: isStudy && submission.hasSpecificField === "yes" ? submission.specificField : undefined,
+    studyUniversity: isStudy && submission.hasSpecificUniversity === "yes" ? submission.specificUniversity : undefined,
+    studySupport: isStudy ? readable(submission.studySupport ?? "") : undefined,
     fromDate: submission.fromDate,
     toDate: submission.toDate,
   };
 
   const already = categoriesPresent(existing);
-  const todo = categoriesFor(guide).filter((c) => !already.has(c.key));
+  const todo = categoriesFor(guide, isStudy).filter((c) => !already.has(c.key));
   if (!todo.length) return existing;
 
   let notes = existing;
@@ -828,7 +967,10 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
     // gone now, see translateDraftToArabic, but medium is still the right
     // speed/quality balance for the one drafting pass that remains).
     output_config: { effort: "medium" },
-    system: cachedSystem(buildSystemPrompt()),
+    // A study plan is a different document, not a holiday with a student in
+    // it, so it gets its own brief. Both are cached separately and neither
+    // changes per customer, so caching still hits.
+    system: cachedSystem(submission.journeyType === "study" ? buildStudySystemPrompt() : buildSystemPrompt()),
     messages: [{ role: "user", content: buildUserPrompt(submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabels) }],
   }, STREAM_REQUEST_OPTIONS).finalMessage());
   onSpend?.(opusSpend(response));
@@ -1178,11 +1320,19 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // customer added destinations. Deduplicated only where consecutive,
     // matching the planner's own rule.
     const stopSlugs = (submission.stops?.length ? submission.stops : [submission.city]).filter(Boolean);
+    // A study plan is always one city, and no study city is in the flagship
+    // data: London, Toronto, Melbourne and Tokyo are researched from nothing,
+    // because a student needs universities, a visa route, rents and prayer
+    // spaces rather than our restaurant list. So study keeps every stop
+    // whether or not a guide exists, and the no-data guard below does not
+    // apply to it.
+    const isStudy = submission.journeyType === "study";
     const resolved = stopSlugs
       .map((slug) => ({ slug, guide: flagshipCityGuideBySlug(submission.countrySlug, slug), option: countryCities(submission.countrySlug).find((c) => c.value === slug) }))
-      .filter((s): s is { slug: string; guide: NonNullable<ReturnType<typeof flagshipCityGuideBySlug>>; option: ReturnType<typeof countryCities>[number] | undefined } => !!s.guide);
+      .filter((s) => isStudy || !!s.guide)
+      .map((s) => ({ ...s, guide: s.guide as ReturnType<typeof flagshipCityGuideBySlug> }));
     const guide = resolved[0]?.guide;
-    if (!guide || !resolved.length) {
+    if ((!isStudy && !guide) || !resolved.length) {
       // Usually the "Other" city option, or a destination we haven't built
       // flagship data for yet. There's nothing to draft from, and inventing
       // one would break every rule this file exists to enforce, so tell the
@@ -1222,8 +1372,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const anthropic = new Anthropic({ apiKey: anthropicKey, maxRetries: 6 });
     // Each stop's facts are labelled with its city so the drafting pass can
     // never blend a Jeddah restaurant into a Riyadh day.
-    const groundedFactsEn = resolved.map((s, i) => `--- STOP ${i + 1}: ${stopLabelsEn[i]} ---\n${serializeGuideForDraft(s.guide, false)}`).join("\n\n");
-    const groundedFactsAr = resolved.map((s, i) => `--- المحطة ${i + 1}: ${stopLabelsAr[i]} ---\n${serializeGuideForDraft(s.guide, true)}`).join("\n\n");
+    // A study city has no curated facts at all, and saying so plainly beats
+    // handing the drafting pass an empty block it might read as "nothing is
+    // there" rather than "everything here comes from the research below".
+    const NO_CURATED_EN = "We hold no curated places for this city. Everything factual in this plan must come from the research notes below, or be flagged for the team to confirm.";
+    const NO_CURATED_AR = "لا نملك أماكن مختارة لهذه المدينة. كل معلومة واقعية في هذه الخطة يجب أن تأتي من ملاحظات البحث أدناه، أو تُحال إلى الفريق للتأكد منها.";
+    const groundedFactsEn = resolved.map((s, i) => `--- STOP ${i + 1}: ${stopLabelsEn[i]} ---\n${s.guide ? serializeGuideForDraft(s.guide, false) : NO_CURATED_EN}`).join("\n\n");
+    const groundedFactsAr = resolved.map((s, i) => `--- المحطة ${i + 1}: ${stopLabelsAr[i]} ---\n${s.guide ? serializeGuideForDraft(s.guide, true) : NO_CURATED_AR}`).join("\n\n");
 
     const supabaseReady = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
     const supabase = supabaseReady ? createSupabaseAdminClient() : null;
@@ -1236,7 +1391,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // cities cost nothing here, so adding stops is cheap: the extra spend on
     // a multi-stop trip is the longer draft, not the research.
     const researchPerStop = await Promise.all(resolved.map(async (stop, i) => {
-      const cached = supabase ? await getCachedResearch(supabase, stop.slug) : null;
+      // Namespaced, because a study city and a tourism city can share a name
+      // (Tokyo, Dubai) and the two sets of notes answer different questions.
+      const cacheKey = isStudy ? `study:${stop.slug}` : stop.slug;
+      const cached = supabase ? await getCachedResearch(supabase, cacheKey) : null;
       if (cached && !cached.stale) return { label: stopLabelsEn[i], notes: cached.notes };
       const fresh = await researchOperationalFacts(
         anthropic, stop.guide, submission, stopLabelsEn[i], (d) => { draftSpend += d; },
@@ -1245,14 +1403,14 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         cached?.raw ?? "",
         // Persist after each category, so a failure halfway keeps the half
         // that worked instead of paying for it again next time.
-        supabase ? async (soFar) => { await cacheResearch(supabase, stop.slug, soFar); } : undefined,
+        supabase ? async (soFar) => { await cacheResearch(supabase, cacheKey, soFar); } : undefined,
         // A customer is waiting on the other end of this, and the route has
         // a hard ceiling. Research gets four minutes of it, then the plan
         // gets written with whatever arrived.
         Date.now() + RESEARCH_DEADLINE_MS,
       );
       if (fresh) {
-        if (supabase) await cacheResearch(supabase, stop.slug, fresh);
+        if (supabase) await cacheResearch(supabase, cacheKey, fresh);
         return { label: stopLabelsEn[i], notes: fresh };
       }
       // Live research failed (API error, out of credits, timeout) and the
