@@ -774,7 +774,15 @@ export async function researchOperationalFacts(
 // adaptive thinking takes a real share of it before a word is written; and
 // Arabic needs noticeably more tokens than English for the same text, so the
 // translation is always the first to run out.
-const DRAFT_MAX_TOKENS = 32_000;
+// Raised again from 32,000 after an Edinburgh study draft's Arabic used
+// 25,535 of it, 80%, without truncating. Study plans are longer than trip
+// plans by design: they carry entry requirements, fees, visa steps, housing
+// costs and community detail rather than a day's sketch, and the density
+// rules turn paragraphs into more, shorter lines. 80% is not a failure, it
+// is the last warning before one, and the failure mode is an Arabic draft
+// that stops mid-sentence in front of a customer. Verified 64,000 is
+// accepted by claude-opus-5 before setting it here.
+const DRAFT_MAX_TOKENS = 64_000;
 
 // The self-check only ever writes a short bullet list or one clean line, so
 // 1200 looked generous. It was not. This call runs with adaptive thinking,
@@ -785,7 +793,13 @@ const DRAFT_MAX_TOKENS = 32_000;
 // reviewer's email simply had no self-check section and nothing said why.
 //
 // Big enough that the reasoning fits and the verdict still gets written.
-const SELF_CHECK_MAX_TOKENS = 8_000;
+// Raised from 8,000 when the pass moved to Opus at high effort. The measured
+// high-effort run spent 4,235 output tokens, so 8,000 would have held - but
+// this constant already has a history of being set to what a good run needs
+// rather than what a bad one takes, and the failure mode is silent: thinking
+// tokens ARE output tokens, so a run that reasons too long returns no text
+// and the reviewer's email simply has no self-check section.
+const SELF_CHECK_MAX_TOKENS = 24_000;
 
 /**
  * Rejects a response that stopped because it ran out of room.
@@ -887,6 +901,9 @@ export function opusSpend(response: Anthropic.Message): number {
   return messageSpend(response, OPUS_IN_PER_M, OPUS_OUT_PER_M);
 }
 
+// Kept although nothing calls it today: the self-check was the last Sonnet
+// call and moved to Opus. Deleting it would take the Sonnet price constants
+// with it, and the next cheap pass we add would have to rediscover them.
 export function sonnetSpend(response: Anthropic.Message): number {
   return messageSpend(response, SONNET_IN_PER_M, SONNET_OUT_PER_M);
 }
@@ -1034,9 +1051,21 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
 // A warning, not a rejection. A translation with one fused word is still worth
 // far more to the reviewer than no Arabic at all, and this pass is expensive
 // to re-run.
+// Arabic LETTERS only. The range U+0600-U+06FF also holds Arabic punctuation
+// and the Arabic-Indic digits, so the old class counted a Latin character
+// followed by an Arabic comma as a fused word. On one Edinburgh draft that
+// was five of the six warnings: "gov.uk،", "EH8 9BT،", "Bristo Square،" -
+// a postcode, an address and a URL correctly punctuated in Arabic, which is
+// exactly what the translation prompt tells it to do with identifiers.
+//
+// A detector that cries wolf five times out of six teaches the reviewer to
+// skim past it, and then the real half-transliteration goes out. Narrowing
+// the class left one flag on that draft, the genuine one.
+const ARABIC_LETTER = "ؠ-يٮ-ۓەۥۦۮ-ۯۺ-ۿ";
+
 export function mixedScriptFragments(arabic: string): string[] {
-  const matches = arabic.match(/[؀-ۿ][A-Za-z]|[A-Za-z][؀-ۿ]/g) ?? [];
-  return [...new Set(matches)];
+  const rx = new RegExp(`[${ARABIC_LETTER}][A-Za-z]|[A-Za-z][${ARABIC_LETTER}]`, "g");
+  return [...new Set(arabic.match(rx) ?? [])];
 }
 
 function warnOnMixedScript(arabic: string) {
@@ -1147,19 +1176,32 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
     if (!englishDraft && !arabicDraft) return "";
 
     const response = await anthropic.messages.create({
-      // Sonnet rather than Opus here, measured on a real stored draft: it
-      // runs about 3x faster at roughly half the cost, and on the sample
-      // tested it caught the highest-stakes issue Opus actually missed (a
-      // driver company's hedged "worth confirming current licensing"
-      // restated flatly as "licensed"). Opus flags more invented specifics,
-      // so this trades a little recall for speed and cost. Safe trade only
-      // because this pass advises the human reviewer, it never gates
-      // publishing, so a missed flag costs a reviewer a second look rather
-      // than reaching a customer.
-      model: "claude-sonnet-5",
+      // This was Sonnet at low effort, on the argument that the pass only
+      // advises a reviewer so a missed flag is cheap. Re-measured on a real
+      // stored Edinburgh study draft, all four variants given identical
+      // input, and the argument did not survive:
+      //
+      //   sonnet low    2s  $0.13     13 output tokens   CLEAN
+      //   opus low     20s  $0.24   1,139               3 issues
+      //   opus medium  32s  $0.26   2,047               3 issues
+      //   opus high    59s  $0.32   4,235               3 issues
+      //
+      // Sonnet did not check the draft cheaply, it barely checked it at all:
+      // thirteen tokens and a clean bill of health on a draft with three
+      // real defects in it, including a budget conclusion the draft's own
+      // figures did not support. A check that passes everything is worse
+      // than no check, because it tells a reviewer the page was read.
+      //
+      // Every Opus variant found the same three. High is kept because it
+      // states them precisely enough to act on without opening the draft,
+      // and because a harder draft is where the extra reasoning would earn
+      // its keep. The latency is affordable for a specific reason: the
+      // proposal row is inserted BEFORE this runs, so a slow or failed
+      // self-check costs the reviewer their note, never the customer's plan.
+      model: "claude-opus-5",
       max_tokens: SELF_CHECK_MAX_TOKENS,
       thinking: { type: "adaptive" },
-      output_config: { effort: "low" },
+      output_config: { effort: "high" },
       system: cachedSystem(buildSelfCheckSystemPrompt()),
       messages: [{
         role: "user",
@@ -1168,10 +1210,11 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
     });
 
     // This pass takes onSpend and never called it, so every recorded draft
-    // cost was short by the self-check: a Sonnet call carrying the grounded
-    // facts, the research notes and both drafts, roughly a tenth of a dollar.
-    // A cost column you have to mentally add to is not a cost column.
-    onSpend?.(sonnetSpend(response));
+    // cost was short by the self-check: a call carrying the grounded facts,
+    // the research notes and both drafts. A cost column you have to mentally
+    // add to is not a cost column. Priced as Opus since the call moved to
+    // Opus above; leaving sonnetSpend here would under-report every draft.
+    onSpend?.(opusSpend(response));
 
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
     const text = textBlock?.text?.trim() ?? "";

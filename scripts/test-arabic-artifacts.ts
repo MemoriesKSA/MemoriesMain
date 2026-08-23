@@ -35,6 +35,24 @@ const cases: [string, string, boolean][] = [
   ["pure Arabic", "اليوم 1 — الوصول إلى تبليسي", false],
   ["pure English", "Day 1 — arrival in Tbilisi", false],
   ["empty", "", false],
+
+  // Arabic punctuation after Latin. The detector used to call every one of
+  // these a fused word, because U+0600-U+06FF holds the Arabic comma and the
+  // Arabic-Indic digits as well as the letters. On one Edinburgh study draft
+  // that was five of six warnings, and the sixth, real one sat in the noise.
+  // Identifiers staying Latin and then being punctuated in Arabic is exactly
+  // what the translation prompt asks for.
+  ["a URL then an Arabic comma", "لا من قراءة مباشرة على gov.uk، وعدد منها", false],
+  ["a postcode then an Arabic comma", "في 50 Potterrow, EH8 9BT، يقع داخل الحرم", false],
+  ["an address then an Arabic comma", "في 1 Bristo Square، الملاصق مباشرة", false],
+  ["a Latin word then an Arabic full stop", "راجع ukvisa.blog۔", false],
+  ["a Latin word then an Arabic question mark", "هل زرت Heriot-Watt؟", false],
+  ["Arabic-Indic digits beside Latin", "الغرفة ٤٥ EH8", false],
+
+  // But a real fusion must still be caught, including the conjunction "wa"
+  // welded straight onto a Latin domain, which is the one the Edinburgh
+  // draft actually had.
+  ["the conjunction glued to a Latin domain", "وروان وtheimmigrationworld", true],
 ];
 
 let pass = 0;
