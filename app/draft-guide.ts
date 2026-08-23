@@ -232,8 +232,21 @@ THEN the internal sections, exactly as on any other plan and with the same headi
 - "Needs the customer's input" for anything only they can answer, e.g. their actual test scores, whether they hold a scholarship, whether family are coming.
 - "Team to confirm before booking" for everything a human should verify before this is sent: every visa figure, every deadline, every fee, and anything the notes left inconclusive.
 - "For the planner" for what you were unsure about and why.
+- After "For the planner", and in EVERY study plan, two machine-readable lines. Every real named thing in your plan must appear on exactly one of them, because we turn each into a map link the student can tap. A trip plan has done this for a while and a study plan never did, so a university, a campus and a neighbourhood all sat there as dead text on the one page where a student most wants to see where things actually are. You know which words in your own draft are places. This is how you tell us. Separate entries with a pipe, since names contain commas. Write "none" if a line has no entries.
+  PICKS: University of Manchester | Manchester Metropolitan University | Unsworth Park | Manchester Central Mosque | Al-Rahma Halal Meats
+  Everything you are RECOMMENDING or naming as an option for them: universities, colleges and language schools, specific campuses, named halls and student residences, mosques and prayer facilities, halal grocers and restaurants you actually name.
+  PLACES: Manchester Airport | Oxford Road | Fallowfield | Rusholme | Withington | Piccadilly Station | Curry Mile
+  Everything else nameable: airports, stations, tram and rail lines, districts, neighbourhoods, suburbs and streets. The context they need to picture where they would live and how far it is from campus.
+  Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never the study city itself, and never a description that isn't a name, so no "the city centre", no "a student area", no "your accommodation".
 
-FORMAT: plain text only, no markdown, no "#" headings, no asterisks, no numbered-list syntax. Short labelled lines rather than dense paragraphs, the same scannable rhythm as our trip plans. Never write a "Day 1" heading: this is not an itinerary and a day heading would make our tooling paywall it as one.`;
+FORMAT: plain text only, no markdown, no "#" headings, no asterisks, no numbered-list syntax. Never write a "Day 1" heading: this is not an itinerary, and a day heading would make our tooling paywall it as one.
+
+RHYTHM, and this is the part the first drafts got wrong. Our trip plans read as short scannable lines and a study plan sat beside one looking like an essay: single paragraphs running two hundred words, five sourced facts deep, that nobody reads on a phone at midnight. The information was right and the shape was wrong, and a student's parents are reading this too.
+- A section heading on its own line, then labelled lines under it. "English requirement: IELTS 7.0 overall, no sub-test below 6.5." One idea per line.
+- Keep a line to roughly 40 words. If it runs longer, it is two lines: the fact, then the caveat or the "what this means for you".
+- Where you have several facts of the same kind - fees, entry requirements, visa documents, monthly costs - give each its own labelled line rather than joining them into a paragraph. Our renderer turns consecutive labelled lines into a proper list, and prose into a wall.
+- Long only where long earns it: an honest explanation of conflicting sources, or a caveat that changes what they should do. Never to fit four separate facts into one breath.
+- Keep every hedge, every attribution and every figure exactly as they are. This is about line breaks, not about saying less.`;
 }
 
 function buildSystemPrompt() {

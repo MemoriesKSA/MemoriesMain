@@ -76,7 +76,24 @@ function isPlannerHeading(line: string) {
 
 export function parseItinerary(text: string): ItinerarySection[] | null {
   const rawLines = text.split(/\r?\n/);
-  if (!rawLines.some((line) => DAY_HEADING.test(cleanLine(line.trim())))) return null;
+
+  // A day heading used to be required, and anything without one fell through
+  // to the raw pre-wrap fallback. That was fine while every plan was a trip.
+  //
+  // A study plan has no days by design - it is a consultation, and the study
+  // brief forbids a "Day 1" heading precisely so the paywall does not treat
+  // one as an itinerary. The result was that the rule protecting the paywall
+  // sent every study plan to the unstyled fallback: no card, no gold section
+  // headings, no bullets, just a wall of pre-wrapped text next to a tourism
+  // plan that looked finished.
+  //
+  // So a day-less document is now parsed as overview groups, which is exactly
+  // what it is. Nothing is hidden that was not hidden before: the same
+  // heading rules apply, and returning null below still catches text with no
+  // recognisable structure at all.
+  const hasDays = rawLines.some((line) => DAY_HEADING.test(cleanLine(line.trim())));
+  const hasContent = rawLines.filter((line) => line.trim()).length >= 3;
+  if (!hasDays && !hasContent) return null;
 
   const sections: ItinerarySection[] = [];
   let overviewGroups: string[][] = [];
