@@ -50,6 +50,22 @@ const cases: [string, unknown, unknown][] = [
   ["an empty self-check is not clean", readSelfCheckVerdict("").clean, false],
   ["and neither is whitespace", readSelfCheckVerdict("   \n  ").clean, false],
   ["a made-up verdict word is not clean", readSelfCheckVerdict("VERDICT: PROBABLY").clean, false],
+
+  // The shape the model actually writes. The prompt asks for "VERDICT: CLEAN"
+  // and it writes the word on its own instead. Three stored drafts, two
+  // different models, all clean, all painted yellow - the exact failure the
+  // verdict token was added to stop, and this suite was green throughout,
+  // because every case here fed it text the prompt had been obeyed on.
+  ["the real stored first line reads clean", readSelfCheckVerdict("CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes.").clean, true],
+  ["a bare CLEAN reads clean", readSelfCheckVerdict("CLEAN").clean, true],
+  ["with a colon too", readSelfCheckVerdict("CLEAN: nothing to flag.").clean, true],
+  ["a bare ISSUES is not clean", readSelfCheckVerdict("ISSUES. The fee is unsourced.").clean, false],
+  ["and the findings survive the label being stripped", readSelfCheckVerdict("ISSUES\n- The fee is unsourced.").body.includes("fee is unsourced"), true],
+  ["the prose after a bare CLEAN is kept, not swallowed", readSelfCheckVerdict("CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes.").body.includes("translation is faithful"), true],
+
+  // Still failing safe: the word has to lead, and has to be the whole word.
+  ["CLEANUP is not a verdict", readSelfCheckVerdict("CLEANUP still needed on day 3.").clean, false],
+  ["a clean-sounding sentence is not a verdict", readSelfCheckVerdict("The draft is clean.").clean, false],
 ];
 
 let pass = 0;

@@ -52,7 +52,14 @@ const cases: [string, string, boolean][] = [
   // But a real fusion must still be caught, including the conjunction "wa"
   // welded straight onto a Latin domain, which is the one the Edinburgh
   // draft actually had.
-  ["the conjunction glued to a Latin domain", "وروان وtheimmigrationworld", true],
+  ["a standalone conjunction is Arabic, not a fusion", "وروان وtheimmigrationworld", false],
+  ["nor is one before an acronym", "يُقبل TOEFL iBT وPTE", false],
+  ["nor before a proper noun", "جامعة سيدني وUNSW", false],
+  ["nor the other proclitics", "من MoneySmart فStudy Australia", false],
+  // But the letter has to stand alone. Real Arabic before the Latin is
+  // still a name the model began transliterating and abandoned.
+  ["a fusion after a whole Arabic word still flags", "زرنا مدينةStepantsminda", true],
+  ["and a conjunction mid-word is not a prefix", "أشهر غودauri", true],
 ];
 
 let pass = 0;

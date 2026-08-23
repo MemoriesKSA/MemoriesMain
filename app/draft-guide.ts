@@ -1063,9 +1063,29 @@ async function generateEnglishDraft(anthropic: Anthropic, submission: DraftGuide
 // the class left one flag on that draft, the genuine one.
 const ARABIC_LETTER = "ؠ-يٮ-ۓەۥۦۮ-ۯۺ-ۿ";
 
+// Arabic writes its one-letter proclitics joined to the following word with
+// no space: و "and", ف "so", ب "by", ك "as", ل "for". When that word is a
+// Latin name the result is "وUNSW", "وPTE", "وStudy Australia" - correct
+// Arabic, and unavoidable in a document that keeps identifiers in Latin
+// because we tell it to. A Sydney draft raised three warnings and all three
+// were this. Left alone it is the Arabic-comma problem again: a detector
+// firing on every acronym list is one nobody reads.
+//
+// A half-transliteration always has real Arabic before the Latin, several
+// letters of a word the model started spelling out: "غودauri", "مدينةStepantsminda".
+// So the prefix is only forgiven when it stands alone, one Arabic letter with
+// whitespace or the start of the text in front of it.
+const ARABIC_PROCLITICS = "وفبكل";
+
 export function mixedScriptFragments(arabic: string): string[] {
   const rx = new RegExp(`[${ARABIC_LETTER}][A-Za-z]|[A-Za-z][${ARABIC_LETTER}]`, "g");
-  return [...new Set(arabic.match(rx) ?? [])];
+  const out: string[] = [];
+  for (const m of arabic.matchAll(rx)) {
+    const at = m.index ?? 0;
+    const isPrefix = ARABIC_PROCLITICS.includes(m[0][0]) && (at === 0 || /\s/.test(arabic[at - 1]));
+    if (!isPrefix) out.push(m[0]);
+  }
+  return [...new Set(out)];
 }
 
 function warnOnMixedScript(arabic: string) {
@@ -1285,6 +1305,21 @@ export function readSelfCheckVerdict(selfCheck: string): { clean: boolean; body:
   const verdict = lines[0].trim().match(/^VERDICT:\s*(CLEAN|ISSUES)\b/i);
   if (verdict) {
     return { clean: verdict[1].toUpperCase() === "CLEAN", body: lines.slice(1).join("\n").trim() };
+  }
+  // The bare word, which is what the model actually writes most of the time:
+  // "CLEAN. No issues found, the translation is faithful..." rather than the
+  // "VERDICT: CLEAN" the prompt asks for. Three stored drafts across two
+  // different models all did this, and all three rendered a yellow banner on
+  // a draft with nothing wrong with it - the exact thing the verdict token
+  // was introduced to stop. A binary signal should not hinge on whether the
+  // model repeated a label, when the first word already says it plainly.
+  const bare = lines[0].trim().match(/^(CLEAN|ISSUES)\b[.:,\s-]*/i);
+  if (bare) {
+    const rest = lines[0].trim().slice(bare[0].length);
+    return {
+      clean: bare[1].toUpperCase() === "CLEAN",
+      body: [rest, ...lines.slice(1)].join("\n").trim(),
+    };
   }
   // Pre-verdict drafts, and any run that ignored the format.
   if (/^no issues found/i.test(text)) return { clean: true, body: "" };
