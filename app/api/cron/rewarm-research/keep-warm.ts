@@ -17,7 +17,14 @@
 // cacheResearch refuses to overwrite them, so listing one would schedule a
 // purchase whose result is then thrown away.
 export const KEEP_WARM = [
-  "istanbul", "cappadocia",
+  // Türkiye, all nine. The seven beyond Istanbul and Cappadocia were being
+  // warmed from a laptop and the laptop kept going to sleep mid-city, which
+  // is the whole argument for doing this here instead: the cron runs on
+  // Vercel, one city per run, and researchIsComplete means a city left
+  // half-finished is picked up again rather than read as warm.
+  "istanbul", "cappadocia", "antalya", "bodrum", "izmir",
+  "fethiye", "ankara", "bursa", "trabzon",
+  // The ten automated Saudi cities, warmed by hand for about $23.
   "abha", "al-ahsa", "al-jouf", "aseer", "dammam",
   "jazan", "red-sea", "tabuk", "taif", "yanbu",
 ];
