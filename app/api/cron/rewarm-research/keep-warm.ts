@@ -27,6 +27,16 @@ export const KEEP_WARM = [
   // The ten automated Saudi cities, warmed by hand for about $23.
   "abha", "al-ahsa", "al-jouf", "aseer", "dammam",
   "jazan", "red-sea", "tabuk", "taif", "yanbu",
+  // One flagship per remaining country: the city a first customer is most
+  // likely to pick. Each was verified end to end on 2026-08-23 and each came
+  // out of that verification holding about a third of its categories, so the
+  // cron finishes work already started rather than beginning from nothing.
+  //
+  // One each, not all six per country, because no non-Saudi trip has sold yet
+  // and cold is now measured rather than feared: a cold city produces a
+  // publishable draft for about $0.50 more and some checking by the reviewer.
+  // Add the second city in a country when that country starts selling.
+  "bangkok", "kuala-lumpur", "tbilisi", "moscow",
 ];
 
 // Refresh a few days before expiry rather than after, so there is no window
@@ -40,15 +50,17 @@ export const REFRESH_WHEN_DAYS_LEFT = 5;
 // a time, so the last one waits (list length / runs per day) days past the
 // moment it became due. It goes cold if that wait exceeds the margin above.
 //
-// Daily runs therefore support six cities, and this list has twelve. Rather
-// than weaken the spend guard or refresh earlier (which re-buys every city
-// more often and costs real money), vercel.json runs this every six hours.
-// Same spend per city per year, four times the drain rate.
+// Daily runs support six cities and this list has twenty-three. Rather than
+// weaken the spend guard or refresh earlier (which re-buys every city more
+// often and costs real money), vercel.json runs this every four hours. Same
+// spend per city per year, six times the drain rate: a run with nothing due
+// returns immediately and bills nothing, so frequency is close to free and
+// only the list length costs anything.
 //
 //   safe list length = REFRESH_WHEN_DAYS_LEFT * runs per day + 1
 //
 // test-rewarm-capacity asserts this against the schedule in vercel.json,
 // because the failure is silent: nothing errors, a city just goes cold and
 // the next customer for it pays for research and waits for it.
-export const RUNS_PER_DAY = 4;
+export const RUNS_PER_DAY = 6;
 export const KEEP_WARM_CAPACITY = REFRESH_WHEN_DAYS_LEFT * RUNS_PER_DAY + 1;
