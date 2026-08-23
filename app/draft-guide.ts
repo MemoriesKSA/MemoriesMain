@@ -57,6 +57,8 @@ export type DraftGuideSubmission = {
   packageNotes: string;
   currency: string;
   budget: string;
+  /** "fixed" | "unsure" | "open". See the budget rules in the system prompt. */
+  budgetMode?: string;
   name: string;
   email: string;
   phone: string;
@@ -91,6 +93,22 @@ export function serializeGuideForDraft(guide: FlagshipCityGuide, ar: boolean): s
   if (guide.sampleDay.length) lines.push(`${ar ? "نمط يوم استخدمه فريقنا من قبل" : "A sample day pattern our team has used before"}: ${guide.sampleDay.map((b) => `${ar ? b.timeAr : b.timeEn} — ${ar ? b.placeAr : b.placeEn}: ${ar ? b.descriptionAr : b.descriptionEn}`).join(" | ")}`);
   if (guide.travelTips?.length) lines.push(`${ar ? "نصائح السفر" : "Travel tips"}: ${guide.travelTips.map((t) => (ar ? t.ar : t.en)).join(" ")}`);
   return lines.join("\n");
+}
+
+// How the customer answered the budget question, which is three different
+// questions rather than one number. "fixed" is a ceiling to plan under,
+// "unsure" is a figure they want judged, and "open" is a request for us to
+// propose one. Written as a sentence rather than a number so the drafting
+// pass cannot mistake an absent figure for a zero.
+function budgetLine(submission: DraftGuideSubmission): string {
+  const amount = submission.budget ? `${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}` : "";
+  if (submission.budgetMode === "open" || !amount) {
+    return "NO FIGURE GIVEN. The customer has asked us to propose a suitable budget for this trip.";
+  }
+  if (submission.budgetMode === "unsure") {
+    return `${amount}, but the customer is NOT sure it is enough and has asked us to tell them.`;
+  }
+  return `${amount}, a set maximum for the whole trip.`;
 }
 
 function tripLength(from: string, to: string) {
@@ -169,6 +187,10 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - If they stated a preferred flight timing (daytime or night), acknowledge it in that block as something to filter for when they search, e.g. "you said you'd rather fly at night, so filter for late departures". Never claim a specific night flight exists on their route unless the notes say so.
 - A hedge word you use anywhere in this draft (e.g. "typically", "positioned as", "worth confirming") must stay attached to that same claim EVERY time you reference it again, including in the closing "For the planner" section. Don't state something with a hedge once and then restate it as settled fact later in the same draft, that's as much a mistake as never hedging it at all.
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
+- The budget line in the request summary is one of three different questions, and answering the wrong one is a bad plan even when every fact in it is right. Read which it is and write accordingly:
+  A SET MAXIMUM. Plan under it. Say once, plainly, whether the plan fits and roughly what it leaves spare. If the tier they asked for genuinely does not fit, say that in "Needs the customer's input" rather than quietly downgrading them or quietly overspending.
+  A FIGURE THEY ARE NOT SURE ABOUT. They have asked you to judge it, so judging it IS the job, and a plan that silently spends the number without commenting has ignored the question. Build the plan, total it honestly, then tell them straight whether the figure is comfortable, tight, or short, and by roughly how much. If it is short, say what it would take: a lower hotel tier, one fewer night, a cheaper season. Warm and direct, never scolding, and never flattering a number that does not work.
+  NO FIGURE AT ALL. They have asked you to propose one. Build the trip you would actually recommend for these people, these dates and this destination, then price it from the figures in your sources and present the total as the suggested budget, broken down the same way as always. Give a range rather than a single number where the sources give a range, name the tier you priced it at, and say plainly that a different tier moves it up or down. Never invent a figure to fill the gap, and never refuse to answer: "tell us your budget" is exactly what they said they could not do.
 - Then show the budget adding up, don't just assert that it does. Under a "Where the budget goes" heading in the overview, give a rough allocation across the categories that actually apply to this trip: accommodation, flights, transport on the ground, food, and activities and entry tickets. Give each a figure or a range, total them, and say plainly how much of their stated budget that leaves spare, or that it runs over if it does. "We've built this to sit inside your budget" is a promise; the customer paid for the working. A number they can check is the single most useful thing on the page, and it lets them see for themselves which part to trade if they want to change something.
 - That allocation is built only from figures already in this plan and in the grounded facts and research notes: the nightly rate you used times the nights, the ticket prices you quoted, the per-person food band from the research. Multiply and add those, and show the arithmetic in the line, e.g. "Hotels: 16 nights across the three cities, roughly SAR 14,000 including the 15% VAT and 5% municipality fee". Where you genuinely have no sourced figure for a category, flights being the usual one, say so in that line and give it as the amount left over rather than inventing a number: "Flights: not quoted here, so price them when you search; the rest of this list leaves roughly SAR X for them". Never present the total as a quote, and never invent a per-category figure to make the arithmetic tidy.
 - Round the working. Estimates carrying the whole trip should read as estimates, so "roughly SAR 14,000" not "SAR 13,847", and say once that every figure is an estimate to plan around rather than a price anyone has agreed.
@@ -255,7 +277,7 @@ Preferred accommodation rating: ${submission.stayRating && submission.stayRating
 Flying from: ${submission.departureCity || "not stated"}
 Preferred flight timing: ${submission.flightTiming && submission.flightTiming !== "flexible" ? readable(submission.flightTiming) : "flexible, no preference stated"}
 Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}
-Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}
+Budget: ${budgetLine(submission)}
 Customer notes: ${submission.packageNotes || "none"}
 
 Real, grounded facts for ${cityLabel} (only use these named places):
@@ -300,7 +322,7 @@ export function customerRequestForCheck(submission: DraftGuideSubmission, cityLa
     `Flying from: ${submission.departureCity || "not stated"}`,
     `Preferred flight timing: ${submission.flightTiming && submission.flightTiming !== "flexible" ? readable(submission.flightTiming) : "flexible, no preference stated"}`,
     `Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}`,
-    `Total budget: ${submission.currency} ${Number(submission.budget).toLocaleString("en-US")}`,
+    `Budget: ${budgetLine(submission)}`,
     `Customer notes: ${submission.packageNotes || "none"}`,
   ].filter(Boolean).join("\n");
 }

@@ -166,6 +166,11 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [delivery, setDelivery] = useState<string[]>(["email"]);
   const [currency, setCurrency] = useState("SAR");
   const [budget, setBudget] = useState("");
+  // Three ways a customer can arrive at a budget, per Habib's spec. "fixed"
+  // and "unsure" both carry a number; "open" deliberately carries none and
+  // asks us to propose one, so the amount field is hidden rather than left
+  // blank and failing validation.
+  const [budgetMode, setBudgetMode] = useState("fixed");
   const [phoneCode, setPhoneCode] = useState("+966");
   const [formError, setFormError] = useState("");
   const [missingSections, setMissingSections] = useState<number[]>([]);
@@ -285,7 +290,9 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       transport.includes("flights") && !departureCity.trim() ? 3 : 0,
       !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
       !transport.length || !stays.length ? 3 : 0,
-      !value("budget") ? 4 : 0,
+      // "No set budget" is a complete answer, not a missing one: the customer
+      // is asking us to propose the figure, so there is no amount to require.
+      budgetMode !== "open" && !value("budget") ? 4 : 0,
       !delivery.length || !value("name") || (delivery.includes("email") && (!value("email") || !emailField?.validity.valid)) || (delivery.includes("whatsapp") && !value("phone")) || !privacyAccepted ? 5 : 0,
     ].filter(Boolean) as number[];
     if (missing.length) {
@@ -524,9 +531,30 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       <label className="fullTextField"><span>{text(ar, "Add anything we have not asked", "أضف أي طلب لم نسأل عنه")}</span><textarea name="packageNotes" rows={3} placeholder={text(ar, "Type a hotel name, dietary preference, accessibility need, dream experience or anything else…", "اكتب اسم فندق أو تفضيلًا غذائيًا أو احتياجًا لسهولة الوصول أو تجربة تحلم بها…")} /></label>
     </section>
 
-    <section className={sectionClass(4)} data-step="4"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small>{requiredWarning(4)}</div></div><div className="budgetComposer">
+    <section className={sectionClass(4)} data-step="4"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small>{requiredWarning(4)}</div></div><fieldset className="budgetModes"><legend>{text(ar, "Budget options", "خيارات الميزانية")}</legend>
+      <input type="hidden" name="budgetMode" value={budgetMode} />
+      {[
+        { value: "fixed",  en: "I have a set budget",                      ar: "لدي ميزانية محددة",                       hintEn: "Enter the maximum available for the trip",  hintAr: "أدخل الحد الأقصى للميزانية المتاحة للرحلة" },
+        { value: "unsure", en: "I have a budget but I'm not sure it's enough", ar: "لدي ميزانية ولكن غير متأكد إذا كانت كافية", hintEn: "We'll help you land on the right budget",     hintAr: "سنساعدك في تحديد الميزانية المناسبة" },
+        { value: "open",   en: "No set budget",                            ar: "لا توجد ميزانية محددة",                   hintEn: "Suggest a suitable budget for the trip",     hintAr: "اقترحوا لي ميزانية مناسبة للرحلة" },
+      ].map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          className={budgetMode === option.value ? "selected" : ""}
+          aria-pressed={budgetMode === option.value}
+          onClick={() => { setBudgetMode(option.value); if (option.value === "open") setBudget(""); }}
+        >
+          <strong>{text(ar, option.en, option.ar)}</strong>
+          <small>{text(ar, option.hintEn, option.hintAr)}</small>
+        </button>
+      ))}
+    </fieldset>
+    <div className="budgetComposer">
       <ElasticSelect label={text(ar, "Currency", "العملة")} name="currency" options={["SAR","USD","EUR","GBP","AED","KWD","QAR","BHD"].map((item)=>({value:item,label:item}))} value={currency} onChange={setCurrency} placeholder="SAR" />
-      <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input type="hidden" name="budget" value={budget} /><input type="text" inputMode="numeric" aria-required="true" value={budget.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChange={(event) => setBudget(event.target.value.replace(/\D/g, ""))} placeholder={text(ar, "Enter your full journey budget", "أدخل ميزانية الرحلة الكاملة")} /></label>
+      {budgetMode !== "open" ? (
+        <label><span>{text(ar, "Total amount", "المبلغ الكامل")} *</span><input type="hidden" name="budget" value={budget} /><input type="text" inputMode="numeric" aria-required="true" value={budget.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChange={(event) => setBudget(event.target.value.replace(/\D/g, ""))} placeholder={text(ar, budgetMode === "unsure" ? "Enter what you have in mind" : "Enter your full journey budget", budgetMode === "unsure" ? "أدخل المبلغ الذي تفكر فيه" : "أدخل ميزانية الرحلة الكاملة")} /></label>
+      ) : null}
     </div></section>
 
     <section className={sectionClass(5)} data-step="5"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose email, WhatsApp, or both.", "اختر البريد الإلكتروني أو واتساب أو كليهما.")}</small>{requiredWarning(5)}</div></div>

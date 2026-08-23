@@ -69,6 +69,7 @@ type JourneySubmission = {
   packageNotes?: unknown;
   currency?: unknown;
   budget?: unknown;
+  budgetMode?: unknown;
   delivery?: unknown;
   name?: unknown;
   email?: unknown;
@@ -198,6 +199,7 @@ export async function POST(request: Request) {
     packageNotes: clean(raw.packageNotes, 2_000),
     currency: clean(raw.currency, 10),
     budget: clean(raw.budget, 30),
+    budgetMode: clean(raw.budgetMode, 10) || "fixed",
     delivery: cleanList(raw.delivery),
     name: clean(raw.name, 150),
     email: clean(raw.email, 254).toLowerCase(),
@@ -208,7 +210,7 @@ export async function POST(request: Request) {
   };
 
   const missingStudyDetails = submission.journeyType === "study" && (!submission.hasSpecificField || !submission.hasSpecificUniversity || (submission.hasSpecificField === "yes" && !submission.specificField) || (submission.hasSpecificUniversity === "yes" && !submission.specificUniversity));
-  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || !submission.budget || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails;
+  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails;
   const invalidEmail = submission.delivery.includes("email") && !emailPattern.test(submission.email);
   const missingPhone = submission.delivery.includes("whatsapp") && !submission.phone;
   if (missingRequired || invalidEmail || missingPhone || submission.toDate < submission.fromDate) {
