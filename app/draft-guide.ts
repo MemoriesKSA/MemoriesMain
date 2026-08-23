@@ -395,6 +395,22 @@ export function customerRequestForCheck(submission: DraftGuideSubmission, cityLa
     `Preferred flight timing: ${submission.flightTiming && submission.flightTiming !== "flexible" ? readable(submission.flightTiming) : "flexible, no preference stated"}`,
     `Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}`,
     `Budget: ${budgetLine(submission)}`,
+    // The study answers, for exactly the reason the budget is here. Without
+    // them the check reads a study plan with no study request and calls the
+    // student's own answers inventions: a real London draft was flagged for
+    // "Mechanical Engineering", which the customer had typed into the form,
+    // and the finding claimed it drove the whole university shortlist. Same
+    // bug as the SAR 15,000 budget, one release later, in the one pass that
+    // exists to catch invented detail.
+    submission.journeyType === "study" ? "This is a STUDY ABROAD request, not a holiday. The customer is a Saudi citizen, confirmed on the form." : "",
+    submission.journeyType === "study" ? `Study level: ${readable(submission.purpose)}` : "",
+    submission.journeyType === "study"
+      ? `Field of study: ${submission.hasSpecificField === "yes" && submission.specificField ? submission.specificField : "none given, so the plan may cover overall standing instead"}`
+      : "",
+    submission.journeyType === "study"
+      ? `Named university: ${submission.hasSpecificUniversity === "yes" && submission.specificUniversity ? submission.specificUniversity : "none given, so the plan shortlists them itself"}`
+      : "",
+    submission.journeyType === "study" ? `Support requested: ${readable(submission.studySupport ?? "") || "not specified"}` : "",
     `Customer notes: ${submission.packageNotes || "none"}`,
   ].filter(Boolean).join("\n");
 }
@@ -1508,7 +1524,13 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
 
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch, dayByDayCalendar(submission.fromDate, submission.toDate), customerRequestForCheck(submission, cityLabelEn, stopLabelsEn), (d) => { draftSpend += d; });
+    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch,
+      // A study plan has no day list, so a day-by-day calendar for it is
+      // meaningless and, over an academic year, enormous: the London draft
+      // shipped thirty "Day 1 = Monday September 20" lines into a check that
+      // had no days to verify them against.
+      isStudy ? "" : dayByDayCalendar(submission.fromDate, submission.toDate),
+      customerRequestForCheck(submission, cityLabelEn, stopLabelsEn), (d) => { draftSpend += d; });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;

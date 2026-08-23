@@ -12,7 +12,7 @@
 // This asserts the wiring, since the writing itself is a model output and
 // belongs in a real end-to-end run.
 
-import { categoriesFor, buildStudySystemPrompt, missingCategories, researchIsComplete, type DraftGuideSubmission } from "../app/draft-guide";
+import { categoriesFor, buildStudySystemPrompt, missingCategories, researchIsComplete, customerRequestForCheck, type DraftGuideSubmission } from "../app/draft-guide";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 import { studyCountries } from "../app/components/planner-data";
 
@@ -91,6 +91,42 @@ const cases: [string, unknown, unknown][] = [
 const partial = "##cat:universities\n...\n##cat:studyvisa\n...";
 const full = "##cat:universities\n.\n##cat:studyvisa\n.\n##cat:living\n.\n##cat:studentlife\n.";
 
+// The self-check must see the study answers, or it calls the student's own
+// form entries inventions. A real London draft was flagged for "Mechanical
+// Engineering" - which the customer had typed in - and the finding claimed it
+// drove the entire university shortlist. Same bug as the SAR 15,000 budget on
+// a Jeddah plan, one release later, in the one pass that exists to catch
+// invented detail. Three runs went green the moment the checker could see it.
+const studyRequestView = customerRequestForCheck({
+  ...submission,
+  name: "Test", fromDate: "2027-09-20", toDate: "2028-06-30",
+  travellers: "solo", travellerCount: "1", transport: [], stays: [],
+  planIncludes: [], currency: "SAR", budget: "", budgetMode: "open",
+  packageNotes: "none",
+} as unknown as DraftGuideSubmission, "London");
+
+const tripRequestView = customerRequestForCheck({
+  name: "Test", countryName: "Turkiye", purpose: "leisure",
+  fromDate: "2026-11-14", toDate: "2026-11-20",
+  travellers: "couple", travellerCount: "2", transport: [], stays: [],
+  planIncludes: [], currency: "SAR", budget: "30000", budgetMode: "fixed",
+  packageNotes: "none",
+} as unknown as DraftGuideSubmission, "Istanbul");
+
+const checkerCases: [string, unknown, unknown][] = [
+  ["the checker is told this is a study request", /STUDY ABROAD request/.test(studyRequestView), true],
+  ["and that the customer is a Saudi citizen", /Saudi citizen/.test(studyRequestView), true],
+  // The fixture's field, which is what the London draft was wrongly flagged
+  // for having "invented".
+  ["it sees the field of study the customer typed", studyRequestView.includes("computer science"), true],
+  ["and the university they named", studyRequestView.includes("University of Manchester"), true],
+  ["it sees the study level", /Study level/.test(studyRequestView), true],
+  ["it sees whether a university was named", /Named university/.test(studyRequestView), true],
+  ["and the support they asked for", /Support requested/.test(studyRequestView), true],
+  // None of it belongs on a holiday, where it would be noise in every check.
+  ["a trip check carries no study lines", /STUDY ABROAD request|Study level|Named university/.test(tripRequestView), false],
+];
+
 const warmCases: [string, unknown, unknown][] = [
   ["the real Manchester shape is incomplete", researchIsComplete(undefined, partial, true), false],
   ["and names exactly what is missing", missingCategories(undefined, partial, true).join(","), "living,studentlife"],
@@ -104,7 +140,7 @@ const warmCases: [string, unknown, unknown][] = [
 
 // One run, one exit code. Kept together deliberately: an early exit after the
 // first block would have skipped every warming check and still reported a pass.
-const all = [...cases, ...warmCases];
+const all = [...cases, ...warmCases, ...checkerCases];
 let pass = 0;
 for (const [name, got, want] of all) {
   const ok = got === want;

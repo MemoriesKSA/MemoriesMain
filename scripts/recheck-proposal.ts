@@ -29,7 +29,7 @@ import {
 import { readFileSync } from "fs";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../app/flagship-city-data";
-import { travelCountries } from "../app/components/planner-data";
+import { travelCountries, studyCountries } from "../app/components/planner-data";
 import type { PlanStop } from "../app/journey/plan-stops";
 
 const args = process.argv.slice(2);
@@ -84,25 +84,41 @@ async function main() {
     process.exit(1);
   }
 
+  // Read early, because everything below branches on it. A study city has no
+  // curated data by design and is researched from nothing, so requiring a
+  // guide refused to re-check any study plan at all - which is where a cheap
+  // loop matters most, since study research is four categories and slow to
+  // regenerate.
+  const requested = REQUEST_FILE ? JSON.parse(readFileSync(REQUEST_FILE, "utf8")) as Record<string, unknown> : {};
+  const isStudy = requested.journeyType === "study";
+
   const slugs = slugsFrom(data.stops as PlanStop[] | null, String(data.city));
   const guides = slugs.map((slug) => {
     const countrySlug = flagshipCountryForCity(slug);
     const guide = countrySlug ? flagshipCityGuideBySlug(countrySlug, slug) : undefined;
-    const label = travelCountries.find((c) => c.value === countrySlug)?.cities.find((c) => c.value === slug)?.en ?? slug;
+    // Study cities live in studyCountries, not travelCountries, so a lookup
+    // in the wrong list leaves the label as a bare slug.
+    const label =
+      travelCountries.find((c) => c.value === countrySlug)?.cities.find((c) => c.value === slug)?.en
+      ?? studyCountries.flatMap((c) => c.cities).find((c) => c.value === slug)?.en
+      ?? slug;
     return { slug, guide, label };
   });
-  const missing = guides.filter((g) => !g.guide).map((g) => g.slug);
+  const missing = isStudy ? [] : guides.filter((g) => !g.guide).map((g) => g.slug);
   if (missing.length) {
     console.error(`No city data for: ${missing.join(", ")}`);
     process.exit(1);
   }
 
   const multiStop = guides.length > 1;
-  const groundedFactsEn = guides.map((g, i) => `--- STOP ${i + 1}: ${g.label} ---\n${serializeGuideForDraft(g.guide!, false)}`).join("\n\n");
-  const groundedFactsAr = guides.map((g, i) => `--- المحطة ${i + 1}: ${g.label} ---\n${serializeGuideForDraft(g.guide!, true)}`).join("\n\n");
+  const NO_CURATED_EN = "We hold no curated places for this city. Everything factual in this plan must come from the research notes below, or be flagged for the team to confirm.";
+  const NO_CURATED_AR = "لا نملك أماكن مختارة لهذه المدينة. كل معلومة واقعية في هذه الخطة يجب أن تأتي من ملاحظات البحث أدناه، أو تُحال إلى الفريق للتأكد منها.";
+  const groundedFactsEn = guides.map((g, i) => `--- STOP ${i + 1}: ${g.label} ---\n${g.guide ? serializeGuideForDraft(g.guide, false) : NO_CURATED_EN}`).join("\n\n");
+  const groundedFactsAr = guides.map((g, i) => `--- المحطة ${i + 1}: ${g.label} ---\n${g.guide ? serializeGuideForDraft(g.guide, true) : NO_CURATED_AR}`).join("\n\n");
 
   const research = await Promise.all(guides.map(async (g) => {
-    const cached = await getCachedResearch(supabase, g.slug);
+    // Study notes live under their own key, the same as in the draft path.
+    const cached = await getCachedResearch(supabase, isStudy ? `study:${g.slug}` : g.slug);
     return { label: g.label, notes: cached?.notes ?? "" };
   }));
   const operationalResearch = research
@@ -116,10 +132,10 @@ async function main() {
     name: "", countryName: "", travellers: "", travellerCount: "", purpose: "",
     transport: [], stays: [], planIncludes: [], currency: "SAR", budget: "0",
     stayRating: "flexible", departureCity: "", flightTiming: "flexible", packageNotes: "",
-    ...(REQUEST_FILE ? JSON.parse(readFileSync(REQUEST_FILE, "utf8")) : {}),
+    ...requested,
     fromDate: String(data.from_date ?? ""),
     toDate: String(data.to_date ?? ""),
-  } as DraftGuideSubmission;
+  } as unknown as DraftGuideSubmission;
   const customerRequest = customerRequestForCheck(submission, String(data.city), guides.map((g) => g.label));
 
   console.log(`${reference}  ${data.city}  ${data.from_date} to ${data.to_date}`);
