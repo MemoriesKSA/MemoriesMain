@@ -1233,15 +1233,32 @@ export function wrapEmailHtml(reference: string, cityLabel: string, customerName
 // reaches a customer (see the "Team to confirm before booking" section),
 // research findings were never treated as gospel, just a strong first pass.
 //
-// Habib moved this from 7 days to 30 on 2026-08-20. The argument for weekly
-// was never that a week is when these facts turn; it is that the reviewer is
-// the real freshness check, and that argument works just as well at a month.
-// Curated rows already never expire at all, which is a far larger staleness
-// exposure than thirty days and has been accepted from the start. What a
-// month genuinely risks is seasonal turns inside the window: Ramadan hours,
-// a summer-to-winter timetable, a restaurant that closed. Those are exactly
-// what the reviewer checks before anything is sent.
-export const RESEARCH_CACHE_TTL_DAYS = 30;
+// Habib moved this from 7 days to 30 on 2026-08-20, and to a year on
+// 2026-08-23. The argument for weekly was never that a week is when these
+// facts turn; it is that the reviewer is the real freshness check, and that
+// argument holds at any window. Curated rows never expire at all, which is a
+// far larger staleness exposure and has been accepted from the start.
+//
+// A year is "does not expire" for every practical purpose, and it is worth
+// knowing why the number barely matters. Age was already close to a no-op: a
+// row past its TTL is marked stale, falls into the research pass, which finds
+// every category already present, returns without a single API call, and
+// re-caches the same notes - which resets the clock. So a city that gets used
+// never goes stale on age, and a city that does not get used costs nothing by
+// being stale. What the TTL actually drives is whether the re-warm cron
+// decides to re-buy, and that is the only place it spends money.
+//
+// The real invalidation lever is RESEARCH_SCOPE_VERSION: deliberate,
+// human-triggered, and it re-buys every automated row. That is the switch to
+// reach for when the research SCOPE changes, not this one.
+//
+// What a long window genuinely risks is a fact that turned and nobody
+// noticed: a restaurant that closed, a summer-to-winter timetable, a price
+// that moved. Each is checked by the reviewer before anything reaches a
+// customer, and the drafts hedge hours and prices as needing confirmation
+// regardless. Worth revisiting once the site is selling and there is traffic
+// to justify a shorter cycle.
+export const RESEARCH_CACHE_TTL_DAYS = 365;
 
 // The TTL only answers "is this too old". It doesn't answer "was this
 // gathered under the scope the drafting pass now expects", and that is a
