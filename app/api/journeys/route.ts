@@ -48,6 +48,7 @@ type JourneySubmission = {
   city?: unknown;
   purpose?: unknown;
   studySupport?: unknown;
+  saudiCitizen?: unknown;
   hasSpecificField?: unknown;
   specificField?: unknown;
   hasSpecificUniversity?: unknown;
@@ -178,6 +179,7 @@ export async function POST(request: Request) {
     city: clean(raw.city, 100),
     purpose: clean(raw.purpose, 100),
     studySupport: clean(raw.studySupport, 100),
+    saudiCitizen: clean(raw.saudiCitizen, 3),
     hasSpecificField: clean(raw.hasSpecificField, 3),
     specificField: clean(raw.specificField, 200),
     hasSpecificUniversity: clean(raw.hasSpecificUniversity, 3),
@@ -209,8 +211,13 @@ export async function POST(request: Request) {
     privacyAccepted: clean(raw.privacyAccepted, 3),
   };
 
+  // Study abroad is a Saudi-citizen service, so the answer is required and
+  // "no" is a refusal rather than a missing field. Enforced here as well as in
+  // the form, because a form that disables its own submit button is a courtesy
+  // and not a control: this endpoint is public.
+  const studyNotEligible = submission.journeyType === "study" && submission.saudiCitizen !== "yes";
   const missingStudyDetails = submission.journeyType === "study" && (!submission.hasSpecificField || !submission.hasSpecificUniversity || (submission.hasSpecificField === "yes" && !submission.specificField) || (submission.hasSpecificUniversity === "yes" && !submission.specificUniversity));
-  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails;
+  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails || studyNotEligible;
   const invalidEmail = submission.delivery.includes("email") && !emailPattern.test(submission.email);
   const missingPhone = submission.delivery.includes("whatsapp") && !submission.phone;
   if (missingRequired || invalidEmail || missingPhone || submission.toDate < submission.fromDate) {
