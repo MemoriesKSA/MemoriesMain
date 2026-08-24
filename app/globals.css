@@ -589,3 +589,15 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
    sent to a form that cannot accept their country. */
 .cityPlanSoonActions{display:flex;flex-direction:column;align-items:flex-start;gap:14px}
 .cityPlanSoonLink{border-bottom:1px solid currentColor;padding-bottom:3px;color:var(--gold-light);font-size:.78rem;font-weight:800}
+
+/* The hero wash follows the text, in both directions.
+   Each hero draws two gradients: one from the bottom, which is correct in any
+   language, and one from the left, which was not. The title sits at the
+   inline start of the container, so in Arabic it flips to the right while the
+   90deg wash stayed pinned to the left - white serif type over the bright
+   half of the photograph, and the darkened half left empty beside it.
+   Gradients take physical angles and have no logical equivalent, so the
+   horizontal layer is reversed here rather than expressed as a start/end.
+   Vertical layers are untouched: the bottom is the bottom either way. */
+.arabicSite .cityGuideHeroShade{background:linear-gradient(0deg,rgba(2,24,20,.94),rgba(2,24,20,.13) 72%),linear-gradient(270deg,rgba(2,24,20,.55),transparent 62%)}
+.arabicSite .flagshipHeroShade{background:linear-gradient(0deg,rgba(2,24,20,.92),rgba(2,24,20,.2) 75%),linear-gradient(270deg,rgba(2,24,20,.5),transparent 62%)}
