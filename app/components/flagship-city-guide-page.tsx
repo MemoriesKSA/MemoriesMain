@@ -7,6 +7,7 @@ import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data"
 import { countryGuideBySlug } from "../destination-guide-data";
 import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
 import { publicPreview } from "./public-preview";
+import { fetchLiveWeather } from "../weather-live";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -25,7 +26,7 @@ function hasPublicImage(src: string) {
   return existsSync(join(process.cwd(), "public", src));
 }
 
-export function FlagshipCityGuidePage({
+export async function FlagshipCityGuidePage({
   country,
   city,
   guide,
@@ -85,6 +86,12 @@ export function FlagshipCityGuidePage({
 
   const otherCities = (countryGuideBySlug("saudi-arabia")?.cities ?? []).filter((candidate) => candidate.slug !== city.slug);
 
+  // Today's reading, fetched here rather than in the browser so the number is
+  // in the HTML: no spinner, no layout jump, and it still shows with
+  // JavaScript off. Returns null on any failure, and the panel below renders
+  // exactly as it did before - a city page is worth reading without it.
+  const live = await fetchLiveWeather(city.slug);
+
   return (
     <main className="innerPage flagshipCityPage">
       <Breadcrumb
@@ -138,7 +145,7 @@ export function FlagshipCityGuidePage({
 
       <section className="container flagshipWeather" id="weather">
         <p className="kicker">{ar ? "الطقس والتوقيت" : "Weather & timing"}</p>
-        <WeatherTransportTabs guide={guide} locale={locale} />
+        <WeatherTransportTabs guide={guide} locale={locale} live={live} />
       </section>
 
       <section className="container flagshipPullQuote">

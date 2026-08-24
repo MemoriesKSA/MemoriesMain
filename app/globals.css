@@ -601,3 +601,38 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
    Vertical layers are untouched: the bottom is the bottom either way. */
 .arabicSite .cityGuideHeroShade{background:linear-gradient(0deg,rgba(2,24,20,.94),rgba(2,24,20,.13) 72%),linear-gradient(270deg,rgba(2,24,20,.55),transparent 62%)}
 .arabicSite .flagshipHeroShade{background:linear-gradient(0deg,rgba(2,24,20,.92),rgba(2,24,20,.2) 75%),linear-gradient(270deg,rgba(2,24,20,.5),transparent 62%)}
+
+/* Today's reading, under the best-window and peak-heat cards.
+   Deliberately a different shape from the two cards above it: those describe
+   a season, this describes an hour, and making it a third identical card
+   would have flattened that difference. The temperature is the largest thing
+   in the section because it is the one number somebody came looking for. */
+.weatherNow{
+  display:flex;flex-direction:column;gap:14px;
+  margin-top:18px;padding:20px 22px;
+  border:1px solid var(--line);border-radius:14px;background:var(--paper);
+}
+.weatherNowHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.weatherNowLabel{
+  color:var(--gold);font-size:.68rem;font-weight:800;letter-spacing:.19em;text-transform:uppercase;
+}
+.weatherNowClock{
+  color:var(--muted);font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  font-variant-numeric:tabular-nums;
+}
+.weatherNowBody{display:flex;align-items:center;gap:20px}
+.weatherNowTemp{
+  font-family:var(--font-display),Georgia,serif;font-size:clamp(3rem,8vw,4rem);
+  font-weight:600;line-height:.86;color:var(--ink);font-variant-numeric:tabular-nums;
+}
+.weatherNowTemp sup{font-size:.42em;vertical-align:super;line-height:0}
+.weatherNowMeta{display:flex;flex-direction:column;gap:3px;min-width:0}
+.weatherNowMeta strong{font-size:1.02rem;color:var(--ink)}
+.weatherNowMeta span{color:var(--muted);font-size:.86rem;font-variant-numeric:tabular-nums}
+.weatherNowReading{
+  margin:0;padding-top:13px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:.92rem;line-height:1.6;
+}
+@media(max-width:520px){
+  .weatherNowBody{gap:16px}
+}

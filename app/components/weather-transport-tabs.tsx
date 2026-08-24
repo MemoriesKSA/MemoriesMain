@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Bus, Sun, Thermometer } from "lucide-react";
 import type { EditorialCityGuide, FlagshipTransportMode } from "../flagship-city-data";
+import type { LiveWeather } from "../weather-live";
 
-export function WeatherTransportTabs({ guide, locale = "en" }: { guide: EditorialCityGuide; locale?: "en" | "ar" }) {
+export function WeatherTransportTabs({ guide, locale = "en", live }: { guide: EditorialCityGuide; locale?: "en" | "ar"; live?: LiveWeather | null }) {
   const ar = locale === "ar";
   const hasTransport = (guide.transportation?.length ?? 0) > 0;
   const [tab, setTab] = useState<"weather" | "transport">("weather");
@@ -41,6 +42,26 @@ export function WeatherTransportTabs({ guide, locale = "en" }: { guide: Editoria
               <p className="weatherNote">{ar ? peakHeat.noteAr : peakHeat.noteEn}</p>
             </article>
           </div>
+          {live ? (
+            <div className="weatherNow">
+              <div className="weatherNowHead">
+                <span className="weatherNowLabel">{ar ? "الآن" : "Right now"}</span>
+                <span className="weatherNowClock">{live.localTime}</span>
+              </div>
+              <div className="weatherNowBody">
+                <span className="weatherNowTemp">{live.tempC}<sup>°</sup></span>
+                <div className="weatherNowMeta">
+                  <strong>{ar ? live.conditionAr : live.conditionEn}</strong>
+                  <span>
+                    {ar ? `الإحساس الحراري ${live.feelsLikeC}°` : `Feels like ${live.feelsLikeC}°`}
+                    {" · "}
+                    {live.highC}° / {live.lowC}°
+                  </span>
+                </div>
+              </div>
+              <p className="weatherNowReading">{ar ? live.readingAr : live.readingEn}</p>
+            </div>
+          ) : null}
           <p className="weatherTip">{ar ? guide.weather.tipAr : guide.weather.tipEn}</p>
         </>
       ) : (
