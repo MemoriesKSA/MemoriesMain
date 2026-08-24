@@ -37,7 +37,7 @@ import {
 } from "../app/draft-guide";
 import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { flagshipCityKeys, flagshipCityGuideBySlug } from "../app/flagship-city-data";
-import { travelCountries, studyCountries } from "../app/components/planner-data";
+import { isPlannableCountry, plannableCountries, travelCountries, studyCountries } from "../app/components/planner-data";
 
 const args = process.argv.slice(2);
 const has = (flag: string) => args.includes(flag);
@@ -94,9 +94,15 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
   const warm: Target[] = [];
   const cold: Target[] = [];
 
+  // Was flagshipCityKeys(), which lists only cities we hand-curated. That was
+  // the right source while a city could not be planned without a guide. Now a
+  // plannable country needs every one of its cities warm whether or not anyone
+  // wrote a guide for it - Indonesia, the Philippines and the UAE have none at
+  // all - and asking for them by name found nothing, silently, because they
+  // were never in the list being walked.
   const cityKeys = STUDY
     ? studyCountries.flatMap((c) => c.cities.filter((city) => !city.value.startsWith("other-")).map((city) => ({ countrySlug: c.value, citySlug: city.value })))
-    : flagshipCityKeys();
+    : plannableCountries.flatMap((c) => c.cities.filter((city) => !city.value.startsWith("other-")).map((city) => ({ countrySlug: c.value, citySlug: city.value })));
 
   for (const { countrySlug, citySlug } of cityKeys) {
     if (ONLY && !ONLY.includes(citySlug)) continue;
@@ -253,8 +259,19 @@ async function main() {
     }
 
     const guide = flagshipCityGuideBySlug(t.countrySlug, t.citySlug);
-    // A study city has no guide by design, so only a tourism city needs one.
-    if (!STUDY && !guide) { console.log(`skip ${t.citySlug}: no city data`); continue; }
+    // A tourism city used to need a curated guide before it could be
+    // researched, which was true while research only topped up what the guide
+    // already held. It no longer is: a plannable city with no guide researches
+    // the full set instead, hotels included.
+    //
+    // Left in place, this guard skipped all fourteen Indonesian, Philippine
+    // and Emirati cities and exited 0, reporting "0 of 14 cities warmed" as
+    // though there had been nothing to do. Nothing was billed, which is the
+    // only reason it was cheap to find.
+    if (!STUDY && !guide && !isPlannableCountry(t.countrySlug)) {
+      console.log(`skip ${t.citySlug}: no city data and ${t.countrySlug} is not plannable`);
+      continue;
+    }
 
     console.log(`\n--- ${t.label} (${t.countrySlug}) ---`);
 

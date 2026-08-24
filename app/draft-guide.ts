@@ -498,10 +498,22 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
     scope: ({ cityLabelEn, countryName }) => `Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, full-day hire with a driver, or both), roughly how they price it if published, and whatever you can genuinely find on reputation and standing. We have no drivers of our own for this city, so this is the only source the plan will have. Search "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for names that come up. A hotel concierge arrangement or a well-reviewed local tour operator providing a car and driver counts, say which it is.`,
   },
   {
+    key: "stays",
+    header: "Hotels",
+    searches: 12,
+    scope: ({ cityLabelEn, countryName, purpose }) => `Real, currently-operating hotels in ${cityLabelEn} across price tiers, suiting a ${purpose} trip: at least 2 genuinely budget or mid-range, at least 2 upscale or luxury, roughly 6-8 in total. For each: name, the district or area it sits in, one line on what the place is actually like, its rough price tier, and the review score WITH the number of ratings behind it where you can find one. We hold no hotels of our own for this city, so this is the only source the plan has to book a stay from, and a plan that cannot name somewhere to sleep is not a plan. Prefer places with a real, verifiable presence: an official site, a listing on a major booking platform, a street address. Search "best hotels in ${cityLabelEn}", "luxury hotels ${cityLabelEn} ${countryName}", "affordable hotels ${cityLabelEn}", and "where to stay in ${cityLabelEn}" for the districts. Never invent a star rating: report the tier and what the place is like, and say plainly if a star count is not published anywhere you found.`,
+  },
+  {
     key: "sights",
     header: "More to do",
     searches: 12,
-    scope: ({ cityLabelEn, guide }) => `More real, currently-open things to do in and around ${cityLabelEn}, beyond these, which we already hold: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. Aim for 6-8 that a visitor would spend half a day or more on, deliberately mixing the kinds: a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it is ticketed or free. Our own list is short and a long stay here has to be filled with real places rather than vague afternoons. Don't repeat what we hold, and don't pad with restaurants.`,
+    // The "beyond these" clause only makes sense when there IS a these. A
+    // city with no curated guide was handed "beyond these, which we already
+    // hold: " with an empty list, which reads as an instruction to avoid
+    // nothing in particular and wastes a sentence of an expensive prompt.
+    scope: ({ cityLabelEn, guide }) => (guide?.attractions ?? []).length === 0
+      ? `Real, currently-open things to do in and around ${cityLabelEn}. Aim for 8-10 that a visitor would spend half a day or more on, deliberately mixing the kinds: the headline sights the city is actually known for, a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, whether it is ticketed or free, and its opening hours or seasonal status if published. We hold nothing of our own for this city, so this is the only source of things to do the plan will have. Don't pad with restaurants, another pass covers those.`
+      : `More real, currently-open things to do in and around ${cityLabelEn}, beyond these, which we already hold: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. Aim for 6-8 that a visitor would spend half a day or more on, deliberately mixing the kinds: a museum or gallery, a market or shopping street, a park or waterfront walk, a neighbourhood worth wandering, an evening thing, and one or two day trips within about two hours (name the place, say roughly how far and how people get there). For each: name, what it is in one line, and whether it is ticketed or free. Our own list is short and a long stay here has to be filled with real places rather than vague afternoons. Don't repeat what we hold, and don't pad with restaurants.`,
   },
   {
     key: "halal",
@@ -577,12 +589,30 @@ export function categoriesFor(guide: FlagshipCityGuide | undefined, isStudy = fa
   // A study city is researched from nothing: it has no flagship entry, and
   // none of the trip categories would answer a student's question anyway.
   if (isStudy) return STUDY_RESEARCH_CATEGORIES;
-  if (!guide) return [];
-  const holdsDriver = !![...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].length;
+
+  // A trip city with no curated guide used to return no categories at all,
+  // which read as "nothing left to research" when it meant "nothing is known
+  // yet". Combined with the draft branch refusing to open without a guide, a
+  // whole country could sit in the planner producing nothing.
+  //
+  // Every rule below is really the same question - does our own data already
+  // cover this? - so an absent guide answers "no" to all of them and the city
+  // researches the full set. No special case, just honest defaults.
+  const holdsDriver = !![...(guide?.trustedProviders ?? []), ...(guide?.extendedProviders ?? [])].length;
+  const attractions = guide?.attractions.length ?? 0;
   return RESEARCH_CATEGORIES.filter((c) => {
-    if (c.key === "dining") return guide.dining.length < 3;
+    if (c.key === "dining") return (guide?.dining.length ?? 0) < 3;
     if (c.key === "drivers") return !holdsDriver;
-    if (c.key === "sights") return guide.attractions.length < 6;
+    if (c.key === "sights") return attractions < 6;
+    // Hours are checked against places we already hold by name. With none
+    // held there is no list to check, and the category would ask the model
+    // for the opening hours of an empty set.
+    if (c.key === "hours") return attractions > 0;
+    // Somewhere to sleep. This category is new because curated data always
+    // carried the hotels, so nothing ever researched them - which is also
+    // why Kazbegi, Kutaisi and Mtskheta have sat on a single hotel each
+    // however many times they were rewarmed.
+    if (c.key === "stays") return (guide?.stay.length ?? 0) < 2;
     return true;
   });
 }
@@ -716,10 +746,17 @@ export async function researchOperationalFacts(
   shouldStop?: () => string | null,
 ): Promise<string> {
   const isStudy = submission.journeyType === "study";
-  // A trip is grounded in our own place list, so no list means nothing to
-  // research around. A study city has no list by design and is researched
-  // from nothing, so the same check would skip every study plan.
-  if (!isStudy && !guide?.attractions.length) return existing;
+  // There used to be a guard here refusing to research a trip city with no
+  // curated attractions, on the reasoning that a trip is grounded in our own
+  // place list so an empty list leaves nothing to research around. That has
+  // stopped being true: a plannable city with no guide researches the full
+  // set from nothing, hotels included, exactly as a study city does.
+  //
+  // It was also redundant. categoriesFor decides what is worth researching
+  // and the `todo` check below already returns early when that is nothing,
+  // so this second opinion could only ever disagree with the first - and it
+  // did, returning "added nothing" for Bali while categoriesFor was asking
+  // for all seven categories. One authority, further down.
 
   const context: ResearchContext & { fromDate: string; toDate: string } = {
     cityLabelEn,

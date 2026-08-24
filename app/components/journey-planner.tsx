@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, GraduationCap, Luggage, Map, MapPin, Plane, Sparkles } from "lucide-react";
 import { ElasticSelect, MultiChoice } from "./form-controls";
 import type { SelectChoice } from "./form-controls";
-import { deepDataCountries, pathOptions, saudiArabia, studyCountries, travelCountries } from "./planner-data";
+import { deepDataCountries, pathOptions, plannableCountries, saudiArabia, studyCountries } from "./planner-data";
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
 import { planFee, NIGHT_RATE, EXTRA_STOP_FEE } from "../journey/pricing";
 
@@ -183,7 +183,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const submissionId = useRef(crypto.randomUUID());
   const resultRef = useRef<HTMLDivElement>(null);
 
-  const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : travelCountries;
+  const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : plannableCountries;
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
   const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;

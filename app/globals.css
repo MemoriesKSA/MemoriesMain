@@ -560,3 +560,32 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 @media(max-width:640px){.nightsRow{grid-template-columns:1fr auto auto}.nightsDates{grid-column:1/-1;text-align:start}}
 .datesFee{display:grid;gap:3px;margin:16px 0 0;padding:13px 16px;border:1px solid var(--gold);border-radius:11px;background:rgba(231,185,79,.08);font-size:.86rem;font-weight:800}
 .datesFee span{color:var(--muted);font-size:.74rem;font-weight:600}
+
+/* Feedback page. Deliberately plain: a wide box, a gold button, and the two
+   optional fields visibly marked optional so nobody fills them in out of
+   obligation before saying what they came to say. */
+.feedbackPage{padding-block:72px 96px}
+.feedbackIntro{max-width:660px}
+.feedbackIntro h1{margin:0 0 18px;font-size:clamp(2.3rem,4.4vw,3.4rem);line-height:1.06}
+.feedbackIntro h1 em{color:var(--gold);font-style:italic}
+.feedbackIntro p{margin:0;color:var(--muted);font-size:1.02rem;line-height:1.75}
+.feedbackFormWrap{max-width:660px;margin-top:34px}
+.feedbackForm{display:flex;flex-direction:column;gap:18px}
+.feedbackForm label{display:block;margin-bottom:7px;font-size:.79rem;font-weight:800;letter-spacing:.02em}
+.feedbackOptional{margin-inline-start:7px;color:var(--muted);font-size:.72rem;font-weight:600;letter-spacing:0;text-transform:none}
+.feedbackForm textarea,.feedbackForm input{width:100%;padding:13px 15px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);line-height:1.65}
+.feedbackForm textarea{resize:vertical;min-height:170px}
+.feedbackForm textarea:focus,.feedbackForm input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent}
+.feedbackRow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.feedbackForm .button.gold{align-self:flex-start;min-width:150px}
+.feedbackDone{max-width:660px;padding:34px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:var(--shadow)}
+.feedbackDone h3{margin:14px 0 10px;font-size:1.5rem}
+.feedbackDone p{margin:0;color:var(--muted);line-height:1.75}
+.feedbackAgain{margin-top:18px;padding:0;border:0;border-bottom:1px solid currentColor;background:none;color:var(--gold);font-size:.78rem;font-weight:800;cursor:pointer}
+@media(max-width:640px){.feedbackRow{grid-template-columns:1fr}}
+
+/* A destination we are not ready to plan yet. Same shape as the normal
+   plan CTA so the page does not look broken, different words so nobody is
+   sent to a form that cannot accept their country. */
+.cityPlanSoonActions{display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.cityPlanSoonLink{border-bottom:1px solid currentColor;padding-bottom:3px;color:var(--gold-light);font-size:.78rem;font-weight:800}

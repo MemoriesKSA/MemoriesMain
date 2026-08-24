@@ -113,7 +113,7 @@ const fallbackPlaces = (cityEn: string, cityAr: string) => ({
 // Move one out of here as soon as it has a hero image and city images under
 // /images/cities/<slug>/. test-city-uniqueness.ts fails if a planner country
 // is neither profiled nor named here, so this list cannot rot quietly.
-export const CATALOGUE_PENDING = new Set(["malaysia", "georgia", "russia"]);
+export const CATALOGUE_PENDING = new Set(["malaysia", "georgia", "russia", "philippines"]);
 
 export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) => {
   const profile = profiles[country.value];

@@ -6,6 +6,7 @@ import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, MapPin, Sparkles,
 import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data";
 import { countryGuideBySlug } from "../destination-guide-data";
 import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
+import { publicPreview } from "./public-preview";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -42,13 +43,22 @@ export function FlagshipCityGuidePage({
   const story = ar ? guide.storyAr : guide.storyEn;
   const cityName = ar ? city.nameAr : city.nameEn;
 
-  const hasDining = guide.dining.length > 0;
-  const hasStay = guide.stay.length > 0;
+  // See publicPreview: the cap is display-only. The full lists stay in the
+  // flagship data and still ground the AI draft, so a plan can still match a
+  // hotel to a stated budget or offer a step up a tier.
+  const shownAttractions = publicPreview(guide.attractions);
+  const shownDining = publicPreview(guide.dining);
+  const shownStay = publicPreview(guide.stay);
+
+  const hasDining = shownDining.length > 0;
+  const hasStay = shownStay.length > 0;
   const hasSampleDay = guide.sampleDay.length > 0;
   const hasFaq = (guide.faq?.length ?? 0) > 0;
   const hasTips = (guide.travelTips?.length ?? 0) > 0;
 
-  const tagPills = Array.from(new Set(guide.attractions.map((place) => (ar ? place.categoryAr : place.categoryEn))));
+  // Built from what is actually shown, so the pills cannot advertise a
+  // category whose only place sits below the cut.
+  const tagPills = Array.from(new Set(shownAttractions.map((place) => (ar ? place.categoryAr : place.categoryEn))));
 
   const navItems: JumpNavItem[] = [
     { id: "about", labelEn: "About", labelAr: "نبذة" },
@@ -150,7 +160,7 @@ export function FlagshipCityGuidePage({
           </h2>
         </div>
         <div className="flagshipGrid placesGrid">
-          {guide.attractions.map((place: FlagshipPlace) => (
+          {shownAttractions.map((place: FlagshipPlace) => (
             <article key={place.nameEn} className="placeCard">
               <div className="placeCardMedia">
                 <ImageSlot label={ar ? place.nameAr : place.nameEn} />
@@ -173,7 +183,7 @@ export function FlagshipCityGuidePage({
             <h2>{ar ? "مشهد طعام يستحق ليلة إضافية." : "A dining scene worth staying an extra night for."}</h2>
           </div>
           <div className="flagshipGrid diningGrid">
-            {guide.dining.map((place: FlagshipDining) => (
+            {shownDining.map((place: FlagshipDining) => (
               <article key={place.nameEn} className="diningCard">
                 <ImageSlot label={ar ? place.nameAr : place.nameEn} />
                 <span className="placeCategory">{ar ? place.cuisineAr : place.cuisineEn}</span>
@@ -199,7 +209,7 @@ export function FlagshipCityGuidePage({
             </h2>
           </div>
           <div className="flagshipGrid stayGrid">
-            {guide.stay.map((place: FlagshipStay) => (
+            {shownStay.map((place: FlagshipStay) => (
               <article key={place.nameEn} className="hotelCard">
                 <div className="placeCardMedia">
                   <ImageSlot label={ar ? place.nameAr : place.nameEn} />

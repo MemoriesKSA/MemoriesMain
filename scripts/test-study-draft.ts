@@ -47,7 +47,12 @@ const cases: [string, unknown, unknown][] = [
   // The premise this whole design rests on.
   ["no study city has flagship data", studyCityWithData.length, 0],
   ["so a study city researches with no guide at all", studyCats.length, 4],
-  ["and never falls back to an empty list", categoriesFor(undefined, false).length, 0],
+  // This asserted 0 until a trip city was allowed to research from nothing.
+  // The old name was already at odds with the old number: it said "never
+  // falls back to an empty list" while asserting the list WAS empty, which
+  // is exactly what let a whole country sit in the planner producing nothing.
+  ["a trip city with no guide researches everything", categoriesFor(undefined, false).length, 7],
+  ["and a study city still gets its own four, not those seven", studyCats.length, 4],
 
   ["study asks about universities", studyCats.includes("universities"), true],
   ["the Saudi visa route", studyCats.includes("studyvisa"), true],
@@ -133,9 +138,14 @@ const warmCases: [string, unknown, unknown][] = [
   ["all four categories is complete", researchIsComplete(undefined, full, true), true],
   ["with nothing left to buy", missingCategories(undefined, full, true).length, 0],
   ["empty notes need all four", missingCategories(undefined, "", true).length, 4],
-  // Measured against the wrong set, a study city would look complete on
-  // categories it never researched, which is how it read as fresh before.
-  ["study notes are NOT judged by the trip categories", researchIsComplete(undefined, full, false), true],
+  // Measured against the wrong set this used to read as complete, because a
+  // trip city with no guide needed no categories at all, so any notes at all
+  // satisfied it. Now the wrong set is seven trip categories that four study
+  // categories plainly do not cover, so the mistake reports itself instead of
+  // passing quietly. Strictly better than the behaviour this line was written
+  // to pin down.
+  ["study notes measured as a trip now read as incomplete", researchIsComplete(undefined, full, false), false],
+  ["and name the trip categories they are missing", missingCategories(undefined, full, false).includes("stays"), true],
 ];
 
 // One run, one exit code. Kept together deliberately: an early exit after the

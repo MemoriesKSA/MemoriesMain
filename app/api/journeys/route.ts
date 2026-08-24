@@ -1,8 +1,8 @@
 import { Resend } from "resend";
 import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
-import { travelCountries } from "../../components/planner-data";
-import { flagshipCityGuideBySlug } from "../../flagship-city-data";
+import { isPlannableCountry, travelCountries } from "../../components/planner-data";
+
 
 export const runtime = "nodejs";
 // The AI draft (see draft-guide.ts) runs in the background via after()
@@ -307,7 +307,14 @@ export async function POST(request: Request) {
   // no draft at all. Its plan is grounded in its own research categories
   // instead - universities, the Saudi visa route, housing, halal and prayer.
   const isStudyRequest = submission.journeyType === "study";
-  if (isStudyRequest || countrySlug === "saudi-arabia" || flagshipCityGuideBySlug(countrySlug, submission.city)) {
+  // Was: study, or Saudi, or the city has a curated guide. That last clause
+  // is what silently dropped 105 cities - the planner offered them, this
+  // branch refused them, and nobody found out because a request that produces
+  // nothing looks exactly like one that has not finished yet.
+  //
+  // Now both sides read the same list. A country is plannable or it is not in
+  // the dropdown, so the two cannot drift apart again.
+  if (isStudyRequest || isPlannableCountry(countrySlug)) {
     after(() => generateDraftGuide({
       submissionId: submission.submissionId,
       city: submission.city,

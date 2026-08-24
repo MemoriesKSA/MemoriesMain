@@ -27,7 +27,7 @@ const cities = (items: Array<[string, string, string]>): LocalizedOption[] =>
 export const saudiArabia: CountryOption = {
   value: "saudi-arabia",
   en: "Saudi Arabia",
-  ar: "المملكة العربية السعودية",
+  ar: "المملكة العربية السعودية",
   aliases: "ksa saudi arabia kingdom",
   cities: cities([
     ["riyadh", "Riyadh", "الرياض"], ["jeddah", "Jeddah", "جدة"], ["alula", "AlUla", "العلا"],
@@ -75,6 +75,7 @@ export const travelCountries: CountryOption[] = [
   { value: "uae", en: "United Arab Emirates", ar: "الإمارات العربية المتحدة", aliases: "uae emirates dubai abu dhabi", cities: cities([["dubai","Dubai","دبي"],["abu-dhabi","Abu Dhabi","أبوظبي"],["ras-al-khaimah","Ras Al Khaimah","رأس الخيمة"],["sharjah","Sharjah","الشارقة"],["other-uae","Another UAE city","مدينة إماراتية أخرى"]]) },
   { value: "greece", en: "Greece", ar: "اليونان", aliases: "greek hellas", cities: cities([["athens","Athens","أثينا"],["santorini","Santorini","سانتوريني"],["mykonos","Mykonos","ميكونوس"],["crete","Crete","كريت"],["rhodes","Rhodes","رودس"],["thessaloniki","Thessaloniki","سالونيك"],["other-greece","Another Greek destination","وجهة يونانية أخرى"]]) },
   { value: "indonesia", en: "Indonesia", ar: "إندونيسيا", aliases: "indonesian bali", cities: cities([["bali","Bali","بالي"],["jakarta","Jakarta","جاكرتا"],["yogyakarta","Yogyakarta","يوجياكارتا"],["lombok","Lombok","لومبوك"],["labuan-bajo","Labuan Bajo & Komodo","لابوان باجو وكومودو"],["other-indonesia","Another Indonesian destination","وجهة إندونيسية أخرى"]]) },
+  { value: "philippines", en: "Philippines", ar: "الفلبين", aliases: "filipino philippine manila cebu", cities: cities([["manila","Manila","مانيلا"],["cebu","Cebu","سيبو"],["boracay","Boracay","بوراكاي"],["palawan","Palawan","بالاوان"],["bohol","Bohol","بوهول"],["other-philippines","Another Philippine destination","وجهة فلبينية أخرى"]]) },
   { value: "thailand", en: "Thailand", ar: "تايلاند", aliases: "thai siam", cities: cities([["bangkok","Bangkok","بانكوك"],["phuket","Phuket","بوكيت"],["chiang-mai","Chiang Mai","شيانغ ماي"],["krabi","Krabi","كرابي"],["koh-samui","Koh Samui","كوه ساموي"],["pattaya","Pattaya","باتايا"],["other-thailand","Another Thai destination","وجهة تايلاندية أخرى"]]) },
   { value: "australia", en: "Australia", ar: "أستراليا", aliases: "aussie", cities: cities([["sydney","Sydney","سيدني"],["melbourne","Melbourne","ملبورن"],["gold-coast","Gold Coast","غولد كوست"],["brisbane","Brisbane","بريزبن"],["perth","Perth","بيرث"],["adelaide","Adelaide","أديلايد"],["cairns","Cairns","كيرنز"],["other-australia","Another Australian city","مدينة أسترالية أخرى"]]) },
   { value: "canada", en: "Canada", ar: "كندا", aliases: "canadian", cities: cities([["toronto","Toronto","تورونتو"],["vancouver","Vancouver","فانكوفر"],["montreal","Montréal","مونتريال"],["quebec-city","Québec City","مدينة كيبيك"],["banff","Banff","بانف"],["calgary","Calgary","كالغاري"],["ottawa","Ottawa","أوتاوا"],["victoria","Victoria","فيكتوريا"],["other-canada","Another Canadian city","مدينة كندية أخرى"]]) },
@@ -88,6 +89,45 @@ export const travelCountries: CountryOption[] = [
   { value: "georgia", en: "Georgia", ar: "جورجيا", aliases: "georgian tbilisi", cities: cities([["tbilisi","Tbilisi","تبليسي"],["batumi","Batumi","باتومي"],["kazbegi","Kazbegi","كازبيغي"],["kutaisi","Kutaisi","كوتايسي"],["borjomi","Borjomi","بورجومي"],["mtskheta","Mtskheta","متسخيتا"],["other-georgia","Another Georgian city","مدينة جورجية أخرى"]]) },
   { value: "russia", en: "Russia", ar: "روسيا", aliases: "russian federation", cities: cities([["moscow","Moscow","موسكو"],["saint-petersburg","Saint Petersburg","سانت بطرسبرغ"],["kazan","Kazan","قازان"],["sochi","Sochi","سوتشي"],["kaliningrad","Kaliningrad","كالينينغراد"],["other-russia","Another Russian city","مدينة روسية أخرى"]]) },
 ];
+
+// Which countries the journey planner will actually accept a request for.
+//
+// travelCountries stays the full list, because /destinations builds its story
+// pages from it, map links resolve a city's country through it, and a stored
+// plan works out where it went from it. None of that should shrink.
+//
+// What had to shrink is the planner. Every country here that we hold no data
+// for still appeared in the dropdown, and the draft branch in the journeys
+// route only opens for a city we can actually ground - so a customer could
+// choose Paris, submit, and receive nothing at all. Not an error, not a log
+// line: the team got a brief and the customer got silence. That had already
+// happened twice before, once to Türkiye and once to every study request,
+// and the route's own comment says so.
+//
+// So the planner offers only what we can plan. The rest keep their story
+// pages, marked as somewhere we are still working on.
+const PLANNABLE = new Set([
+  "saudi-arabia",
+  "turkey",
+  "thailand",
+  "malaysia",
+  "georgia",
+  "russia",
+  // Warmed from research rather than curated by hand, which is what let
+  // these three open without anyone writing a city guide first.
+  "indonesia",
+  "philippines",
+  "uae",
+]);
+
+export function isPlannableCountry(slug: string): boolean {
+  return PLANNABLE.has(slug);
+}
+
+export const plannableCountries: CountryOption[] = travelCountries.filter((c) => PLANNABLE.has(c.value));
+
+/** Countries kept for browsing only: a story page, no journey request. */
+export const showcaseCountries: CountryOption[] = travelCountries.filter((c) => !PLANNABLE.has(c.value));
 
 export const studyCountries: CountryOption[] = [
   { value: "united-kingdom", en: "United Kingdom", ar: "المملكة المتحدة", aliases: "uk britain british england great britain", cities: cities([["london","London","لندن"],["manchester","Manchester","مانشستر"],["edinburgh","Edinburgh","إدنبرة"],["birmingham","Birmingham","برمنغهام"],["glasgow","Glasgow","غلاسكو"],["leeds","Leeds","ليدز"],["liverpool","Liverpool","ليفربول"],["nottingham","Nottingham","نوتنغهام"],["bristol","Bristol","بريستول"],["other-uk-study","Another UK study city","مدينة دراسية بريطانية أخرى"]]) },
