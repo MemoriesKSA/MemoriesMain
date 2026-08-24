@@ -12,7 +12,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { Resend } from "resend";
 import { randomBytes } from "node:crypto";
 import { flagshipCityGuideBySlug, type FlagshipCityGuide } from "./flagship-city-data";
-import { travelCountries } from "./components/planner-data";
+import { isPlannableCountry, travelCountries } from "./components/planner-data";
 
 /** The cities the planner offers for a country, for slug -> label lookups. */
 function countryCities(countrySlug: string) {
@@ -1525,6 +1525,24 @@ export async function cacheResearch(supabase: ReturnType<typeof createSupabaseAd
 // Fire-and-forget: call from app/api/journeys/route.ts inside after(), never
 // awaited by the customer-facing response. Swallows its own errors, a
 // failed draft should never surface anywhere or block anything.
+/**
+ * Is there anything to build a plan out of?
+ *
+ * Pulled out of generateDraftGuide so the answer can be tested without a
+ * network call, because getting it wrong is silent: the customer submits, no
+ * plan appears, and nothing in the product says why.
+ *
+ * Curated data counts. So does a real city in a country we have committed to
+ * planning, because we warm that research ahead of time. A study city counts
+ * by design, it never had curated data. An "other-" placeholder is not a city
+ * and counts as nothing.
+ */
+export function canGroundAPlan(countrySlug: string, city: string, hasGuide: boolean, isStudy: boolean): boolean {
+  if (isStudy) return true;
+  if (hasGuide) return true;
+  if (city.startsWith("other-")) return false;
+  return isPlannableCountry(countrySlug);
+}
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
   try {
     // These early returns used to be completely silent, which made a missing
@@ -1543,14 +1561,30 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     const isStudy = submission.journeyType === "study";
     const resolved = stopSlugs
       .map((slug) => ({ slug, guide: flagshipCityGuideBySlug(submission.countrySlug, slug), option: countryCities(submission.countrySlug).find((c) => c.value === slug) }))
-      .filter((s) => isStudy || !!s.guide)
+      // Same decision as the guard below, so a stop cannot be dropped here
+      // and then reported as "no city data" there. Dropping a no-guide stop
+      // emptied this list, which is what made Bali fail even after the guard
+      // itself was fixed: the fix was correct and never reached.
+      .filter((s) => canGroundAPlan(submission.countrySlug, s.slug, !!s.guide, isStudy))
       .map((s) => ({ ...s, guide: s.guide as ReturnType<typeof flagshipCityGuideBySlug> }));
     const guide = resolved[0]?.guide;
-    if ((!isStudy && !guide) || !resolved.length) {
-      // Usually the "Other" city option, or a destination we haven't built
-      // flagship data for yet. There's nothing to draft from, and inventing
-      // one would break every rule this file exists to enforce, so tell the
-      // team it needs planning by hand rather than leaving them to notice.
+    // A trip city used to need curated data or nothing happened. That was the
+    // fourth guard in this file family saying the same thing: the journeys
+    // route refused the branch, categoriesFor returned no categories,
+    // researchOperationalFacts returned early, the pre-warm script skipped the
+    // city, and then this. Each was fixed in turn and Bali still produced no
+    // plan at all, because this one was left.
+    //
+    // What actually matters is whether there is anything to ground a plan in.
+    // For a plannable country that is now true without curated data: we warm
+    // the research ahead of time precisely so it is. An "other-" placeholder
+    // is not a real city and still has nothing, which is what this catches.
+    const groundable = canGroundAPlan(submission.countrySlug, submission.city, !!guide, isStudy);
+    if (!groundable || !resolved.length) {
+      // Usually the "Other" city option, or a destination we have not built
+      // anything for yet. There is nothing to draft from, and inventing it
+      // would break every rule this file exists to enforce, so tell the team
+      // it needs planning by hand rather than leaving them to notice.
       console.error(`Draft skipped for ${submission.submissionId}: no flagship city data for "${submission.city}"`);
       await notifyDraftFailed(submission, new Error("NO_CITY_DATA")).catch(() => {});
       return;
@@ -1637,6 +1671,15 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       .filter((r) => r.notes)
       .map((r) => (multiStop ? `--- RESEARCH FOR ${r.label} ---\n${r.notes}` : r.notes))
       .join("\n\n");
+    // Grounded in nothing at all: no curated places and no research came back.
+    // Drafting anyway would be asking the model to invent a city, which is the
+    // one thing this file exists to prevent.
+    if (!isStudy && !guide && !operationalResearch.trim()) {
+      console.error(`Draft skipped for ${submission.submissionId}: no curated data and no research for "${submission.city}"`);
+      await notifyDraftFailed(submission, new Error("NO_GROUNDING")).catch(() => {});
+      return;
+    }
+
     const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn, (d) => { draftSpend += d; });
     if (!englishDraft) return;
 

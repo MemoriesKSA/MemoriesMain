@@ -17,7 +17,7 @@
 import { plannableCountries, showcaseCountries, travelCountries, studyCountries, isPlannableCountry } from "../app/components/planner-data";
 import { CATALOGUE_PENDING, countryGuides } from "../app/destination-guide-data";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
-import { categoriesFor, researchIsComplete, missingCategories } from "../app/draft-guide";
+import { canGroundAPlan, categoriesFor, researchIsComplete, missingCategories } from "../app/draft-guide";
 import { PUBLIC_PREVIEW_MAX, publicPreview } from "../app/components/public-preview";
 
 const plannableSlugs = plannableCountries.map((c) => c.value);
@@ -93,6 +93,23 @@ const cases: [string, unknown, unknown][] = [
   ["seven stored categories reads as complete", researchIsComplete(undefined, sevenCats, false), true],
   ["and nothing is left to buy", missingCategories(undefined, sevenCats, false).length, 0],
   ["empty notes need all seven", missingCategories(undefined, "", false).length, 7],
+
+  // The fourth guard. The route was fixed, categoriesFor was fixed,
+  // researchOperationalFacts was fixed, the pre-warm script was fixed, and a
+  // real Bali request still produced no plan at all, because generateDraftGuide
+  // had its own copy of the same rule. Found by running a draft rather than by
+  // reading the code, which is how all four of them were found.
+  ["Bali drafts without curated data", canGroundAPlan("indonesia", "bali", false, false), true],
+  ["so does Manila", canGroundAPlan("philippines", "manila", false, false), true],
+  ["and Dubai", canGroundAPlan("uae", "dubai", false, false), true],
+  ["a curated city still drafts", canGroundAPlan("turkey", "istanbul", true, false), true],
+  ["a study city always drafts, it never had curated data", canGroundAPlan("japan", "osaka", false, true), true],
+
+  // And it still refuses what it should. These produce no plan on purpose.
+  ["a browse-only country does not draft", canGroundAPlan("france", "paris", false, false), false],
+  ["nor does the Other-city placeholder", canGroundAPlan("indonesia", "other-indonesia", false, false), false],
+  ["even in a country we plan", canGroundAPlan("turkey", "other-turkey", false, false), false],
+  ["a study request is exempt from the placeholder rule", canGroundAPlan("japan", "other-japan-study", false, true), true],
 
   // The free page shows a taste, the draft still gets everything.
   ["the public page caps at two", PUBLIC_PREVIEW_MAX, 2],
