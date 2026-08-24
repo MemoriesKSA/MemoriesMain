@@ -14,10 +14,16 @@
 #   npx tsx --env-file=.env.local scripts/test-halal-research.ts
 #   npx tsx --env-file=.env.local scripts/test-long-draft.ts
 #
+# test-research-intact reads the live research cache rather than calling an
+# API. It buys nothing, but it fails for as long as a repair is mid-flight,
+# so it is run deliberately rather than on every sweep:
+#
+#   npx tsx --env-file=.env.local scripts/test-research-intact.ts
+#
 # (test-cache-expiry constructs a client but buys nothing, so it stays in.)
 cd "$(dirname "$0")/.." || exit 1
 
-LIVE="test-budget-draft test-country-draft test-halal-research test-long-draft"
+LIVE="test-budget-draft test-country-draft test-halal-research test-long-draft test-research-intact"
 
 fail=0
 failed=""

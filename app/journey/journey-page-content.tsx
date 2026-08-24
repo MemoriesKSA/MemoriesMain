@@ -5,7 +5,7 @@ import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, redactableNamesForCity } from "./place-links";
 import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import { parseAllNamedPlaces, parsePickNames, type PlanStop } from "./plan-stops";
+import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -37,7 +37,11 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   const placesAr = [...new Set([...placeNamesForCity(proposal.city, true), ...namedInDraft])].sort((a, b) => b.length - a.length);
   // Verified official sites where we have them; everything else falls back
   // to a Maps search inside the linkifier.
-  const officialUrls = officialUrlMapForCity(proposal.city);
+  // Our own verified list, then anything the plan itself supplied. The plan
+  // wins where they overlap: it read the research for this specific city and
+  // this specific institution, and a university admissions page is a better
+  // link than a map pin for someone deciding where to spend three years.
+  const officialUrls = { ...officialUrlMapForCity(proposal.city), ...parseSiteLinks(proposal.notes ?? "") };
   // Which stop each place belongs to, so a map search for a Jeddah
   // restaurant on a three-city plan says Jeddah and not the whole trip.
   const placeCities = placeCityMapForCity(proposal.city);

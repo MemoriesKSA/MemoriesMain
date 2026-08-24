@@ -116,7 +116,8 @@ export function stopsFromNights(labels: string[], nights: number[]): PlanStop[] 
 // Pipe separated, because place names contain commas ("Hua Thanon, Samui").
 const PICKS_LINE = /^\s*PICKS:/i;
 const PLACES_LINE = /^\s*PLACES:/i;
-export const NAME_MARKER_LINE = /^\s*(PICKS|PLACES):/i;
+const SITES_LINE = /^\s*SITES:/i;
+export const NAME_MARKER_LINE = /^\s*(PICKS|PLACES|SITES):/i;
 
 function readMarkerList(internalText: string, pattern: RegExp): string[] {
   if (!internalText) return [];
@@ -142,6 +143,38 @@ export function parsePickNames(internalText: string): string[] {
 /** Airports, transit, districts and geography. Readable whether or not they paid. */
 export function parseContextPlaceNames(internalText: string): string[] {
   return readMarkerList(internalText, PLACES_LINE);
+}
+
+/**
+ * Official websites for things the plan names, as `SITES: Name = url | ...`.
+ *
+ * A map search is the right link for a restaurant, and the wrong one for a
+ * university: somebody deciding where to spend three years wants the
+ * admissions page, not a pin on a map. The drafting pass supplies the URL
+ * because it is the only part of the system that has read the research the
+ * URL came from, and it is told to give only URLs that actually appear
+ * there rather than construct one that looks right.
+ *
+ * Anything that is not a plain http(s) URL is dropped. A malformed entry
+ * falls back to the map search, which is worse but never wrong.
+ */
+export function parseSiteLinks(internalText: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!internalText) return out;
+  for (const line of internalText.split(/\r?\n/)) {
+    if (!SITES_LINE.test(line)) continue;
+    const body = line.replace(SITES_LINE, "").trim();
+    if (!body || /^none$/i.test(body)) continue;
+    for (const entry of body.split("|")) {
+      const at = entry.indexOf("=");
+      if (at < 0) continue;
+      const name = entry.slice(0, at).trim();
+      const url = entry.slice(at + 1).trim();
+      if (!name || !/^https?:\/\/[^\s]+$/i.test(url)) continue;
+      out[name.toLowerCase()] = url;
+    }
+  }
+  return out;
 }
 
 /** Both, longest first, for linkifying. */

@@ -237,9 +237,16 @@ THEN the internal sections, exactly as on any other plan and with the same headi
   Everything you are RECOMMENDING or naming as an option for them: universities, colleges and language schools, specific campuses, named halls and student residences, mosques and prayer facilities, halal grocers and restaurants you actually name.
   PLACES: Manchester Airport | Oxford Road | Fallowfield | Rusholme | Withington | Piccadilly Station | Curry Mile
   Everything else nameable: airports, stations, tram and rail lines, districts, neighbourhoods, suburbs and streets. The context they need to picture where they would live and how far it is from campus.
+  Then a third machine-readable line, for the things a student would rather open than find on a map. A map pin is the right link for a restaurant and the wrong one for a university: somebody deciding where to spend three years wants the admissions page. Same pipe-separated shape, with the name exactly as you used it, then "=", then the URL.
+  SITES: The University of Osaka = https://www.osaka-u.ac.jp/en | Osaka Metropolitan University = https://www.omu.ac.jp/en/
+  Give a URL ONLY if that exact URL appears in the research notes you were given. Do not assemble one that looks plausible, do not guess a domain from an institution's name, and do not shorten or tidy one you did see. A wrong university link is worse than no link, because it looks authoritative and sends someone to the wrong place. If the notes carry no URL for an institution, leave it off this line entirely and it will simply get a map search like everything else. Write "none" if you have no URLs at all. Universities, language schools and colleges are what this line is for; do not use it for restaurants or neighbourhoods.
   Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never the study city itself, and never a description that isn't a name, so no "the city centre", no "a student area", no "your accommodation".
 
 FORMAT: plain text only, no markdown, no "#" headings, no asterisks, no numbered-list syntax. Never write a "Day 1" heading: this is not an itinerary, and a day heading would make our tooling paywall it as one.
+
+- Never finish a sentence the research did not finish. A note can stop mid-word, and when it does you must stop with it. If the notes say "315 m from Masjid Istiq" you write nothing about that mosque's name; if they say "Cycling is a real cost lever:" and then stop, you have a fact about cost and no fact about how many people cycle. This has produced a mosque name nobody wrote, a claim that most students own a bicycle, and a restaurant described as "not a large room" from a line that was cut before it said anything about the room. A truncated source is less information, never an invitation to supply the rest.
+- Do not upgrade a hedge into a stronger claim. Carry the source's own strength across exactly: "widely available" does not become "on every menu in town", "the school sets this figure" does not become "the figure the authorities think a year costs", "often" does not become "always", and a single named example does not become a general rule. If the sentence you are about to write is more certain, more universal or more authoritative than the sentence you read, you have changed the fact.
+- Never build a correspondence the notes did not state. Two lists are not a mapping. If the research names airlines somewhere and hubs somewhere else, you may not join them with "respectively" and hand a traveller a pairing nobody verified; one draft paired Bangkok with Turkish Airlines that way. Say what each source actually attaches to what, or say them separately.
 
 RHYTHM, and this is the part the first drafts got wrong. Our trip plans read as short scannable lines and a study plan sat beside one looking like an essay: single paragraphs running two hundred words, five sourced facts deep, that nobody reads on a phone at midnight. The information was right and the shape was wrong, and a student's parents are reading this too.
 - A section heading on its own line, then labelled lines under it. "English requirement: IELTS 7.0 overall, no sub-test below 6.5." One idea per line.
@@ -294,6 +301,9 @@ Rules, factual accuracy and safety about the real companies named here matter mo
   PLACES: Suvarnabhumi Airport | Airport Rail Link | Sukhumvit | Soi Arab | Bang Rak | Hua Thanon | Fisherman's Village | Chao Phraya
   Everything else nameable: airports, stations, transit lines and river routes, districts, neighbourhoods, quarters, streets, islands, rivers and mountains. The context a customer needs to orient themselves whether or not they have paid.
   Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never a city that is one of this trip's stops, and never a description that isn't a name, so no "the old town", no "the south-east coast", no "your hotel".
+- Never finish a sentence the research did not finish. A note can stop mid-word, and when it does you must stop with it. If the notes say "315 m from Masjid Istiq" you write nothing about that mosque's name; if they say "Cycling is a real cost lever:" and then stop, you have a fact about cost and no fact about how many people cycle. This has produced a mosque name nobody wrote, a claim that most students own a bicycle, and a restaurant described as "not a large room" from a line that was cut before it said anything about the room. A truncated source is less information, never an invitation to supply the rest.
+- Do not upgrade a hedge into a stronger claim. Carry the source's own strength across exactly: "widely available" does not become "on every menu in town", "the school sets this figure" does not become "the figure the authorities think a year costs", "often" does not become "always", and a single named example does not become a general rule. If the sentence you are about to write is more certain, more universal or more authoritative than the sentence you read, you have changed the fact.
+- Never build a correspondence the notes did not state. Two lists are not a mapping. If the research names airlines somewhere and hubs somewhere else, you may not join them with "respectively" and hand a traveller a pairing nobody verified; one draft paired Bangkok with Turkish Airlines that way. Say what each source actually attaches to what, or say them separately.
 - Get religious terminology exactly right, most of our customers are Muslim and a loose word here reads as not knowing the subject. The Friday midday congregational prayer is Jumu'ah, and on a Friday it replaces the ordinary Dhuhr prayer rather than sitting alongside it. So write "Friday prayer (Jumu'ah)" when you mean it, never "Friday midday prayer" or "Dhuhr on Friday", which is what someone unfamiliar with it would write and which translates badly into Arabic. The same care applies to any other religious term you use.
 - Weigh the stated budget, traveller count, trip length and the customer's preferred accommodation rating (if given) when choosing between the luxury and budget-tier hotels in the grounded facts, and say which tier you picked and why, but say it once, briefly, don't re-justify it inside every day. If the customer's preferred rating and the budget point in different directions (e.g. they asked for 5-star but the budget only supports budget-tier), say so plainly as something needing the customer's input, don't silently pick one over the other.
 - Careful with the star rating specifically. Our hotel facts carry a tier, luxury or budget, and a description. They do NOT carry a star rating for any property, so you do not know how many stars any named hotel actually holds. Never write that a hotel "is 4-star", "matches the 4-star level you asked for" or anything that states or implies a star count for a named property, even when the customer asked for that rating and the hotel plainly suits them. That sentence reads as a fact we checked and it is really just their request repeated back. Say what the facts do support instead: the tier, and what the place is actually like. "Novotel Istanbul Bosphorus, a reliable mid-range base on the water" is honest and more useful than "a 4-star that matches your request".
@@ -700,6 +710,22 @@ export function stripCategoryMarkers(notes: string): string {
  * Researches one category. Returns null on any failure, which the caller
  * treats as "stop, keep what we have" rather than as an empty result.
  */
+/**
+ * Cuts a report back to its last line that actually finished.
+ *
+ * A research note ending "315 m and 522 m respectively from Masjid Istiq" is
+ * worse than one that stops a line earlier: the drafting pass reads it as a
+ * fact with a name attached and supplies the rest. Better to lose the line.
+ */
+export function trimToLastCompleteLine(text: string): string {
+  const lines = text.split("\n");
+  while (lines.length) {
+    const last = lines[lines.length - 1].trim();
+    if (!last || !/[.!?)\]"»۔؟]$/.test(last)) { lines.pop(); continue; }
+    break;
+  }
+  return lines.join("\n").trim();
+}
 async function researchOneCategory(
   anthropic: Anthropic,
   category: ResearchCategory,
@@ -709,7 +735,15 @@ async function researchOneCategory(
   try {
     const response = await anthropic.messages.stream({
       model: "claude-opus-5",
-      max_tokens: 4000,
+      // Was 4000, which had to cover adaptive thinking, a dozen web-search
+      // tool blocks AND the written report out of one budget. It did not fit,
+      // and the way it failed was quiet: the report simply stopped, mid-word,
+      // and got stored that way. All four Osaka categories ended mid-sentence
+      // ("Masjid Istiq", "Cycling is a real cost lever:"), and the drafting
+      // pass then finished those sentences itself, inventing a mosque name and
+      // a claim about how many students cycle. Three of one draft's findings
+      // traced back here.
+      max_tokens: 16_000,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: category.searches }],
@@ -738,6 +772,18 @@ async function researchOneCategory(
       .map((block) => block.text)
       .join("\n")
       .trim();
+    // Even with headroom a category can still run out. Storing a fragment is
+    // what invited the drafting pass to finish the sentence, so a truncated
+    // report is cut back to its last complete line and the loss is logged
+    // rather than left looking like a finding.
+    if (response.stop_reason === "max_tokens") {
+      const trimmed = trimToLastCompleteLine(text);
+      console.warn(
+        `Research for ${context.cityLabelEn} / ${category.header} hit its token ceiling and was cut off. ` +
+        `Dropped ${text.length - trimmed.length} characters of an unfinished line so nothing downstream completes it. ` +
+        `Raise the research max_tokens if this recurs.`);
+      return trimmed || null;
+    }
     return text || null;
   } catch (error) {
     console.error(`Research failed for ${context.cityLabelEn} / ${category.header}`, error);
