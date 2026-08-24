@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { conciergePageHref, tokenizeReply } from "../concierge-pages";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -27,19 +28,10 @@ function getPlanHref(pathname: string, ar: boolean) {
   return `${prefix}/design-your-journey`;
 }
 
-// Splits a reply into word tokens (each including its trailing whitespace)
-// for a word-by-word reveal, treating the plan marker as one atomic final
-// token so it's never exposed mid-bracket while streaming in.
-function tokenize(content: string, marker: string): string[] {
-  const markerIndex = content.indexOf(marker);
-  if (markerIndex === -1) return content.match(/\S+\s*/g) ?? [];
-  const before = content.slice(0, markerIndex).match(/\S+\s*/g) ?? [];
-  return [...before, content.slice(markerIndex)];
-}
 
 function renderBubble(content: string, planHref: string, ar: boolean) {
   const marker = ar ? PLAN_MARKER_AR : PLAN_MARKER_EN;
-  return tokenize(content, marker).map((token, index) => {
+  return tokenizeReply(content).map((token, index) => {
     if (token.startsWith(marker)) {
       return (
         <span className="wordFade" key={index}>
@@ -48,6 +40,21 @@ function renderBubble(content: string, planHref: string, ar: boolean) {
           </Link>
         </span>
       );
+    }
+    // Any other page Memory named. An unknown label falls through to plain
+    // text below rather than becoming a link to nowhere.
+    if (token.startsWith("[") && token.endsWith("]")) {
+      const label = token.slice(1, -1);
+      const href = conciergePageHref(label, ar);
+      if (href) {
+        return (
+          <span className="wordFade" key={index}>
+            <Link className="supportPageLink" href={href}>
+              {label} <ArrowRight className="directionArrow" size={13} />
+            </Link>
+          </span>
+        );
+      }
     }
     const [, word, trailing] = token.match(/^(\S+)(\s*)$/) ?? [null, token, ""];
     return (
@@ -84,8 +91,7 @@ export function SupportChat() {
   function revealText(fullText: string): Promise<void> {
     return new Promise((resolve) => {
       if (revealTimerRef.current) clearInterval(revealTimerRef.current);
-      const marker = ar ? PLAN_MARKER_AR : PLAN_MARKER_EN;
-      const tokens = tokenize(fullText, marker);
+      const tokens = tokenizeReply(fullText);
       let shown = 0;
       revealTimerRef.current = setInterval(() => {
         shown = Math.min(tokens.length, shown + 1);

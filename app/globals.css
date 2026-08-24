@@ -636,3 +636,17 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 @media(max-width:520px){
   .weatherNowBody{gap:16px}
 }
+
+/* A page Memory named, as something you can press. It used to describe where
+   a page lived, "in the footer under Company", which is directions rather
+   than a destination. Quieter than the planner button beside it: that one is
+   the thing we want pressed, this one is a courtesy. */
+.supportPageLink{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:8px;padding:7px 13px;
+  border:1px solid var(--line);border-radius:999px;background:var(--paper);
+  color:var(--ink);font-size:.77rem;font-weight:800;letter-spacing:.01em;
+  transition:.18s background,.18s border-color;
+}
+.supportPageLink:hover{background:var(--ivory);border-color:var(--gold)}
+.arabicSite .supportPageLink .directionArrow{transform:scaleX(-1)}
