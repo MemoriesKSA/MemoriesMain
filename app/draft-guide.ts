@@ -585,6 +585,27 @@ const STUDY_RESEARCH_CATEGORIES: ResearchCategory[] = [
 // Which categories a city needs. Gated on our own data rather than on this
 // customer's trip, because the answer is cached per city and reused by every
 // later customer, whose trip will be different.
+/**
+ * How many hotels a city must already hold before we stop researching more.
+ *
+ * Counted across the plannable cities the day this was raised: one city held
+ * none at all, 24 held exactly one, 18 held two, three held three, and a
+ * single city held four. A plan is told to weigh the customer's budget and
+ * their stated star rating and choose between a luxury and a budget option -
+ * with one hotel on file there is no choice to make, so everybody gets the
+ * same place whatever they asked for or are paying.
+ *
+ * Four, because the research pass returns six to eight, so any city under
+ * this ends up with a real spread rather than a token second option. A city
+ * already holding four keeps its own list and buys nothing.
+ */
+const MIN_CURATED_STAYS = 4;
+
+/** Every hotel the drafting pass can see for a city, curated across both lists. */
+function curatedStayCount(guide: FlagshipCityGuide | undefined): number {
+  return (guide?.stay?.length ?? 0) + (guide?.extendedStay?.length ?? 0);
+}
+
 export function categoriesFor(guide: FlagshipCityGuide | undefined, isStudy = false): ResearchCategory[] {
   // A study city is researched from nothing: it has no flagship entry, and
   // none of the trip categories would answer a student's question anyway.
@@ -610,9 +631,13 @@ export function categoriesFor(guide: FlagshipCityGuide | undefined, isStudy = fa
     if (c.key === "hours") return attractions > 0;
     // Somewhere to sleep. This category is new because curated data always
     // carried the hotels, so nothing ever researched them - which is also
-    // why Kazbegi, Kutaisi and Mtskheta have sat on a single hotel each
-    // however many times they were rewarmed.
-    if (c.key === "stays") return (guide?.stay.length ?? 0) < 2;
+    // why Kazbegi, Kutaisi and Mtskheta sat on a single hotel each however
+    // many times they were rewarmed.
+    // Counted the same way the drafting pass counts them, which is stay plus
+    // extendedStay (see allStays above). Reading only `stay` said Taif held
+    // one hotel when the draft can actually see five, and would have bought
+    // hotels for thirteen cities that already had plenty.
+    if (c.key === "stays") return curatedStayCount(guide) < MIN_CURATED_STAYS;
     return true;
   });
 }

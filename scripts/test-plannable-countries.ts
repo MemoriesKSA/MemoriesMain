@@ -34,6 +34,9 @@ const unguided = plannableCities.filter((k) => !flagshipCityGuideBySlug(k.countr
 const noGuide = categoriesFor(undefined, false).map((c) => c.key);
 const riyadh = categoriesFor(flagshipCityGuideBySlug("saudi-arabia", "riyadh"), false).map((c) => c.key);
 const kazbegi = categoriesFor(flagshipCityGuideBySlug("georgia", "kazbegi"), false).map((c) => c.key);
+const taif = categoriesFor(flagshipCityGuideBySlug("saudi-arabia", "taif"), false).map((c) => c.key);
+const makkah = categoriesFor(flagshipCityGuideBySlug("saudi-arabia", "makkah"), false).map((c) => c.key);
+const tbilisi = categoriesFor(flagshipCityGuideBySlug("georgia", "tbilisi"), false).map((c) => c.key);
 
 const sevenCats = ["dining", "drivers", "stays", "sights", "halal", "rentals", "flights"]
   .map((k) => `##cat:${k}\n.`).join("\n");
@@ -79,7 +82,13 @@ const cases: [string, unknown, unknown][] = [
   ["and still tops up what it lacks", riyadh.includes("halal"), true],
   // Kazbegi has held exactly one hotel through every rewarm, because nothing
   // ever researched hotels: curated data always supplied them.
-  ["a city holding one hotel now researches more", kazbegi.includes("stays"), true],
+  ["a city holding one hotel researches more", kazbegi.includes("stays"), true],
+  // Counted the way the drafting pass counts them. Reading only `stay` and
+  // ignoring `extendedStay` said Taif held one hotel when the draft can see
+  // five, and would have bought hotels for thirteen cities that had plenty.
+  ["a city thin in `stay` but deep in `extendedStay` is left alone", taif.includes("stays"), false],
+  ["and Makkah, which holds seven across both lists", makkah.includes("stays"), false],
+  ["while a genuinely thin city is not", tbilisi.includes("stays"), true],
 
   ["seven stored categories reads as complete", researchIsComplete(undefined, sevenCats, false), true],
   ["and nothing is left to buy", missingCategories(undefined, sevenCats, false).length, 0],
