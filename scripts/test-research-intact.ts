@@ -20,7 +20,28 @@ import { createSupabaseAdminClient } from "../app/supabase-admin";
 import { trimToLastCompleteLine } from "../app/draft-guide";
 
 // A body that stops without finishing its last sentence.
-const FINISHED = /[.!?)\]"»۔؟]$/;
+// A genuinely unfinished line, rather than one that simply has no full stop.
+//
+// The first version flagged any last line without terminal punctuation, which
+// also catches the "what I could not confirm" list every report ends with:
+// "GP registration and any residual police registration requirement" is a
+// complete bullet, not a severed sentence. It called two clean reports broken.
+//
+// Real truncation leaves a tell: a dangling comma or colon, a joining word
+// with nothing after it, or a bracket that never closed.
+const DANGLING_PUNCT = /[,:;\-–—(\[]$/;
+const JOINING_WORD = /\b(and|or|the|a|an|in|on|of|to|for|with|at|by|from|is|are|was|were|that|which|its|their|as)$/i;
+
+function looksTruncated(body: string): boolean {
+  const text = body.trim();
+  if (!text) return false;
+  const last = text.split("\n").pop()!.trim();
+  if (DANGLING_PUNCT.test(last)) return true;
+  if (JOINING_WORD.test(last)) return true;
+  const opens = (last.match(/\(/g) ?? []).length;
+  const closes = (last.match(/\)/g) ?? []).length;
+  return opens > closes;
+}
 
 const unitCases: [string, unknown, unknown][] = [
   ["a line cut mid-word is dropped", trimToLastCompleteLine("315 m from Masjid Istiq"), ""],
@@ -51,7 +72,7 @@ async function main() {
       const body = block.slice(block.indexOf("\n")).trim();
       if (!body) continue;
       cats++;
-      if (!FINISHED.test(body)) { cut++; offenders.push(`${row.city_slug}/${key}`); }
+      if (looksTruncated(body)) { cut++; offenders.push(`${row.city_slug}/${key}`); }
     }
   }
 

@@ -130,7 +130,14 @@ async function plan(): Promise<{ warm: Target[]; cold: Target[] }> {
     // that fit the in-request deadline, and then looked "fresh" forever.
     // A study city has no guide at all and is measured against the study set.
     const storedNotes = readScopeVersion(row.research_notes as string).notes;
-    const missing = STUDY ? missingCategories(undefined, storedNotes, true) : guide ? missingCategories(guide, storedNotes) : [];
+    // The ": []" that used to close this line said a trip city with no
+    // curated guide is missing nothing, so every no-guide city reported
+    // "fresh" whatever it actually held. Bali sat at six of seven categories
+    // and this called it warm; fifteen Indonesian, Philippine and Emirati
+    // cities were skipped by the repair run because of it. The sixth copy of
+    // the same assumption in this codebase. missingCategories handles an
+    // absent guide correctly now, so it just gets asked.
+    const missing = missingCategories(STUDY ? undefined : guide, storedNotes, STUDY);
     if (version !== RESEARCH_SCOPE_VERSION) cold.push(target(`scope v${version}, now v${RESEARCH_SCOPE_VERSION}`));
     else if (expired) cold.push(target(`past ${RESEARCH_CACHE_TTL_DAYS} days`));
     else if (missing.length) cold.push(target(`incomplete, missing ${missing.join(", ")}`));
