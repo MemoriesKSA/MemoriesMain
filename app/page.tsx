@@ -47,7 +47,8 @@ export default function Home() {
         <article className="abroadCard">
           <p className="kicker">Study Abroad</p><h2>Your next chapter,<br />made clearer.</h2><p>Guidance for students planning to study overseas, from choosing a destination to visa-application assistance.</p>
           <ul><li>Study destination guidance</li><li>Visa-application assistance</li><li>Flights and accommodation</li><li>Arrival planning</li></ul>
-          <Link className="button dark" href="/study-abroad">Explore study support <ArrowRight size={16} /></Link>
+          <p className="pausedFlag">We&apos;re working on it — study plans aren&apos;t open yet.</p>
+          <Link className="button dark" href="/study-abroad">Read what we&apos;re building <ArrowRight size={16} /></Link>
         </article>
       </section>
 

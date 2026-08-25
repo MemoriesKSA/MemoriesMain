@@ -650,3 +650,18 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 }
 .supportPageLink:hover{background:var(--ivory);border-color:var(--gold)}
 .arabicSite .supportPageLink .directionArrow{transform:scaleX(-1)}
+
+/* Study abroad, paused. Sits in the planner's column on the dark hero, so it
+   is built like the story chapters beside it rather than like the white form
+   it replaced: the section reads as closed, not as broken. */
+.pausedPanel{align-self:start;padding:56px 48px;border:1px solid rgba(230,185,93,.22);border-radius:18px;background:linear-gradient(145deg,rgba(93,153,166,.14),rgba(255,255,255,.02));color:white}
+.pausedPanel>svg{width:34px;height:34px;color:var(--gold-light)}
+.pausedPanel .kicker{margin:26px 0 10px}
+.pausedPanel h2{margin:0;font-size:clamp(2.4rem,3.6vw,3.6rem);line-height:1.02}
+.pausedPanel h2 em{color:var(--gold-light)}
+.pausedPanel p:not(.kicker){max-width:480px;margin:22px 0 0;color:rgba(255,255,255,.68);font-size:.78rem;line-height:1.85}
+.pausedActions{display:flex;flex-wrap:wrap;align-items:center;gap:26px;margin-top:36px}
+.pausedActions .button{display:inline-flex;align-items:center;gap:10px}
+.pausedActions .button svg{width:16px;height:16px}
+.pausedActions .textLink{color:rgba(255,255,255,.72)}
+@media(max-width:780px){.pausedPanel{padding:36px 26px}}

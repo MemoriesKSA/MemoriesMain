@@ -14,7 +14,7 @@
 // is the other half of today: a city with no curated data researches the full
 // set from nothing rather than researching nothing at all.
 
-import { plannableCountries, showcaseCountries, travelCountries, studyCountries, isPlannableCountry } from "../app/components/planner-data";
+import { plannableCountries, showcaseCountries, travelCountries, studyCountries, isPlannableCountry , pathOptions, STUDY_ABROAD_PAUSED } from "../app/components/planner-data";
 import { CATALOGUE_PENDING, countryGuides } from "../app/destination-guide-data";
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 import { canGroundAPlan, categoriesFor, researchIsComplete, missingCategories } from "../app/draft-guide";
@@ -117,6 +117,20 @@ const cases: [string, unknown, unknown][] = [
   ["a short one is left alone", publicPreview([1]).length, 1],
   ["an absent one does not throw", publicPreview(undefined).length, 0],
 ];
+
+// Study abroad is paused, and the pause has to hold in both places.
+//
+// The lesson from the bug this file was written for: the form and the route
+// each decided for themselves what was possible, and disagreed for a day. So
+// the switch is one constant, the form filters on it, and the route refuses a
+// study request that reaches it anyway from a stale tab or a bookmarked link.
+const studyPathOffered = pathOptions.some((o) => o.path === "study");
+const pauseCases: [string, unknown, unknown][] = [
+  ["the planner does not offer study while it is paused", studyPathOffered, !STUDY_ABROAD_PAUSED],
+  ["the other two paths are untouched", pathOptions.map((o) => o.path).join(","), STUDY_ABROAD_PAUSED ? "journey,saudi" : "journey,saudi,study"],
+  ["the study destinations are kept, not deleted", studyCountries.length > 0, true],
+];
+cases.push(...pauseCases);
 
 let pass = 0;
 for (const [name, got, want] of cases) {

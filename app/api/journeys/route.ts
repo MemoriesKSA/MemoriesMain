@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
-import { isPlannableCountry, travelCountries } from "../../components/planner-data";
+import { isPlannableCountry, STUDY_ABROAD_PAUSED, travelCountries } from "../../components/planner-data";
 
 
 export const runtime = "nodejs";
@@ -215,9 +215,13 @@ export async function POST(request: Request) {
   // "no" is a refusal rather than a missing field. Enforced here as well as in
   // the form, because a form that disables its own submit button is a courtesy
   // and not a control: this endpoint is public.
+  // The form no longer offers study, and this refuses it anyway: a stale
+  // tab, a bookmarked link or a replayed request would otherwise reach a
+  // path we have taken off the site.
+  const studyPaused = STUDY_ABROAD_PAUSED && submission.journeyType === "study";
   const studyNotEligible = submission.journeyType === "study" && submission.saudiCitizen !== "yes";
   const missingStudyDetails = submission.journeyType === "study" && (!submission.hasSpecificField || !submission.hasSpecificUniversity || (submission.hasSpecificField === "yes" && !submission.specificField) || (submission.hasSpecificUniversity === "yes" && !submission.specificUniversity));
-  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails || studyNotEligible;
+  const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails || studyNotEligible || studyPaused;
   const invalidEmail = submission.delivery.includes("email") && !emailPattern.test(submission.email);
   const missingPhone = submission.delivery.includes("whatsapp") && !submission.phone;
   if (missingRequired || invalidEmail || missingPhone || submission.toDate < submission.fromDate) {
@@ -338,6 +342,9 @@ export async function POST(request: Request) {
       flightTiming: submission.flightTiming,
       planIncludes: submission.planIncludes,
       packageNotes: submission.packageNotes,
+      // Their own last words. Collected and emailed since the beginning,
+      // and until now never shown to the pass that writes the plan.
+      notes: submission.notes,
       currency: submission.currency,
       budget: submission.budget,
       budgetMode: submission.budgetMode,

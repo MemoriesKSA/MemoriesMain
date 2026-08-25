@@ -136,8 +136,28 @@ export const studyCountries: CountryOption[] = [
   { value: "japan", en: "Japan", ar: "اليابان", aliases: "japanese nippon", cities: cities([["tokyo","Tokyo","طوكيو"],["kyoto","Kyoto","كيوتو"],["osaka","Osaka","أوساكا"],["yokohama","Yokohama","يوكوهاما"],["nagoya","Nagoya","ناغويا"],["fukuoka","Fukuoka","فوكوكا"],["sapporo","Sapporo","سابورو"],["sendai","Sendai","سينداي"],["other-japan-study","Another Japanese study city","مدينة دراسية يابانية أخرى"]]) },
 ];
 
-export const pathOptions: Array<LocalizedOption & { path: PlannerPath; descriptionEn: string; descriptionAr: string }> = [
+/**
+ * Study abroad is paused, and this is the one switch that pauses it.
+ *
+ * Nothing is deleted: the 32 study cities stay warm in the research cache,
+ * the study brief stays, the study pages stay. Reopening is this constant.
+ *
+ * Paused because it is the half of the product where being wrong hurts
+ * somebody. A wrong restaurant is an annoyance; a wrong visa deadline can
+ * cost a student a year, and study drafts are still the ones coming back
+ * with findings while trip drafts come back clean.
+ *
+ * Everything that decides whether a study request is possible reads this,
+ * so the form and the journeys route cannot drift apart the way the
+ * planner and the draft branch once did over which countries were real.
+ */
+export const STUDY_ABROAD_PAUSED = true;
+
+const ALL_PATH_OPTIONS: Array<LocalizedOption & { path: PlannerPath; descriptionEn: string; descriptionAr: string }> = [
   { path: "journey", value: "journey", en: "Design your dream journey", ar: "صمّم رحلة أحلامك", descriptionEn: "A complete holiday shaped around you.", descriptionAr: "رحلة متكاملة مصممة حولك." },
   { path: "saudi", value: "saudi", en: "Discover Saudi Arabia", ar: "اكتشف السعودية", descriptionEn: "Visit the Kingdom for leisure, culture or pilgrimage.", descriptionAr: "اكتشف المملكة للسياحة أو الثقافة أو الزيارة الدينية." },
   { path: "study", value: "study", en: "Study Abroad", ar: "الدراسة في الخارج", descriptionEn: "Study planning and visa-application assistance.", descriptionAr: "تخطيط الدراسة والمساعدة في طلب التأشيرة." },
 ];
+
+/** The study path is hidden while it is paused; the other two are unchanged. */
+export const pathOptions = ALL_PATH_OPTIONS.filter((option) => !(STUDY_ABROAD_PAUSED && option.path === "study"));

@@ -14,7 +14,7 @@ const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   metadataBase: new URL("https://memories.tours"),
   title: { default: "MEMORIES Travel, Journeys made personal", template: "%s | MEMORIES Travel" },
-  description: "Dream journeys, Saudi Arabia experiences and study-abroad planning for travellers around the world.",
+  description: "Dream journeys and Saudi Arabia experiences, planned in full for travellers around the world.",
   alternates: { canonical: "/", languages: { en: "/", ar: "/ar" } },
   openGraph: { title: "MEMORIES Travel", description: "Every journey begins with a dream. We turn it into a memory.", images: ["/images/hero-family.webp"] },
 };
