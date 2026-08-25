@@ -975,10 +975,23 @@ export async function researchNamedRequests(
   anthropic: Anthropic,
   submission: DraftGuideSubmission,
   cityLabelEn: string,
+  deadlineAt: number,
   onSpend?: (dollars: number) => void,
 ): Promise<string> {
+  // A customer is waiting and the route has a hard ceiling. The city research
+  // has always been deadline-bounded; this was not, and a Dubai draft that
+  // re-researched two stale categories and then searched two named requests
+  // ran the function past 800 seconds and lost its tail.
+  if (Date.now() > deadlineAt) {
+    console.log("Skipping named requests: past the research deadline already.");
+    return "";
+  }
   const names = await extractNamedRequests(anthropic, submission, onSpend);
   if (!names.length) return "";
+  if (Date.now() > deadlineAt) {
+    console.log(`Skipping ${names.length} named request(s): the deadline passed during extraction.`);
+    return "";
+  }
   console.log(`Researching ${names.length} named request(s): ${names.join(", ")}`);
   const reports = (await Promise.all(
     names.map((name) => researchOneNamedRequest(anthropic, name, submission, cityLabelEn, onSpend)),
@@ -1927,6 +1940,23 @@ export function spliceFindings(arabicDraft: string): string {
     .map((fragment) => `- Arabic draft: the word around "${fragment}" starts in one script and finishes in the other. Write it wholly in Arabic script, or leave the name wholly in Latin letters, and remove any self-correction phrasing next to it.`)
     .join("\n");
 }
+/**
+ * The internal half of a draft, as stored.
+ *
+ * Shared by the early write and the final one so the two cannot drift:
+ * whatever a timeout leaves behind is the same text the reviewer would
+ * have seen, minus the verdict.
+ */
+function internalNotesSoFar(
+  englishSplit: { internalOnly?: string },
+  arabicSplit: { internalOnly?: string } | null,
+): string | null {
+  const parts = [
+    englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
+    arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
+  ].filter(Boolean);
+  return parts.length ? parts.join("\n\n") : null;
+}
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
   try {
     // These early returns used to be completely silent, which made a missing
@@ -1935,7 +1965,17 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // Stop one is `city`; `stops` carries the full ordered trip when the
     // customer added destinations. Deduplicated only where consecutive,
     // matching the planner's own rule.
-    const stopSlugs = (submission.stops?.length ? submission.stops : [submission.city]).filter(Boolean);
+    // Lower-cased, because every consumer of this treats it as a slug and
+    // one of them is a cache key. A stop arriving as "Dubai" rather than
+    // "dubai" finds no curated guide, no city option and, worst, no cached
+    // research, so the draft silently re-researches a city we already hold
+    // in full, burns its research deadline getting two categories of seven,
+    // and writes the plan from a fraction of what was available. The form
+    // sends slugs today; nothing enforced that, and a test harness typing
+    // the display label found the hole immediately.
+    const stopSlugs = (submission.stops?.length ? submission.stops : [submission.city])
+      .filter(Boolean)
+      .map((s) => s.trim().toLowerCase());
     // A study plan is always one city, and no study city is in the flagship
     // data: London, Toronto, Melbourne and Tokyo are researched from nothing,
     // because a student needs universities, a visa route, rents and prayer
@@ -2019,6 +2059,19 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // translation only exists once English is final, self-check only
     // means something once both are final. Parallelizing English/Arabic
     // (the old approach) was exactly what let them disagree.
+    // Anything this customer named on the form is searched for them, now,
+    // rather than looked for in a cache that was filled before they existed.
+    // Only named requests get this: the rest of the city is the same for
+    // everyone, and buying that per customer would be waste.
+    //
+    // Started here rather than awaited after the city research, because the
+    // two are independent and running them end to end is what pushed one
+    // draft past the function's ceiling. Same deadline as the city work.
+    const namedRequests = researchNamedRequests(
+      anthropic, submission, cityLabelEn, Date.now() + RESEARCH_DEADLINE_MS,
+      (d) => { draftSpend += d; },
+    );
+
     // One research blob per stop, each read from the per-city cache. Cached
     // cities cost nothing here, so adding stops is cheap: the extra spend on
     // a multi-stop trip is the longer draft, not the research.
@@ -2055,13 +2108,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       .filter((r) => r.notes)
       .map((r) => (multiStop ? `--- RESEARCH FOR ${r.label} ---\n${r.notes}` : r.notes))
       .join("\n\n");
-    // Anything this customer named on the form is searched here, now, rather
-    // than looked for in a cache that was filled before they existed. Only
-    // named requests get this: the rest of the city is the same for everyone
-    // and paying for it per customer would be waste.
-    const namedRequestResearch = await researchNamedRequests(
-      anthropic, submission, cityLabelEn, (d) => { draftSpend += d; },
-    );
+    const namedRequestResearch = await namedRequests;
     const operationalResearch = [cityResearch, namedRequestResearch].filter(Boolean).join("\n\n");
     // Grounded in nothing at all: no curated places and no research came back.
     // Drafting anyway would be asking the model to invent a city, which is the
@@ -2139,7 +2186,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     if (supabase && proposalId && arabicSplit?.customerFacing) {
       const { error } = await supabase
         .from("proposals")
-        .update({ itinerary_ar: arabicSplit.customerFacing })
+        .update({
+          itinerary_ar: arabicSplit.customerFacing,
+          // The marker lines ride along here, well before the self-check, the
+          // repair and the reviewer's note. They are not internal trivia: the
+          // page reads PICKS, PLACES and SITES out of this column to turn
+          // every named thing in the plan into a link. Written last, one
+          // timeout took every link in a finished plan with it. The update
+          // further down rewrites this same column with the verdict added.
+          notes: internalNotesSoFar(englishSplit, arabicSplit),
+        })
         .eq("id", proposalId);
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
@@ -2258,8 +2314,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
                 ? "AI self-check: CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes."
                 : `AI self-check, needs a look before publishing:\n${readSelfCheckVerdict(selfCheck).body}`)
             : "",
-          englishSplit.internalOnly ? `Internal planning notes, English:\n${englishSplit.internalOnly}` : "",
-          arabicSplit?.internalOnly ? `Internal planning notes, Arabic:\n${arabicSplit.internalOnly}` : "",
+          // The same text the early write already stored, so a timeout
+          // between the two leaves the reviewer a note that is merely
+          // missing its verdict rather than one that disagrees with it.
+          internalNotesSoFar(englishSplit, arabicSplit) ?? "",
         ].filter(Boolean);
         const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
 
