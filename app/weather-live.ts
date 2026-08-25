@@ -21,8 +21,14 @@ export type LiveWeather = {
   isDay: boolean;
   highC: number;
   lowC: number;
-  /** Local wall-clock time in the city, "HH:MM". */
+  /**
+   * Local wall-clock time in the city, "HH:MM", as of the reading. Correct
+   * when rendered and then frozen by the page cache, so it is the fallback
+   * for the first paint; the browser recomputes from utcOffsetSeconds.
+   */
   localTime: string;
+  /** The city's offset from UTC, so the browser can tell its real clock. */
+  utcOffsetSeconds: number;
   sunrise: string;
   sunset: string;
   conditionEn: string;
@@ -153,11 +159,18 @@ export async function fetchLiveWeather(citySlug: string): Promise<LiveWeather | 
   url.searchParams.set("forecast_days", "1");
 
   try {
-    // Cached for half an hour by the framework, so page views cost nothing
-    // upstream: fifteen cities is at most ~720 calls a day however busy the
-    // site gets. Weather does not move enough in thirty minutes for anyone
-    // to notice, and the alternative is one API call per visitor.
-    const response = await fetch(url, { next: { revalidate: 1800 } });
+    // Cached by the framework, so page views cost nothing upstream: fifteen
+    // cities at five minutes is ~4,320 calls a day however busy the site gets,
+    // well inside the free allowance, and the alternative is one call per
+    // visitor.
+    //
+    // It was half an hour, which was too long to claim "right now". On a hot
+    // afternoon the number can move three degrees in that time, and because
+    // this fetch also sets the revalidation of the whole statically rendered
+    // destination page, a visitor refreshing the page saw the same reading
+    // again rather than a newer one. Ten minutes is close enough to now that
+    // the label is honest.
+    const response = await fetch(url, { next: { revalidate: 300 } });
     if (!response.ok) return null;
     const data = await response.json();
 
@@ -179,6 +192,7 @@ export async function fetchLiveWeather(citySlug: string): Promise<LiveWeather | 
       highC: Math.round(d.temperature_2m_max[0]),
       lowC: Math.round(d.temperature_2m_min[0]),
       localTime: clockFrom(c.time),
+      utcOffsetSeconds: Number(data?.utc_offset_seconds ?? 0),
       sunrise,
       sunset,
       conditionEn: cond.en,

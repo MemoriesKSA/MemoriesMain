@@ -145,7 +145,7 @@ export async function FlagshipCityGuidePage({
 
       <section className="container flagshipWeather" id="weather">
         <p className="kicker">{ar ? "الطقس والتوقيت" : "Weather & timing"}</p>
-        <WeatherTransportTabs guide={guide} locale={locale} live={live} />
+        <WeatherTransportTabs guide={guide} citySlug={city.slug} locale={locale} live={live} />
       </section>
 
       <section className="container flagshipPullQuote">
