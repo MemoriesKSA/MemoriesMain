@@ -14,7 +14,7 @@
 // languages is ~35,000 output tokens and lets the model change anything it
 // passes; a list of exact replacements cannot touch a line it was not asked to.
 
-import { parseDraftEdits, applyDraftEdits } from "../app/draft-guide";
+import { parseDraftEdits, applyDraftEdits, spliceFindings } from "../app/draft-guide";
 
 const draft = [
   "Day 2 — Uluwatu",
@@ -75,6 +75,25 @@ const cases: [string, unknown, unknown][] = [
   // Deletion is a valid fix: removing an unsupported claim is the point.
   ["an empty replacement deletes the text", applyDraftEdits("keep this. drop this.", [{ lang: "en", find: " drop this.", replace: "" }]).text, "keep this."],
 ];
+
+// A word that changes alphabet halfway now becomes a finding rather than a
+// warning nobody acts on. Telling the translator not to do it failed twice:
+// ناniwa-ku for Naniwa-ku, then بيبيز إيطالianissimo for Italianissimo. A rule
+// it can forget is weaker than a detector that cannot.
+const spliced = spliceFindings("مطاعم بيبيز إيطالianissimo في ليدز");
+const cleanArabic = spliceFindings("مطاعم إيطالية في ليدز");
+const withProclitic = spliceFindings("جامعة ليدز وUNSW");
+
+const spliceCases: [string, unknown, unknown][] = [
+  ["a spliced word becomes a finding", spliced.length > 0, true],
+  ["the finding names the fragment", spliced.includes("لi"), true],
+  ["and says what to do about it", spliced.includes("wholly in Arabic script"), true],
+  ["and mentions the self-correction habit", spliced.includes("self-correction"), true],
+  ["clean Arabic yields no findings", cleanArabic, ""],
+  ["and a standalone conjunction before Latin is not a splice", withProclitic, ""],
+  ["neither is an empty draft", spliceFindings(""), ""],
+];
+cases.push(...spliceCases);
 
 let pass = 0;
 for (const [name, got, want] of cases) {

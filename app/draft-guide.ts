@@ -578,7 +578,7 @@ const STUDY_RESEARCH_CATEGORIES: ResearchCategory[] = [
     key: "studyvisa",
     header: "Student visa route for a Saudi applicant",
     searches: 10,
-    scope: ({ countryName, studyLevel }) => `The student visa route into ${countryName} for a SAUDI CITIZEN studying at ${studyLevel || "degree"} level. Cover: the exact visa name and category, whether Saudi nationals apply online or in person and where, the documents normally required, the financial-proof requirement and the figure sources give for it, tuberculosis or other medical screening if it applies, biometrics, typical processing times, the fee, and any health surcharge. Then the things a student actually gets caught by: how far ahead they may apply, whether the visa allows part-time work and how many hours, whether a spouse or children can accompany them at this study level, and what happens after the course ends. Also cover, separately and clearly, whether Saudi government scholarship students (the Custodian of the Two Holy Mosques programme, or a sponsoring ministry or university) follow a different route or need an attestation from the Saudi cultural attaché in that country, and name that attaché office if it exists. EVERYTHING here changes without notice and is specific to the passport, so attribute every figure to its source and its date, and state plainly where a source is undated or where two disagree. This research grounds a plan that tells the customer to verify with the embassy; it never replaces that.`,
+    scope: ({ countryName, studyLevel }) => `The student visa route into ${countryName} for a SAUDI CITIZEN studying at ${studyLevel || "degree"} level. Cover: the exact visa name and category, whether Saudi nationals apply online or in person and where, the documents normally required, the financial-proof requirement and the figure sources give for it, tuberculosis or other medical screening if it applies, biometrics, typical processing times, the fee, and any health surcharge. Then the things a student actually gets caught by: how far ahead they may apply, whether the visa allows part-time work and how many hours, whether a spouse or children can accompany them at this study level, and what happens after the course ends. Also cover, separately and clearly, whether Saudi government scholarship students (the Custodian of the Two Holy Mosques programme, or a sponsoring ministry or university) follow a different route or need an attestation from the Saudi cultural attaché in that country, and name that attaché office if it exists. EVERYTHING here changes without notice and is specific to the passport, so attribute every figure to its source and its date, and state plainly where a source is undated or where two disagree. This research grounds a plan that tells the customer to verify with the embassy; it never replaces that. For every institution you name, give its official website as a bare URL on the same line, taken from the search result you actually opened rather than assembled from the name: the admissions or international-students page if you found one, otherwise the homepage. Write it as https://... with nothing around it. These become the links a student taps to go and read the entry requirements themselves, so an institution without a URL here simply gets a map search instead, which is far less useful to somebody deciding where to spend three years. Do not invent, shorten or tidy a URL, and do not guess a domain from an institution's name.`,
   },
   {
     key: "living",
@@ -1723,6 +1723,25 @@ export async function repairDraft(
     return null;
   }
 }
+/**
+ * Turns spliced Arabic words into findings the repair pass can act on.
+ *
+ * Telling the translator not to do this has now failed twice: ناniwa-ku for
+ * Naniwa-ku, and بيبيز إيطالianissimo for Italianissimo. A rule it can forget
+ * is weaker than a detector that cannot, and we already have the detector.
+ *
+ * So the fragments become findings in the same shape the self-check writes,
+ * and go through the same repair. The check itself often does not flag these,
+ * because it is reading for factual fidelity rather than for a word that
+ * changes alphabet halfway.
+ */
+export function spliceFindings(arabicDraft: string): string {
+  const fragments = mixedScriptFragments(arabicDraft);
+  if (!fragments.length) return "";
+  return fragments
+    .map((fragment) => `- Arabic draft: the word around "${fragment}" starts in one script and finishes in the other. Write it wholly in Arabic script, or leave the name wholly in Latin letters, and remove any self-correction phrasing next to it.`)
+    .join("\n");
+}
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
   try {
     // These early returns used to be completely silent, which made a missing
@@ -1976,14 +1995,23 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       return verdict.body.split(/\r?\n/).filter((line) => line.trim().length > 12).length;
     };
 
+    // A spliced Arabic word counts as a finding even when the check passed the
+    // draft, because the check reads for factual fidelity and a word changing
+    // alphabet halfway is a different kind of wrong.
+    const findingsFor = (check: string, arabic: string) => {
+      const verdict = readSelfCheckVerdict(check);
+      const fromCheck = verdict.clean ? "" : verdict.body;
+      return [fromCheck, spliceFindings(arabic)].filter(Boolean).join("\n");
+    };
+
     const MAX_REPAIR_ROUNDS = 2;
-    let previousCount = countFindings(selfCheck);
+    let previousCount = countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length;
     for (let round = 1; round <= MAX_REPAIR_ROUNDS && previousCount > 0 && englishDraft; round++) {
-      const verdict = readSelfCheckVerdict(selfCheck);
-      if (verdict.clean || !verdict.body) break;
+      const findings = findingsFor(selfCheck, arabicDraft);
+      if (!findings) break;
 
       const repaired = await repairDraft(
-        anthropic, englishDraft, arabicDraft, verdict.body,
+        anthropic, englishDraft, arabicDraft, findings,
         groundedFactsEn, operationalResearch, (d) => { draftSpend += d; });
       if (!repaired) break;
 
@@ -1993,7 +2021,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       // needs that, not a list of things already put right.
       selfCheck = await runCheck(englishDraft, arabicDraft);
 
-      const nowCount = countFindings(selfCheck);
+      const nowCount = countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length;
       console.log(`Repair round ${round}: ${repaired.applied} edits applied, findings ${previousCount} to ${nowCount}.`);
       if (nowCount === 0) break;
       if (nowCount >= previousCount) {
