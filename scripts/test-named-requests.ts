@@ -54,7 +54,7 @@ const cases: [string, unknown, unknown][] = [
   ]),
 
   // Real names still come through, whatever the model dresses them in.
-  ["a plain list parses", real.length, 3],
+  ["a plain list parses, capped at two", real.length, 2],
   ["and keeps the name exactly", real[0], "Lapita Resort"],
   ["a name containing a comma survives whole", real[1], "Atlantis, The Palm"],
   ["bullets are stripped", bulleted[0], "Lapita Resort"],
@@ -67,7 +67,10 @@ const cases: [string, unknown, unknown][] = [
   ["while the real name beside it survives", chatty.includes("Lapita Resort"), true],
 
   // Cost ceilings. Somebody who lists ten things wrote a wish list.
-  ["never more than three are researched", overLong.length, 3],
+  // Two, not three. Every extra name is another search on the critical path
+  // of a function that already times out, and the third thing somebody
+  // lists is nearly always the least important thing they typed.
+  ["never more than two are researched", overLong.length, 2],
   ["a name repeated is researched once", duplicated.length, 2],
 
   // Nothing in, nothing out, no crash.
