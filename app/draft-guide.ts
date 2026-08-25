@@ -55,6 +55,11 @@ export type DraftGuideSubmission = {
   flightTiming: string;
   planIncludes: string[];
   packageNotes: string;
+  // The customer's own last words on the form. This was collected, emailed
+  // to the team, and then never handed to the drafting pass at all, so the
+  // one free-text box where somebody writes what they actually want was the
+  // one thing the plan could not see.
+  notes?: string;
   currency: string;
   budget: string;
   /** "fixed" | "unsure" | "open". See the budget rules in the system prompt. */
@@ -240,10 +245,11 @@ THEN the internal sections, exactly as on any other plan and with the same headi
   Then a third machine-readable line, for the things a student would rather open than find on a map. A map pin is the right link for a restaurant and the wrong one for a university: somebody deciding where to spend three years wants the admissions page. Same pipe-separated shape, with the name exactly as you used it, then "=", then the URL.
   SITES: The University of Osaka = https://www.osaka-u.ac.jp/en | Osaka Metropolitan University = https://www.omu.ac.jp/en/
   Give a URL ONLY if that exact URL appears in the research notes you were given. Do not assemble one that looks plausible, do not guess a domain from an institution's name, and do not shorten or tidy one you did see. A wrong university link is worse than no link, because it looks authoritative and sends someone to the wrong place. If the notes carry no URL for an institution, leave it off this line entirely and it will simply get a map search like everything else. Write "none" if you have no URLs at all. Universities, language schools and colleges are what this line is for; do not use it for restaurants or neighbourhoods.
-  Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never the study city itself, and never a description that isn't a name, so no "the city centre", no "a student area", no "your accommodation".
+  Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never the study city itself, and never a description that isn't a name, so no "the city centre", no "a student area", no "your accommodation". Give each entry in BOTH languages: the English name exactly as your English plan writes it, then " = ", then exactly the Arabic your Arabic plan writes for the same thing, so "Atlantis, The Palm = أتلانتس ذا بالم". We look for these strings character-for-character in your own text to build the links, so the Arabic side must match what you actually wrote there, including the definite article and the spacing. Until now these lines were English only, and the result was that the whole Arabic half of every plan came out with no links at all while the English half was fully linked, which is not a translation, it is a worse product in the customer's own language. If you left a name in Latin script in the Arabic text too, give it once with no " = ".
 
 FORMAT: plain text only, no markdown, no "#" headings, no asterisks, no numbered-list syntax. Never write a "Day 1" heading: this is not an itinerary, and a day heading would make our tooling paywall it as one.
 
+- When the customer named something themselves, answer them about it. Their form may name a specific hotel, restaurant, airline, operator, attraction or institution, and when it does you are handed a block headed THE CUSTOMER'S OWN NAMED REQUESTS, searched for this customer at the moment this plan was written rather than taken from the city cache. Treat it exactly as you treat the rest of the research: it is grounded, and every source-fidelity rule below applies to every line of it. Address the thing they named directly, in the section where it belongs, and never write that we have nothing on it while that block is telling you what it is. One plan answered a customer who had asked for a particular resort with "our research for this trip doesn't cover it, so we have nothing verified to tell you", which was true of the cache and useless to them. If the block itself says NOTHING FOUND, then say plainly that we could not verify it and offer to price it properly, but that sentence is a last resort now, not the default. A price in that block is a published, dated, indicative figure: present it as exactly that, with its source, and tell them to price their own dates live. Never restate it as a quote for their stay.
 - Never finish a sentence the research did not finish. A note can stop mid-word, and when it does you must stop with it. If the notes say "315 m from Masjid Istiq" you write nothing about that mosque's name; if they say "Cycling is a real cost lever:" and then stop, you have a fact about cost and no fact about how many people cycle. This has produced a mosque name nobody wrote, a claim that most students own a bicycle, and a restaurant described as "not a large room" from a line that was cut before it said anything about the room. A truncated source is less information, never an invitation to supply the rest.
 - Do not upgrade a hedge into a stronger claim. Carry the source's own strength across exactly: "widely available" does not become "on every menu in town", "the school sets this figure" does not become "the figure the authorities think a year costs", "often" does not become "always", and a single named example does not become a general rule. If the sentence you are about to write is more certain, more universal or more authoritative than the sentence you read, you have changed the fact.
 - Never build a correspondence the notes did not state. Two lists are not a mapping. If the research names airlines somewhere and hubs somewhere else, you may not join them with "respectively" and hand a traveller a pairing nobody verified; one draft paired Bangkok with Turkish Airlines that way. Say what each source actually attaches to what, or say them separately.
@@ -302,7 +308,11 @@ Rules, factual accuracy and safety about the real companies named here matter mo
   Everything you are RECOMMENDING: restaurants, cafés, hotels, drivers and transfer companies, tour operators, attractions, temples, museums, markets, beaches, viewpoints. The answers the customer is paying for.
   PLACES: Suvarnabhumi Airport | Airport Rail Link | Sukhumvit | Soi Arab | Bang Rak | Hua Thanon | Fisherman's Village | Chao Phraya
   Everything else nameable: airports, stations, transit lines and river routes, districts, neighbourhoods, quarters, streets, islands, rivers and mountains. The context a customer needs to orient themselves whether or not they have paid.
-  Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never a city that is one of this trip's stops, and never a description that isn't a name, so no "the old town", no "the south-east coast", no "your hotel".
+  Then a third machine-readable line, for the things a customer would rather open than find on a map. A map pin is the right link for a restaurant and a useless one for an app or a booking platform: somebody told to book on the DTC app wants the app, not a map of the taxi company's head office, and a plan that names an app, a website or an operator and leaves it as dead text has told them to go and search for it themselves. Same pipe-separated shape, the name exactly as you used it, then "=", then the URL.
+  SITES: Dubai Taxi Company = https://www.dubaitaxi.ae | Museum of the Future = https://museumofthefuture.ae
+  This line is for apps and their booking or download pages, official operator, rental and airline sites, ticketing pages for attractions, and official tourism pages. Not restaurants, hotels, districts or streets: those want the map, and a map is the better link for them. Give a URL ONLY if that exact URL appears in the research notes you were given or in the notes on the customer's own named requests. Do not assemble one that looks plausible, do not guess a domain from a company's name, and do not shorten or tidy one you did see. A wrong link is worse than no link, because it looks like something we checked. If the notes carry no URL for something, leave it off this line entirely and it simply gets a map search like everything else. Write "none" if you have no URLs at all.
+  Both lines: spell each exactly as it appears in your plan, and list a thing once even if you mention it five times. Never a city that is one of this trip's stops, and never a description that isn't a name, so no "the old town", no "the south-east coast", no "your hotel". Give each entry in BOTH languages: the English name exactly as your English plan writes it, then " = ", then exactly the Arabic your Arabic plan writes for the same thing, so "Atlantis, The Palm = أتلانتس ذا بالم". We look for these strings character-for-character in your own text to build the links, so the Arabic side must match what you actually wrote there, including the definite article and the spacing. Until now these lines were English only, and the result was that the whole Arabic half of every plan came out with no links at all while the English half was fully linked, which is not a translation, it is a worse product in the customer's own language. If you left a name in Latin script in the Arabic text too, give it once with no " = ".
+- When the customer named something themselves, answer them about it. Their form may name a specific hotel, restaurant, airline, operator, attraction or institution, and when it does you are handed a block headed THE CUSTOMER'S OWN NAMED REQUESTS, searched for this customer at the moment this plan was written rather than taken from the city cache. Treat it exactly as you treat the rest of the research: it is grounded, and every source-fidelity rule below applies to every line of it. Address the thing they named directly, in the section where it belongs, and never write that we have nothing on it while that block is telling you what it is. One plan answered a customer who had asked for a particular resort with "our research for this trip doesn't cover it, so we have nothing verified to tell you", which was true of the cache and useless to them. If the block itself says NOTHING FOUND, then say plainly that we could not verify it and offer to price it properly, but that sentence is a last resort now, not the default. A price in that block is a published, dated, indicative figure: present it as exactly that, with its source, and tell them to price their own dates live. Never restate it as a quote for their stay.
 - Never finish a sentence the research did not finish. A note can stop mid-word, and when it does you must stop with it. If the notes say "315 m from Masjid Istiq" you write nothing about that mosque's name; if they say "Cycling is a real cost lever:" and then stop, you have a fact about cost and no fact about how many people cycle. This has produced a mosque name nobody wrote, a claim that most students own a bicycle, and a restaurant described as "not a large room" from a line that was cut before it said anything about the room. A truncated source is less information, never an invitation to supply the rest.
 - Do not upgrade a hedge into a stronger claim. Carry the source's own strength across exactly: "widely available" does not become "on every menu in town", "the school sets this figure" does not become "the figure the authorities think a year costs", "often" does not become "always", and a single named example does not become a general rule. If the sentence you are about to write is more certain, more universal or more authoritative than the sentence you read, you have changed the fact.
 - Never build a correspondence the notes did not state. Two lists are not a mapping. If the research names airlines somewhere and hubs somewhere else, you may not join them with "respectively" and hand a traveller a pairing nobody verified; one draft paired Bangkok with Turkish Airlines that way. Say what each source actually attaches to what, or say them separately.
@@ -376,6 +386,7 @@ Preferred flight timing: ${submission.flightTiming && submission.flightTiming !=
 Plan should include: ${submission.planIncludes.map(readable).join(", ") || "not specified"}
 Budget: ${budgetLine(submission)}
 Customer notes: ${submission.packageNotes || "none"}
+Their final notes, in their own words: ${submission.notes || "none"}
 
 Real, grounded facts for ${cityLabel} (only use these named places):
 ${groundedFacts}${researchSection}
@@ -437,6 +448,7 @@ export function customerRequestForCheck(submission: DraftGuideSubmission, cityLa
       : "",
     submission.journeyType === "study" ? `Support requested: ${readable(submission.studySupport ?? "") || "not specified"}` : "",
     `Customer notes: ${submission.packageNotes || "none"}`,
+    `Their final notes, in their own words: ${submission.notes || "none"}`,
   ].filter(Boolean).join("\n");
 }
 
@@ -507,7 +519,7 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
     key: "drivers",
     header: "Private drivers",
     searches: 10,
-    scope: ({ cityLabelEn, countryName }) => `Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, full-day hire with a driver, or both), roughly how they price it if published, and whatever you can genuinely find on reputation and standing. We have no drivers of our own for this city, so this is the only source the plan will have. Search "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for names that come up. A hotel concierge arrangement or a well-reviewed local tour operator providing a car and driver counts, say which it is.`,
+    scope: ({ cityLabelEn, countryName }) => `Real private-driver, chauffeur or airport-transfer companies operating in ${cityLabelEn}: aim for 3-5, mixing any international or regional operator that genuinely covers the city with real local companies. For each: name, what they actually offer (airport transfers only, full-day hire with a driver, or both), roughly how they price it if published, and whatever you can genuinely find on reputation and standing. We have no drivers of our own for this city, so this is the only source the plan will have. Search "private driver ${cityLabelEn}", "chauffeur service ${cityLabelEn} ${countryName}", "airport transfer ${cityLabelEn}", "private day tour with driver ${cityLabelEn}", and "[company name] reviews" for names that come up. A hotel concierge arrangement or a well-reviewed local tour operator providing a car and driver counts, say which it is. Give the official website of each company or venue you name as a bare URL on the same line, taken from a search result you actually opened rather than assembled from the name, and prefer the page a customer would need (the booking, tickets or app page) over the corporate homepage. Write it as https://... with nothing around it. These become the links the customer taps, so anything without a URL here just gets a map search instead, which is the wrong answer for an app or a booking platform. Do not invent, shorten or tidy a URL, and never guess a domain from a name.`,
   },
   {
     key: "stays",
@@ -531,25 +543,25 @@ const RESEARCH_CATEGORIES: ResearchCategory[] = [
     key: "halal",
     header: "Halal food and prayer",
     searches: 8,
-    scope: ({ cityLabelEn }) => `How straightforward halal food is in ${cityLabelEn}, in a few lines. Say plainly whether it is the default (a Muslim-majority country) or something to seek out, name the districts, markets or restaurants where it clusters if it is the latter, and name 2-3 specific places that are genuinely halal, halal-certified or otherwise safe (a seafood or vegetarian kitchen counts, say which). If pork or alcohol are common on ordinary menus, say so plainly, that is useful rather than rude. Then prayer: the main mosque or mosques visitors actually use, with the district, and any prayer room at the airport or main sights if documented. Don't certify anything yourself, "listed as halal-certified by X" and "widely described as halal" are different claims and stay different.`,
+    scope: ({ cityLabelEn }) => `How straightforward halal food is in ${cityLabelEn}, in a few lines. Say plainly whether it is the default (a Muslim-majority country) or something to seek out, name the districts, markets or restaurants where it clusters if it is the latter, and name 2-3 specific places that are genuinely halal, halal-certified or otherwise safe (a seafood or vegetarian kitchen counts, say which). If pork or alcohol are common on ordinary menus, say so plainly, that is useful rather than rude. Then prayer: the main mosque or mosques visitors actually use, with the district, and any prayer room at the airport or main sights if documented. Don't certify anything yourself, "listed as halal-certified by X" and "widely described as halal" are different claims and stay different. Give the official website of each company or venue you name as a bare URL on the same line, taken from a search result you actually opened rather than assembled from the name, and prefer the page a customer would need (the booking, tickets or app page) over the corporate homepage. Write it as https://... with nothing around it. These become the links the customer taps, so anything without a URL here just gets a map search instead, which is the wrong answer for an app or a booking platform. Do not invent, shorten or tidy a URL, and never guess a domain from a name.`,
   },
   {
     key: "hours",
     header: "Attractions",
     searches: 12,
-    scope: ({ cityLabelEn, guide }) => `Opening hours, seasonal operating status (open or closed) and ticket pricing for these places in ${cityLabelEn}: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. If a place is a free, unticketed public site with no formal hours (a trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best early morning" - that IS a real finding, don't leave it as "unconfirmed" because there is no ticket office. Spend the budget where the answer could plausibly change with the season or over time: a fixed historic site's hours barely move, a seasonal park or festival venue does, so check the seasonal and newly-opened ones first.`,
+    scope: ({ cityLabelEn, guide }) => `Opening hours, seasonal operating status (open or closed) and ticket pricing for these places in ${cityLabelEn}: ${(guide?.attractions ?? []).map((a) => a.nameEn).join(", ")}. If a place is a free, unticketed public site with no formal hours (a trail, a mountain, an outdoor landmark), report that plainly and confidently, e.g. "freely accessible, no tickets or set hours, best early morning" - that IS a real finding, don't leave it as "unconfirmed" because there is no ticket office. Spend the budget where the answer could plausibly change with the season or over time: a fixed historic site's hours barely move, a seasonal park or festival venue does, so check the seasonal and newly-opened ones first. Give the official website of each company or venue you name as a bare URL on the same line, taken from a search result you actually opened rather than assembled from the name, and prefer the page a customer would need (the booking, tickets or app page) over the corporate homepage. Write it as https://... with nothing around it. These become the links the customer taps, so anything without a URL here just gets a map search instead, which is the wrong answer for an app or a booking platform. Do not invent, shorten or tidy a URL, and never guess a domain from a name.`,
   },
   {
     key: "rentals",
     header: "Rental cars",
     searches: 10,
-    scope: ({ cityLabelEn, countryName }) => `A price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: at least one budget, one mid-range, and one premium if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo and so on, wherever they actually operate there) and real local operators; the chains are easier to verify as legitimate, so don't skip them in favour of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation. Search "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" for names that come up.`,
+    scope: ({ cityLabelEn, countryName }) => `A price-tier-diverse set of real rental car companies operating in ${cityLabelEn}: at least one budget, one mid-range, and one premium if the city has them. Include both well-known international chains (Hertz, Budget, Avis, Sixt, Theeb, Yelo and so on, wherever they actually operate there) and real local operators; the chains are easier to verify as legitimate, so don't skip them in favour of only obscure local names. For each: name, rough price tier, what they offer, and whatever you can genuinely find on reputation. Search "car rental ${cityLabelEn}", "car hire companies ${cityLabelEn} ${countryName}", "cheap car rental ${cityLabelEn}", and "[company name] reviews" for names that come up. Give the official website of each company or venue you name as a bare URL on the same line, taken from a search result you actually opened rather than assembled from the name, and prefer the page a customer would need (the booking, tickets or app page) over the corporate homepage. Write it as https://... with nothing around it. These become the links the customer taps, so anything without a URL here just gets a map search instead, which is the wrong answer for an app or a booking platform. Do not invent, shorten or tidy a URL, and never guess a domain from a name.`,
   },
   {
     key: "flights",
     header: "Airlines and routes",
     searches: 6,
-    scope: ({ cityLabelEn }) => `Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub first. Airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never a specific flight time, schedule or price: that is not something search can honestly confirm, it changes constantly, and the team prices it separately regardless of what you find.`,
+    scope: ({ cityLabelEn }) => `Which airlines fly into ${cityLabelEn}'s nearest airport, and whether international travellers typically connect through the country's main hub first. Airlines and general route/connection patterns only, e.g. "Saudia and flynas serve the local airport, most international arrivals connect via Riyadh (RUH)". Never a specific flight time, schedule or price: that is not something search can honestly confirm, it changes constantly, and the team prices it separately regardless of what you find. Give the official website of each company or venue you name as a bare URL on the same line, taken from a search result you actually opened rather than assembled from the name, and prefer the page a customer would need (the booking, tickets or app page) over the corporate homepage. Write it as https://... with nothing around it. These become the links the customer taps, so anything without a URL here just gets a map search instead, which is the wrong answer for an app or a booking platform. Do not invent, shorten or tidy a URL, and never guess a domain from a name.`,
   },
 ];
 
@@ -802,6 +814,179 @@ async function researchOneCategory(
  * `onCategory` fires after each success with the notes so far, so a caller
  * can persist partial progress rather than risking it all on the last one.
  */
+/**
+ * The things this customer named, researched now, for them.
+ *
+ * Everything else in a plan stands on research bought once per city and reused
+ * for months, which is the right trade for "the good restaurants in Dubai" and
+ * the wrong one for "we want to stay at Lapita". A cache built before this
+ * customer existed cannot know what they were going to ask for, so when a plan
+ * met a named request it had nothing, and said so:
+ *
+ *   "our research for this trip doesn't cover Lapita, so we have nothing
+ *    verified to tell you about its rooms, rates or availability"
+ *
+ * Honest, and still a bad answer. They named one thing on the whole form and
+ * that is the sentence they got back. So a named request now buys its own
+ * search, at draft time, and only a named request does: the general shape of
+ * the city still comes from the cache, because that part does not change per
+ * customer and paying for it again every time would be waste.
+ */
+const NAMED_REQUEST_MAX = 3;
+
+/**
+ * A line that is the model declining, not a place.
+ *
+ * Anchored at the start rather than matched whole, because the refusal
+ * arrives dressed differently every time and only the opening is stable.
+ * A real place name never begins this way.
+ */
+const NOT_A_NAME = /^(none|no |nothing|n\/a|not applicable|the customer|they (did|didn|do not|don)|named? requests?\b|here are|there (are|is) no)/i;
+
+/**
+ * The names out of the extraction model's reply.
+ *
+ * Separate from the call so it can be tested without spending anything,
+ * which is how the bug below survived review: nothing could reach these
+ * lines without a paid request, so nothing did.
+ *
+ * The sentinel is whatever the model felt like typing that turn: "NONE",
+ * "None.", "none - they didn't name anywhere". Testing for exactly "none"
+ * meant a punctuated refusal survived as a name, bought a six-search call,
+ * and arrived at the drafting pass inside a block headed with the
+ * customer's own request, which the brief then tells the drafter to
+ * address directly. A customer who named nothing could be apologised to
+ * about a place they never mentioned.
+ */
+export function namesFromExtractionReply(reply: string): string[] {
+  if (!reply) return [];
+  const out = reply
+    .split(/\r?\n/)
+    // Bullets and numbering off the front, sentence punctuation off the back.
+    .map((l) => l.replace(/^[-*\u2022\d.)\s]+/, "").replace(/[.,;:!\s]+$/, "").trim())
+    .filter((l) => l.length > 2 && !NOT_A_NAME.test(l));
+  return [...new Set(out)].slice(0, NAMED_REQUEST_MAX);
+}
+
+/** Everywhere a customer can type something we did not put in a dropdown. */
+function customerFreeText(submission: DraftGuideSubmission): string {
+  return [submission.packageNotes, submission.notes, submission.specificUniversity]
+    .map((s) => (s ?? "").trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * Which specific, real, named things the customer asked for.
+ *
+ * An extraction rather than a regex, because "we'd like Lapita" and "my
+ * daughter wants to see the Burj" are the same request in different clothes,
+ * and a pattern that catches both catches half the sentence with them.
+ */
+async function extractNamedRequests(
+  anthropic: Anthropic,
+  submission: DraftGuideSubmission,
+  onSpend?: (dollars: number) => void,
+): Promise<string[]> {
+  const text = customerFreeText(submission);
+  if (!text) return [];
+  try {
+    const response = await anthropic.messages.stream({
+      model: "claude-opus-5",
+      max_tokens: 1_000,
+      system: cachedSystem(
+        "You read what a travel customer typed and list the specific, real, named things they asked for by name: a "
+        + "named hotel or resort, a named restaurant, a named airline, a named rental or transport company, a named "
+        + "attraction, museum, park or mosque, a named university, a named tour operator, a named app or booking "
+        + "platform. Only proper names. Not categories, not preferences, and not the destination itself. "
+        + "\"a five-star on the beach\" is not a name; \"we'd love Atlantis\" is Atlantis. A city, district or country "
+        + "that is simply where they are going is not a named request. Output one name per line, spelled as a search "
+        + "engine would best find it, and nothing else. Output the single word NONE if they named nothing.",
+      ),
+      messages: [{ role: "user", content: `Destination: ${submission.city}, ${submission.countryName}\n\nWhat the customer wrote:\n${text}\n\nList the names now.` }],
+    }, RESEARCH_REQUEST_OPTIONS).finalMessage();
+    onSpend?.(logResearchSpend("named requests / extract", response));
+    const reply = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n");
+    return namesFromExtractionReply(reply);
+  } catch (error) {
+    // Without this a plan is exactly the plan we shipped yesterday, so a
+    // failure here costs nothing that was not already missing.
+    console.error("Named-request extraction failed:", error);
+    return [];
+  }
+}
+
+/** One named thing, searched properly. */
+async function researchOneNamedRequest(
+  anthropic: Anthropic,
+  name: string,
+  submission: DraftGuideSubmission,
+  cityLabelEn: string,
+  onSpend?: (dollars: number) => void,
+): Promise<string | null> {
+  try {
+    const response = await anthropic.messages.stream({
+      model: "claude-opus-5",
+      max_tokens: 8_000,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "high" },
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+      system: cachedSystem(researchSystemPrompt()),
+      messages: [{
+        role: "user",
+        content: `City: ${cityLabelEn}, ${submission.countryName}\n`
+          + `Trip dates being planned: ${submission.fromDate} to ${submission.toDate}\n`
+          + `Travellers: ${readable(submission.travellers)}, ${submission.travellerCount}\n\n`
+          + `THE CUSTOMER ASKED FOR THIS BY NAME: ${name}\n\n`
+          + `They named it themselves on the form, so the plan has to answer them about it directly. Search now and report:\n`
+          + `- What it actually is, and where exactly, relative to the rest of ${cityLabelEn}.\n`
+          + `- Whether it is currently open and operating, and anything seasonal that lands on the customer's own dates above.\n`
+          + `- What it costs. Look for published rates: a nightly band for a hotel, an entry or ticket price, a daily hire rate. Give the figure with the source and the date that source published it, and label it indicative. You are not quoting their dates and must never write a number as though you had priced their actual stay, because a live booking engine is the only thing that can do that and you have not opened one. A sourced, dated band plus "price it live for your dates" is the honest answer, and it is far more use to them than silence.\n`
+          + `- Its official website as a bare URL, taken from a search result you actually opened rather than assembled from the name. Write it as https://... with nothing around it.\n`
+          + `- Whether it genuinely suits this trip, and if it does not, say so plainly and why.\n`
+          + `If the searches turn up nothing you can stand behind, write exactly NOTHING FOUND and then one line on what you looked for. Do not pad it out.\n\n`
+          + `Search and report now.`,
+      }],
+    }, RESEARCH_REQUEST_OPTIONS).finalMessage();
+    onSpend?.(logResearchSpend(`named request / ${name}`, response));
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
+    if (!text) return null;
+    return `### ${name}\n${trimToLastCompleteLine(text)}`;
+  } catch (error) {
+    console.error(`Named-request research failed for "${name}":`, error);
+    return null;
+  }
+}
+
+/**
+ * All of them, in parallel, headed so the drafting brief can point at it.
+ *
+ * Capped at three. Somebody who lists ten things has written a wish list
+ * rather than a request, and the first three are the ones they meant.
+ */
+export async function researchNamedRequests(
+  anthropic: Anthropic,
+  submission: DraftGuideSubmission,
+  cityLabelEn: string,
+  onSpend?: (dollars: number) => void,
+): Promise<string> {
+  const names = await extractNamedRequests(anthropic, submission, onSpend);
+  if (!names.length) return "";
+  console.log(`Researching ${names.length} named request(s): ${names.join(", ")}`);
+  const reports = (await Promise.all(
+    names.map((name) => researchOneNamedRequest(anthropic, name, submission, cityLabelEn, onSpend)),
+  )).filter(Boolean);
+  if (!reports.length) return "";
+  return `--- THE CUSTOMER'S OWN NAMED REQUESTS (searched just now, for this customer, not from the city cache) ---\n${reports.join("\n\n")}`;
+}
+
 export async function researchOperationalFacts(
   anthropic: Anthropic,
   // Undefined for a study city, which has no flagship entry at all.
@@ -1866,14 +2051,22 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       // hours and pricing regardless.
       return { label: stopLabelsEn[i], notes: cached?.notes ?? "" };
     }));
-    const operationalResearch = researchPerStop
+    const cityResearch = researchPerStop
       .filter((r) => r.notes)
       .map((r) => (multiStop ? `--- RESEARCH FOR ${r.label} ---\n${r.notes}` : r.notes))
       .join("\n\n");
+    // Anything this customer named on the form is searched here, now, rather
+    // than looked for in a cache that was filled before they existed. Only
+    // named requests get this: the rest of the city is the same for everyone
+    // and paying for it per customer would be waste.
+    const namedRequestResearch = await researchNamedRequests(
+      anthropic, submission, cityLabelEn, (d) => { draftSpend += d; },
+    );
+    const operationalResearch = [cityResearch, namedRequestResearch].filter(Boolean).join("\n\n");
     // Grounded in nothing at all: no curated places and no research came back.
     // Drafting anyway would be asking the model to invent a city, which is the
     // one thing this file exists to prevent.
-    if (!isStudy && !guide && !operationalResearch.trim()) {
+    if (!isStudy && !guide && !cityResearch.trim()) {
       console.error(`Draft skipped for ${submission.submissionId}: no curated data and no research for "${submission.city}"`);
       await notifyDraftFailed(submission, new Error("NO_GROUNDING")).catch(() => {});
       return;

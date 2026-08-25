@@ -79,6 +79,29 @@ const cases: [string, unknown, unknown][] = [
   ["and PICKS still parses alongside it", parseAllNamedPlaces(notes).includes("Masjid Ohtsuka"), true],
 ];
 
+// Two blemishes found across 316 researched university URLs. Both reach the
+// customer as a link, so both are refused here rather than shipped.
+const messy = parseSiteLinks([
+  "SITES: Sendai University = https://www.sendaidaigaku.jp. | Kyushu University = https://www.kyushu-u.ac.jp/en/,"
+].join("\n"));
+const encyclopedic = parseSiteLinks([
+  "SITES: Fukuoka International = https://en.wikipedia.org/wiki/Fukuoka_International_University | Real One = https://www.kyushu-u.ac.jp/en/ | Ranked = https://www.topuniversities.com/universities/x",
+].join("\n"));
+
+const urlCases: [string, unknown, unknown][] = [
+  // A URL copied from prose brings the sentence's full stop with it.
+  ["a trailing full stop is stripped", messy["sendai university"], "https://www.sendaidaigaku.jp"],
+  ["and a trailing comma", messy["kyushu university"], "https://www.kyushu-u.ac.jp/en/"],
+  // An encyclopedia article is not an admissions page.
+  ["a Wikipedia link is refused", encyclopedic["fukuoka international"], undefined],
+  ["so is a rankings aggregator", encyclopedic["ranked"], undefined],
+  ["while the real university survives", encyclopedic["real one"], "https://www.kyushu-u.ac.jp/en/"],
+  // A refused link is not an error: it falls through to a map search, which
+  // is a more honest answer than a link to the wrong kind of page.
+  ["refusing one does not discard the others", Object.keys(encyclopedic).length, 1],
+];
+cases.push(...urlCases);
+
 let pass = 0;
 for (const [name, got, want] of cases) {
   const ok = got === want;
