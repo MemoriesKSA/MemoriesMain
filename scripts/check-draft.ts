@@ -24,8 +24,17 @@ async function main() {
 
   const en = String(row.itinerary_en ?? "");
   const ar = String(row.itinerary_ar ?? "");
+  const notes = String(row.notes ?? "");
+  // Both drafts AND the notes. The Arabic lands well before the self-check,
+  // the repair pass and the internal notes, so treating it as "done" once
+  // reported a finished draft that was still eight minutes from finishing,
+  // and sent me looking for marker lines that had not been written yet.
   if (!en || !ar) {
-    console.log(`${reference}: en=${en.length} ar=${ar.length} — still writing`);
+    console.log(`${reference}: en=${en.length} ar=${ar.length} - still writing`);
+    process.exit(1);
+  }
+  if (!notes) {
+    console.log(`${reference}: drafts stored, still self-checking`);
     process.exit(1);
   }
   console.log(`${reference}: READY  en=${en.length} ar=${ar.length}  token=${row.public_token} status=${row.status}`);

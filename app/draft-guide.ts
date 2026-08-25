@@ -832,7 +832,22 @@ async function researchOneCategory(
  * the city still comes from the cache, because that part does not change per
  * customer and paying for it again every time would be waste.
  */
-const NAMED_REQUEST_MAX = 3;
+// Two, not three. Each one is a real web-search call on the critical path
+// of a function with a hard ceiling, and the third request is nearly always
+// the least important thing the customer typed.
+const NAMED_REQUEST_MAX = 2;
+
+/**
+ * The most wall-clock the named requests may ever cost a plan.
+ *
+ * Not a deadline that decides whether to begin, which is what this had at
+ * first and which protected nothing: the calls were already in flight. This
+ * races them, so when the clock runs out the plan is written from the city
+ * research alone, exactly as it was before this feature existed. A draft
+ * that answers a named request is better; a draft that arrives at all is
+ * the floor.
+ */
+const NAMED_REQUEST_BUDGET_MS = 100 * 1000;
 
 /**
  * A line that is the model declining, not a place.
@@ -933,7 +948,7 @@ async function researchOneNamedRequest(
       max_tokens: 8_000,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
       system: cachedSystem(researchSystemPrompt()),
       messages: [{
         role: "user",
@@ -2067,10 +2082,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // Started here rather than awaited after the city research, because the
     // two are independent and running them end to end is what pushed one
     // draft past the function's ceiling. Same deadline as the city work.
-    const namedRequests = researchNamedRequests(
-      anthropic, submission, cityLabelEn, Date.now() + RESEARCH_DEADLINE_MS,
-      (d) => { draftSpend += d; },
-    );
+    const namedRequests = Promise.race([
+      researchNamedRequests(
+        anthropic, submission, cityLabelEn, Date.now() + NAMED_REQUEST_BUDGET_MS,
+        (d) => { draftSpend += d; },
+      ),
+      new Promise<string>((resolve) => setTimeout(() => {
+        console.warn(`Named requests gave up after ${NAMED_REQUEST_BUDGET_MS / 1000}s; drafting from the city research alone.`);
+        resolve("");
+      }, NAMED_REQUEST_BUDGET_MS).unref?.()),
+    ]);
 
     // One research blob per stop, each read from the per-city cache. Cached
     // cities cost nothing here, so adding stops is cheap: the extra spend on
@@ -2164,6 +2185,12 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             // to day one being free, which is the safe direction to fail in.
             stops: planStops,
             itinerary_en: englishSplit.customerFacing || englishDraft,
+            // Written here, not at the end. The marker lines in this column
+            // are what turn every named thing in the plan into a link, and a
+            // draft that timed out during the Arabic translation arrived with
+            // an English plan and no links in it at all. Both later writes
+            // rewrite this same column with more in it.
+            notes: internalNotesSoFar(englishSplit, null),
           })
           .select("id")
           .single();
