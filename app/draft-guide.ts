@@ -266,6 +266,8 @@ Voice, for everything the customer reads: write directly to them as "you", warm 
 Rules, factual accuracy and safety about the real companies named here matter more than anything else in this draft, a wrong claim about a real business is worse than an incomplete one:
 - Only use the real, named places (attractions, dining, hotels, private drivers, rental car companies) given to you in the grounded facts or the live research notes below, both are equally real, sourced information, not a guess. Never invent a business name, address or price. If a category (e.g. restaurants) genuinely isn't covered by either, say plainly that the team should research it, don't guess, but check the research notes first, they often cover exactly this now.
 - Being allowed to name a place is not being allowed to furnish it. Don't invent what is INSIDE one either: a specific exhibit, a named artefact, a dish on a menu, a room, a view from a particular window, "14th-century Qur'ans in the Islamic Arts Museum". Those are the easiest sentences in the whole draft to write and among the most damaging, because they are exactly what a customer plans their morning around and exactly what they notice is missing. If the sources describe a place in one line, your sentence about it can be one line. Write what it IS and what it's like to be there, which you can say honestly from the tone of the note, and leave the contents to the sources.
+- "Contents" is wider than objects, and this is where good drafts still slip. It includes how long something lasts: a note giving an 18:00 start time is not a note giving a ninety-minute show, and "the most memorable ninety minutes of the trip" is an invented duration however well it reads. It includes living things and what they do: monkeys at one temple in the notes are not monkeys at a different temple, and "the resident monkeys are opportunists" about a place the sources never mentioned monkeys at is a fact you made up. It includes crowds, queues, noise, smells and atmosphere stated as fact about a specific named place, and how busy a particular day or hour is.
+- You will often know these things, genuinely and correctly, from your own knowledge of the world. That is exactly the problem. We sell a researched plan, and a true sentence we cannot point at a source for is indistinguishable to the customer, to the reviewer and to us from one you guessed. If it is not in the grounded facts or the research notes, it does not go in the plan, however confident you are and however much better the paragraph reads with it.
 - Never state or imply a specific proximity, walking distance or travel time between two named real places (e.g. a hotel and a restaurant) unless the grounded facts explicitly say so. Two places both being in the same district or area is NOT the same as being close to each other, don't write "walking distance" or "a short walk" or similar just because they share a neighbourhood, that's inventing a specific, checkable-sounding fact you don't actually have. Describe the place on its own merits and let the driver or logistics handle getting there, or say plainly the distance isn't known.
 - Never upgrade a hedged claim into a flat one. If a grounded fact says something like "positioned as", "worth confirming", "said to be" or similar, carry that same hedge into your own sentence at the point you use the claim, in the same breath, not only as a caveat mentioned separately later. Never state licensing, certification, safety compliance, ratings, or "the best/top" claims as settled fact unless the grounded facts themselves state them as settled fact.
 - No unsourced superlative or ranking, about anything, including places that aren't businesses. "One of the world's biggest hubs", "the busiest airport in Europe", "the oldest bazaar in the world", "the most famous mosque in the city", "world-renowned", "the largest of its kind" and anything of that shape are checkable factual claims dressed as description, which is exactly why they get written by reflex: they feel like colour and they read like a fact. Unless the grounded facts or research notes actually make that comparison, describe the place on its own terms instead, what it is, what's there, what it's like to stand in it. "Istanbul Airport, the main gateway to the country" is fine; "one of the world's biggest hubs" is a ranking nobody sourced. A concrete sourced number always beats a superlative anyway: "Turkish Airlines holds close to 80% of the traffic there" tells them more than "huge".
@@ -1229,6 +1231,8 @@ Your only job is faithful translation, not re-drafting:
 - Same hotel pick, same driver pick, same day count, same day order, same activity or meal on each day as the English original. Never swap which day something happens on, never substitute a different hotel, driver, restaurant or attraction than the one named in the English draft, never reorder the days.
 - Keep airport codes exactly as they are, in Latin letters: IST, SAW, RUH, JED. The English draft gives "Istanbul Airport (IST)" and the Arabic dropped the code, which is the one part of that sentence a traveller actually types into a flight search. Same for anything else that is really an identifier rather than a word: booking references, flight numbers, licence numbers, road numbers, tram lines like T1, and the Latin name of a website. Transliterating an identifier makes it useless.
 - For every named place (hotel, driver, attraction, restaurant) mentioned, use its exact Arabic name from the grounded facts given to you below, matched to the English name used in the draft. Never invent an Arabic name that contradicts the grounded facts. If a business genuinely has no Arabic name anywhere in the grounded facts, transliterate it into Arabic script the way a Saudi reader would normally say it aloud, and do it for every such name, don't transliterate some and leave others in Latin letters in the middle of an Arabic sentence, that inconsistency is what makes a page look machine-made.
+- Never produce a single WORD that is part Arabic script and part Latin script. This is the specific failure to watch for, and it has shipped: an Osaka draft wrote ناniwa-ku for Naniwa-ku, starting the word in Arabic and finishing it in English, and another wrote غودauri for Gudauri. A word is either fully Arabic script or fully Latin, never spliced down the middle. If you begin transliterating a name, finish it in Arabic; if you decide to keep it Latin, keep the whole thing Latin. Street addresses are the usual place this happens, because the number stays Latin and the name starts to drift, so check every address line before you finish.
+- And if you notice you have written a name wrongly, do not correct yourself in the text. Never write anything of the form "X — and I correct it: Y". Go back and write it correctly once. A visible self-correction in a document a customer paid for reads worse than the original mistake would have.
 - Religious terms must be exactly right for a Muslim reader. The Friday congregational prayer is صلاة الجمعة, and on a Friday it takes the place of صلاة الظهر, so never write صلاة الظهر for it even if the English says something loose like "Friday midday prayer". Translate the meaning correctly, not the English word by word.
 - Preserve every hedge exactly in strength. If the English says "typically", "positioned as", "worth confirming", "not verified" or similar, translate that same level of uncertainty in the same place. Don't upgrade a hedge into a confident statement, and don't add a hedge that wasn't in the English.
 - Keep the same section headings: "Needs the customer's input" becomes "يحتاج إلى رأي العميل", "Team to confirm before booking" becomes "على الفريق تأكيده قبل الحجز", "For the planner" becomes "للمخطط". Keep whichever of the two decision headings the English draft actually used, in the same order, don't add one that isn't there.
@@ -1589,6 +1593,136 @@ export function canGroundAPlan(countrySlug: string, city: string, hasGuide: bool
   if (city.startsWith("other-")) return false;
   return isPlannableCountry(countrySlug);
 }
+/**
+ * Fixes exactly what the self-check found, and nothing else.
+ *
+ * The check already names each defect precisely: which sentence, in which
+ * language, and what the source actually said. Feeding that back is far more
+ * reliable than writing another drafting rule and hoping. Three rounds of new
+ * rules on one Bali draft removed an invented show duration and left the
+ * invented monkeys, and each attempt produced a fresh set of unsourced
+ * details instead. This converges because it is told what is wrong rather
+ * than what to avoid.
+ *
+ * It returns edits, not a rewritten draft. A rewrite of both languages is
+ * ~35,000 output tokens and gives the model licence to change anything it
+ * likes on the way past; a list of exact replacements cannot damage a line it
+ * was not asked to touch, and costs a tenth as much. Any edit whose target
+ * text is not found verbatim, or appears more than once, is discarded rather
+ * than guessed at.
+ */
+const REPAIR_MARKER = /^\s*(FIND-EN|FIND-AR|REPLACE-WITH):/i;
+
+export type DraftEdit = { lang: "en" | "ar"; find: string; replace: string };
+
+/** Parses the edit list. Malformed blocks are skipped, never half-applied. */
+export function parseDraftEdits(text: string): DraftEdit[] {
+  const edits: DraftEdit[] = [];
+  const lines = (text ?? "").split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^\s*FIND-(EN|AR):\s*(.*)$/i);
+    if (!m) continue;
+    const next = lines[i + 1]?.match(/^\s*REPLACE-WITH:\s*(.*)$/i);
+    if (!next) continue;
+    const find = m[2].trim();
+    const replace = next[1].trim();
+    if (!find) continue;
+    edits.push({ lang: m[1].toLowerCase() === "ar" ? "ar" : "en", find, replace });
+    i++;
+  }
+  return edits;
+}
+
+/**
+ * Applies edits to one draft, refusing anything ambiguous.
+ *
+ * An edit whose target appears twice would change a line nobody reviewed, so
+ * it is dropped. Returns what applied and what did not, because a silently
+ * skipped repair is how a draft goes out still carrying the defect it was
+ * reported for.
+ */
+export function applyDraftEdits(draft: string, edits: DraftEdit[]): { text: string; applied: number; skipped: string[] } {
+  let text = draft;
+  let applied = 0;
+  const skipped: string[] = [];
+  for (const edit of edits) {
+    const first = text.indexOf(edit.find);
+    if (first < 0) { skipped.push(`not found: "${edit.find.slice(0, 60)}"`); continue; }
+    if (text.indexOf(edit.find, first + 1) >= 0) { skipped.push(`appears more than once: "${edit.find.slice(0, 60)}"`); continue; }
+    text = text.slice(0, first) + edit.replace + text.slice(first + edit.find.length);
+    applied++;
+  }
+  return { text, applied, skipped };
+}
+
+function buildRepairSystemPrompt() {
+  return `You are correcting a finished travel plan that has just been reviewed. The review found specific defects. Your only job is to fix exactly those and change nothing else.
+
+You will be given the English draft, the Arabic draft, the grounded facts and research notes they were written from, and the reviewer\u2019s findings.
+
+OUTPUT FORMAT, exactly this and nothing else. For each fix, two lines:
+FIND-EN: the exact text from the English draft, copied character for character
+REPLACE-WITH: what it should say instead
+
+Use FIND-AR for the Arabic draft. Most findings affect both languages and need one pair for each. Write no preamble, no commentary, no numbering, nothing outside these line pairs. If a finding cannot be fixed by replacing text, skip it silently.
+
+RULES:
+- The FIND text must appear in the draft EXACTLY as you write it, and must be long enough to appear only once. Copy it, do not retype it from memory. An edit whose text does not match verbatim is discarded and the defect ships.
+- Keep the replacement the same kind of thing as what it replaces: a sentence for a sentence, a clause for a clause. Do not expand the plan, do not add new places, do not improve prose that was not flagged.
+- Fix by REMOVING the unsupported part, not by inventing a supported version of it. If the draft claims a show lasts ninety minutes and the notes give no duration, the fix is a sentence with no duration in it, not a different duration. If the draft places monkeys somewhere the notes do not, they leave.
+- Where a hedge was upgraded, put the source\u2019s own strength back. \"Sunday is the worst day\" becomes \"weekends are worst\" if that is what the note says.
+- Where arithmetic is wrong, recompute it from the figures already in the draft and correct the total. Do not change the inputs to make the old total right.
+- The two languages must still say the same thing when you are done. If you fix an English sentence, fix its Arabic counterpart to match.
+- Never introduce a fact that is not in the grounded facts or research notes. You are removing unsupported claims, not sourcing them.`;
+}
+
+/**
+ * One repair round. Returns the corrected drafts, or null if nothing applied.
+ */
+export async function repairDraft(
+  anthropic: Anthropic,
+  englishDraft: string,
+  arabicDraft: string,
+  findings: string,
+  groundedFactsEn: string,
+  operationalResearch: string,
+  onSpend?: (dollars: number) => void,
+): Promise<{ englishDraft: string; arabicDraft: string; applied: number } | null> {
+  try {
+    const response = await anthropic.messages.stream({
+      model: "claude-opus-5",
+      max_tokens: 16_000,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "high" },
+      system: cachedSystem(buildRepairSystemPrompt()),
+      messages: [{
+        role: "user",
+        content: `GROUNDED FACTS:\n${groundedFactsEn}\n\nRESEARCH NOTES:\n${operationalResearch || "none"}\n\nENGLISH DRAFT:\n${englishDraft}\n\nARABIC DRAFT:\n${arabicDraft}\n\nREVIEWER FINDINGS:\n${findings}\n\nWrite the edits now.`,
+      }],
+    }).finalMessage();
+
+    onSpend?.(opusSpend(response));
+    const text = response.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("\n");
+    const edits = parseDraftEdits(text);
+    if (!edits.length) { console.warn("Repair pass returned no usable edits."); return null; }
+
+    const en = applyDraftEdits(englishDraft, edits.filter((e) => e.lang === "en"));
+    const ar = applyDraftEdits(arabicDraft, edits.filter((e) => e.lang === "ar"));
+    const applied = en.applied + ar.applied;
+    const skipped = [...en.skipped, ...ar.skipped];
+
+    console.log(`Repair pass: ${applied} of ${edits.length} edits applied (${en.applied} English, ${ar.applied} Arabic).`);
+    for (const s of skipped) console.warn(`  skipped, ${s}`);
+    if (!applied) return null;
+
+    return { englishDraft: en.text, arabicDraft: ar.text, applied };
+  } catch (error) {
+    // A failed repair leaves the draft exactly as it was, which is the same
+    // position we were in before this pass existed.
+    console.error("Repair pass failed, keeping the original draft:", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
   try {
     // These early returns used to be completely silent, which made a missing
@@ -1726,7 +1860,8 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       return;
     }
 
-    const englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn, (d) => { draftSpend += d; });
+    // Reassigned by the repair pass below when the review finds something.
+    let englishDraft = await generateEnglishDraft(anthropic, submission, cityLabelEn, groundedFactsEn, operationalResearch, stopLabelsEn, (d) => { draftSpend += d; });
     if (!englishDraft) return;
 
     // The English draft is saved here, before the translation runs, rather
@@ -1780,7 +1915,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       }
     }
 
-    const arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
+    let arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
     const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
     // The split decides what the customer sees, and it fails silently: a
     // false internal heading sends the rest of the document to the planner's
@@ -1797,13 +1932,76 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
 
-    const selfCheck = await selfCheckDraft(anthropic, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr, operationalResearch,
-      // A study plan has no day list, so a day-by-day calendar for it is
-      // meaningless and, over an academic year, enormous: the London draft
-      // shipped thirty "Day 1 = Monday September 20" lines into a check that
-      // had no days to verify them against.
-      isStudy ? "" : dayByDayCalendar(submission.fromDate, submission.toDate),
-      customerRequestForCheck(submission, cityLabelEn, stopLabelsEn), (d) => { draftSpend += d; });
+    // Built once: the check and the re-check after a repair both need them.
+    //
+    // A study plan has no day list, so a day-by-day calendar for it is
+    // meaningless and, over an academic year, enormous: the London draft
+    // shipped thirty "Day 1 = Monday September 20" lines into a check that
+    // had no days to verify them against.
+    const checkCalendar = isStudy ? "" : dayByDayCalendar(submission.fromDate, submission.toDate);
+    const checkRequest = customerRequestForCheck(submission, cityLabelEn, stopLabelsEn);
+    const runCheck = (en: string, ar: string) => selfCheckDraft(
+      anthropic, en, ar, groundedFactsEn, groundedFactsAr, operationalResearch,
+      checkCalendar, checkRequest, (d) => { draftSpend += d; });
+
+    let selfCheck = await runCheck(englishDraft, arabicDraft);
+
+    // If the review found something, fix it rather than forwarding it.
+    //
+    // A yellow banner meant "somebody should read this before it goes out",
+    // which works while somebody reads every draft by hand and stops working
+    // the day after that. The check already names each defect exactly, so the
+    // draft goes back with the findings and is corrected surgically, then
+    // checked again on the corrected text.
+    //
+    // One round only. A finding the model cannot fix, a genuine gap in the
+    // research, would otherwise loop until a cap stopped it and be paid for
+    // each time. One round removes what is removable; whatever survives is a
+    // real note for the reviewer rather than noise.
+    // Repair rounds, while they are still helping.
+    //
+    // A single round took one Bali draft from four findings to one: the
+    // unsourced claims went, and what surfaced underneath was a real
+    // scheduling conflict against the draft's own sourced hours. That second
+    // problem only became visible once the first was cleared, so a second
+    // round is worth having.
+    //
+    // The guard is convergence, not a fixed count. A round only earns another
+    // if it reduced the number of findings. A draft stuck at three findings
+    // has hit something the model cannot fix - usually a genuine gap in the
+    // research - and looping on that just bills for the same answer twice.
+    const countFindings = (check: string) => {
+      const verdict = readSelfCheckVerdict(check);
+      if (verdict.clean) return 0;
+      return verdict.body.split(/\r?\n/).filter((line) => line.trim().length > 12).length;
+    };
+
+    const MAX_REPAIR_ROUNDS = 2;
+    let previousCount = countFindings(selfCheck);
+    for (let round = 1; round <= MAX_REPAIR_ROUNDS && previousCount > 0 && englishDraft; round++) {
+      const verdict = readSelfCheckVerdict(selfCheck);
+      if (verdict.clean || !verdict.body) break;
+
+      const repaired = await repairDraft(
+        anthropic, englishDraft, arabicDraft, verdict.body,
+        groundedFactsEn, operationalResearch, (d) => { draftSpend += d; });
+      if (!repaired) break;
+
+      englishDraft = repaired.englishDraft;
+      arabicDraft = repaired.arabicDraft;
+      // The re-check describes the draft actually being stored. A reviewer
+      // needs that, not a list of things already put right.
+      selfCheck = await runCheck(englishDraft, arabicDraft);
+
+      const nowCount = countFindings(selfCheck);
+      console.log(`Repair round ${round}: ${repaired.applied} edits applied, findings ${previousCount} to ${nowCount}.`);
+      if (nowCount === 0) break;
+      if (nowCount >= previousCount) {
+        console.log(`Repair stopping: round ${round} did not reduce the findings, so another would not either.`);
+        break;
+      }
+      previousCount = nowCount;
+    }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;
