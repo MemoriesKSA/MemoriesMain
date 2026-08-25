@@ -18,7 +18,7 @@
 // The failure that matters most here is a marker line reaching a customer, so
 // that is checked from both directions.
 
-import { parsePickNames, parseContextPlaceNames, parseAllNamedPlaces, stripNameMarkers } from "../app/journey/plan-stops";
+import { parsePickNames, parseContextPlaceNames, parseAllNamedPlaces, stripNameMarkers , parseNameAliases, parseSiteLinks } from "../app/journey/plan-stops";
 import { splitDraftForStorage } from "../app/journey/parse-itinerary";
 
 const notes = [
@@ -73,6 +73,58 @@ const cases: [string, unknown, unknown][] = [
   ["stripNameMarkers removes both kinds", /PICKS:|PLACES:/.test(stripNameMarkers(notes)), false],
   ["but leaves the real note behind", stripNameMarkers(notes).includes("Hotel pricing was not sourced"), true],
 ];
+
+// The Arabic half of every plan came out with no links at all.
+//
+// The marker lines carried the English name alone, so the linkifier hunted for
+// "Atlantis, The Palm" in a paragraph that says أتلانتس ذا بالم and found
+// nothing, on every plan we have ever sent. The same list drives the paywall,
+// so an unpaid Arabic plan also still named the hotel the customer had not
+// bought. An entry may now carry both, "English = العربية".
+const bilingual = [
+  "PICKS: Atlantis, The Palm = أتلانتس ذا بالم | Orfali Bros Bistro = أورفلي بروس بيسترو",
+  "PLACES: Palm Jumeirah = نخلة جميرا | Dubai Creek = خور دبي",
+  "SITES: Dubai Taxi Company = https://www.dubaitaxi.ae",
+  "PICKS: Dubai Taxi Company = شركة تاكسي دبي",
+].join("\n");
+// Only the first PICKS line is read, so the alias for the taxi company comes
+// from a note written the way a real draft writes one.
+const realNotes = [
+  "PICKS: Atlantis, The Palm = أتلانتس ذا بالم | Dubai Taxi Company = شركة تاكسي دبي",
+  "PLACES: Palm Jumeirah = نخلة جميرا",
+  "SITES: Dubai Taxi Company = https://www.dubaitaxi.ae",
+].join("\n");
+const bothPicks = parsePickNames(realNotes);
+const aliases = parseNameAliases(realNotes);
+const siteUrls = parseSiteLinks(realNotes);
+
+// Drafts written before this are cached and must keep working exactly as they do.
+const legacy = parsePickNames("PICKS: Nara Thai Cuisine | Wat Pho");
+
+const bilingualCases: [string, unknown, unknown][] = [
+  ["the English name still parses", bothPicks.includes("Atlantis, The Palm"), true],
+  ["and the Arabic one comes with it", bothPicks.includes("أتلانتس ذا بالم"), true],
+  ["both names of both things are present", bothPicks.length, 4],
+  ["context places are bilingual too", parseContextPlaceNames(realNotes).includes("نخلة جميرا"), true],
+  ["everything lands in the combined list", parseAllNamedPlaces(realNotes).includes("شركة تاكسي دبي"), true],
+
+  // Without the alias the Arabic plan falls back to a map search for an app.
+  ["the Arabic name maps to the English one", aliases["شركة تاكسي دبي"], "dubai taxi company"],
+  ["so the URL given once reaches both", siteUrls[aliases["شركة تاكسي دبي"]], "https://www.dubaitaxi.ae"],
+  ["a place with no Arabic side has no alias", aliases["palm jumeirah"], undefined],
+
+  // Old cached drafts.
+  ["a bare English entry still parses", legacy.includes("Nara Thai Cuisine"), true],
+  ["and yields exactly one name, not two", legacy.length, 2],
+
+  // An "=" that is not a translation must not truncate the name.
+  ["a non-Arabic right-hand side is ignored", parsePickNames("PICKS: Cafe = Bar").includes("Cafe"), true],
+  ["and does not become a second name", parsePickNames("PICKS: Cafe = Bar").length, 1],
+  ["a two-language entry is still one thing to the paywall", new Set(bothPicks).size, 4],
+  ["\"none\" survives the new parser", parsePickNames("PICKS: none").length, 0],
+  ["and so does an empty note", parseNameAliases("").hasOwnProperty("x"), false],
+];
+cases.push(...bilingualCases);
 
 let pass = 0;
 for (const [name, got, want] of cases) {

@@ -5,7 +5,7 @@ import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, redactableNamesForCity } from "./place-links";
 import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop } from "./plan-stops";
+import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop, parseNameAliases } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -41,7 +41,14 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // wins where they overlap: it read the research for this specific city and
   // this specific institution, and a university admissions page is a better
   // link than a map pin for someone deciding where to spend three years.
-  const officialUrls = { ...officialUrlMapForCity(proposal.city), ...parseSiteLinks(proposal.notes ?? "") };
+  const officialUrls: Record<string, string> = { ...officialUrlMapForCity(proposal.city), ...parseSiteLinks(proposal.notes ?? "") };
+  // The SITES line names each thing once, in English. The Arabic plan calls
+  // the same thing something else, so without this it fell back to a map
+  // search for precisely the things a map search suits worst: an app, a
+  // booking platform, a university admissions page.
+  for (const [ar, en] of Object.entries(parseNameAliases(proposal.notes ?? ""))) {
+    if (officialUrls[en] && !officialUrls[ar]) officialUrls[ar] = officialUrls[en];
+  }
   // Which stop each place belongs to, so a map search for a Jeddah
   // restaurant on a three-city plan says Jeddah and not the whole trip.
   const placeCities = placeCityMapForCity(proposal.city);
