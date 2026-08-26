@@ -58,7 +58,11 @@ async function main() {
   console.log(`\nnames present in the English text: ${inEnglish.length}`);
   console.log(`names present in the Arabic text:  ${inArabic.length}`);
 
-  const verdict = notes.match(/VERDICT:\s*\w+|^\s*(CLEAN|ISSUES)\s*$/mi);
+  // Matches the wording the pipeline actually stores. The first version looked
+  // for a bare VERDICT: token and reported "not found" on a draft whose notes
+  // plainly said "AI self-check: CLEAN", which is a diagnostic lying about the
+  // thing it exists to check.
+  const verdict = notes.match(/AI self-check[^\n]*/i) ?? notes.match(/VERDICT:\s*\w+/i);
   console.log(`\nself-check: ${verdict ? verdict[0].trim() : "not found in notes"}`);
 
   if (GREP) {
