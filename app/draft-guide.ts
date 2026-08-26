@@ -848,16 +848,27 @@ const NAMED_REQUEST_MAX = 2;
  * the floor.
  */
 //
-// It was 100 seconds, and that number threw away work we had already paid
-// for. A customer asked for Lapita; the search ran, found it, cost 30 cents
-// and produced a full report, and the timer fired a moment before the
-// result landed. The plan then told them we had nothing on it. Paying for
-// an answer and discarding it is worse than never asking.
+// Twice this has thrown away work already paid for. A customer asked for
+// Lapita; the search ran, found it, and a timer fired before the answer was
+// used, so the plan said we had nothing on it. The timer went up, and it
+// happened again: the reports landed at 233 seconds against a 180 second
+// limit.
 //
-// This is a safety net for a search that has genuinely hung, not a budget
-// the normal path is expected to run into. The call itself was made faster
-// below so it lands nowhere near this.
-const NAMED_REQUEST_BUDGET_MS = 180 * 1000;
+// The mistake was the shape, not the number. Promise.race abandons the
+// loser, so the call kept running, kept costing money, and finished into
+// nothing. This is now the SDK's own request timeout, which cancels the
+// request instead of orphaning it: nothing runs on unwatched, and a call
+// that is genuinely stuck is cut off rather than merely ignored.
+//
+// 300 seconds because two requests in parallel measured 233. The draft that
+// measured it finished in 476 seconds all-in while WAITING 180 of them and
+// then discarding the result, so spending that time instead of wasting it
+// costs nothing: worst case here is 300 + the ~296 seconds the rest of the
+// pipeline took, which is comfortably inside the 800 second ceiling.
+const NAMED_REQUEST_BUDGET_MS = 300 * 1000;
+
+/** Cancels rather than orphans. See NAMED_REQUEST_BUDGET_MS. */
+const NAMED_REQUEST_OPTIONS = { timeout: NAMED_REQUEST_BUDGET_MS, maxRetries: 0 };
 
 /**
  * A line that is the model declining, not a place.
@@ -929,7 +940,7 @@ async function extractNamedRequests(
         + "engine would best find it, and nothing else. Output the single word NONE if they named nothing.",
       ),
       messages: [{ role: "user", content: `Destination: ${submission.city}, ${submission.countryName}\n\nWhat the customer wrote:\n${text}\n\nList the names now.` }],
-    }, RESEARCH_REQUEST_OPTIONS).finalMessage();
+    }, NAMED_REQUEST_OPTIONS).finalMessage();
     onSpend?.(logResearchSpend("named requests / extract", response));
     const reply = response.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -981,7 +992,7 @@ async function researchOneNamedRequest(
           + `Keep the whole report under 400 words. It is notes for the person writing the plan, not the plan itself, and a customer is waiting while you write it.\n\n`
           + `Search and report now.`,
       }],
-    }, RESEARCH_REQUEST_OPTIONS).finalMessage();
+    }, NAMED_REQUEST_OPTIONS).finalMessage();
     onSpend?.(logResearchSpend(`named request / ${name}`, response));
     const text = response.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -1029,7 +1040,10 @@ export async function researchNamedRequests(
     names.map((name) => researchOneNamedRequest(anthropic, name, submission, cityLabelEn, onSpend)),
   )).filter(Boolean);
   if (!reports.length) return "";
-  console.log(`Named requests done in ${Math.round((Date.now() - startedAt) / 1000)}s: ${reports.length} report(s) went into the draft.`);
+  // Said only here, where it is true. The previous wording claimed the
+  // reports went into the draft whether or not anything was still waiting
+  // for them, which is how a discarded result read as a success in the log.
+  console.log(`Named requests finished in ${Math.round((Date.now() - startedAt) / 1000)}s with ${reports.length} report(s).`);
   return `--- THE CUSTOMER'S OWN NAMED REQUESTS (searched just now, for this customer, not from the city cache) ---\n${reports.join("\n\n")}`;
 }
 
@@ -2100,16 +2114,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // Started here rather than awaited after the city research, because the
     // two are independent and running them end to end is what pushed one
     // draft past the function's ceiling. Same deadline as the city work.
-    const namedRequests = Promise.race([
-      researchNamedRequests(
-        anthropic, submission, cityLabelEn, Date.now() + NAMED_REQUEST_BUDGET_MS,
-        (d) => { draftSpend += d; },
-      ),
-      new Promise<string>((resolve) => setTimeout(() => {
-        console.warn(`Named requests gave up after ${NAMED_REQUEST_BUDGET_MS / 1000}s; drafting from the city research alone.`);
-        resolve("");
-      }, NAMED_REQUEST_BUDGET_MS).unref?.()),
-    ]);
+    const namedRequests = researchNamedRequests(
+      anthropic, submission, cityLabelEn, Date.now() + NAMED_REQUEST_BUDGET_MS,
+      (d) => { draftSpend += d; },
+    );
 
     // One research blob per stop, each read from the per-city cache. Cached
     // cities cost nothing here, so adding stops is cheap: the extra spend on

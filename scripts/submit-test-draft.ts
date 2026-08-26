@@ -16,10 +16,13 @@ import { randomUUID } from "node:crypto";
 const SITE = process.env.TEST_SITE ?? "https://memories.tours";
 
 // The property under test. Verified absent from the Dubai research with
-// scripts/peek-hotels.ts, and deliberately unlike anything in it: a desert
-// resort 45 minutes inland, where the research holds only city and beach
-// hotels. An invented answer will not be subtle.
-const NAMED = "Bab Al Shams Desert Resort";
+// scripts/peek-hotels.ts, and the exact one a real customer asked for and
+// did not get: the search found it, cost thirty cents, and a timer threw
+// the answer away a moment before it was used.
+//
+// Written the way they wrote it, as one bare word, so the extraction has to
+// expand it to Lapita Dubai Parks and Resorts on its own.
+const NAMED = "Lapita";
 
 const submissionId = randomUUID();
 
@@ -29,26 +32,26 @@ const body = {
   country: "uae",
   city: "dubai",
   stops: "dubai",
-  stopPurposes: "family",
-  stopNights: "4",
+  stopPurposes: "leisure",
+  stopNights: "3",
   stopNightsChosen: "yes",
-  purpose: "family",
-  travellers: "family",
-  travellerCount: "3",
+  purpose: "leisure",
+  travellers: "solo",
+  travellerCount: "1",
   fromDate: "2026-11-12",
-  toDate: "2026-11-16",
+  toDate: "2026-11-15",
   transport: ["rental-car"],
   stays: ["hotel"],
   stayRating: "5-star",
   departureCity: "Riyadh",
   flightTiming: "daytime",
   planIncludes: ["accommodation", "transport", "dining", "activities"],
-  packageNotes: `We would really like to stay at ${NAMED} if it works, my wife has wanted to go for years. If it is not sensible for a short trip please say so honestly.`,
+  packageNotes: `I want to stay at ${NAMED}. If it is not sensible for this trip please say so honestly.`,
   currency: "SAR",
   budget: "18000",
   budgetMode: "fixed",
   delivery: ["email"],
-  name: "Test Draft (named request)",
+  name: "Test Draft (Lapita)",
   email: "dr.zakivet123@gmail.com",
   phoneCode: "+966",
   phone: "500000000",
