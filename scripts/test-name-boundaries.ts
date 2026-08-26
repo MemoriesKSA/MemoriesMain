@@ -16,7 +16,8 @@
 // Both now go through one pattern, so they cannot disagree about where a name
 // begins.
 
-import { placeMatchPattern } from "../app/journey/place-links";
+import { placeMatchPattern, mapsSearchUrl } from "../app/journey/place-links";
+import { parseNameKinds } from "../app/journey/plan-stops";
 import { redactPlaceNames } from "../app/journey/paywall";
 
 const linked = (text: string, names: string[]): string[] => {
@@ -68,6 +69,46 @@ const cases: [string, unknown, unknown][] = [
   ["regex characters in a name are escaped, not interpreted", linked("dinner at 3Fils (harbour)", ["3Fils (harbour)"]).length, 1],
   ["matching is case-insensitive, since prose capitalises freely", linked("ALAMO desk", ["Alamo"]).length, 1],
 ];
+
+// A map search for a bare name is a guess, and Maps resolves the guess
+// differently for every reader. One Riyadh plan's "National" link opened the
+// National Museum on a laptop, an oil-change shop when the Arabic name was
+// searched on another, and the actual car rental desk on a phone: one link,
+// three answers, because ranking is personalised.
+//
+// So each marker entry now carries what the thing is, and that rides into the
+// query behind the name.
+const notes = [
+  "PICKS: National = ناشيونال = car rental | Alamo = ألامو = car rental | Dubai Taxi Company = شركة تاكسي دبي = taxi company | Al Mallah = الملاح = restaurant",
+  "PLACES: Terminal 5 = صالة 5 = airport terminal | Olaya = العليا = district",
+].join("\n");
+const kinds = parseNameKinds(notes);
+
+const q = (url: string) => decodeURIComponent(new URL(url).searchParams.get("query") ?? "");
+
+const kindCases: [string, unknown, unknown][] = [
+  ["the kind is read off the entry", kinds["national"], "car rental"],
+  ["and reaches the Arabic name too", kinds["ناشيونال"], "car rental"],
+  ["places carry a kind as well", kinds["olaya"], "district"],
+
+  // The reported failure, and the query that fixes it.
+  ["a bare name is no longer searched alone", q(mapsSearchUrl("National", "Riyadh", "", "car rental")), "National car rental, Riyadh"],
+  ["the Arabic name gets the same qualifier", q(mapsSearchUrl("ناشيونال", "Riyadh", "", "car rental")), "ناشيونال car rental, Riyadh"],
+
+  // Don't ask for it twice when the name already says it.
+  ["a name that already contains its kind is left alone", q(mapsSearchUrl("Dubai Taxi Company", "Dubai", "", "taxi company")), "Dubai Taxi Company, Dubai"],
+  ["matching there is case-insensitive", q(mapsSearchUrl("National Car Rental", "Riyadh", "", "car rental")), "National Car Rental, Riyadh"],
+
+  // Old drafts have no kinds at all and must behave exactly as before.
+  ["no kind means the old query, unchanged", q(mapsSearchUrl("Wat Pho", "Bangkok")), "Wat Pho, Bangkok"],
+  ["a legacy two-field entry yields no kind", parseNameKinds("PICKS: Wat Pho = وات بو")["wat pho"], undefined],
+  ["a legacy one-field entry yields no kind", parseNameKinds("PICKS: Wat Pho")["wat pho"], undefined],
+  ["no markers at all is safe", Object.keys(parseNameKinds("")).length, 0],
+
+  // The country still lands last, where an address expects it.
+  ["country is appended after the city", q(mapsSearchUrl("Nara Thai", "Bangkok", "Thailand", "restaurant")), "Nara Thai restaurant, Bangkok, Thailand"],
+];
+cases.push(...kindCases);
 
 let pass = 0;
 for (const [name, got, want] of cases) {

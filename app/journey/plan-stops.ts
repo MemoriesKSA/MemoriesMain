@@ -137,7 +137,7 @@ const ARABIC_LETTER = /[ء-ي]/;
  * parses, because drafts written before this are cached and must keep working;
  * they simply have no Arabic side, exactly as they do today.
  */
-type NamePair = { en: string; ar?: string };
+type NamePair = { en: string; ar?: string; kind?: string };
 
 function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
   if (!internalText) return [];
@@ -146,19 +146,44 @@ function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
   const out: NamePair[] = [];
   const seen = new Set<string>();
   for (const entry of line.replace(pattern, "").split("|")) {
-    const at = entry.indexOf("=");
-    const en = (at < 0 ? entry : entry.slice(0, at)).trim();
-    const arRaw = at < 0 ? "" : entry.slice(at + 1).trim();
-    // Only take the right-hand side when it really is Arabic, so a stray "="
+    // Up to three fields: the English name, the Arabic name, and what the
+    // thing actually is. Two fields still parse, and so does one.
+    const fields = entry.split("=").map((f) => f.trim());
+    const en = fields[0] ?? "";
+    // Only take the second field when it really is Arabic, so a stray "="
     // inside an English name cannot silently truncate it.
-    const ar = ARABIC_LETTER.test(arRaw) ? arRaw : "";
+    const ar = fields[1] && ARABIC_LETTER.test(fields[1]) ? fields[1] : "";
+    // The kind is the last field when it is plainly not a name: short, and
+    // never Arabic, since the Arabic slot is the one before it.
+    const kindRaw = fields[2] ?? (fields[1] && !ARABIC_LETTER.test(fields[1]) ? fields[1] : "");
+    const kind = kindRaw && kindRaw.length <= 40 && !ARABIC_LETTER.test(kindRaw) ? kindRaw : "";
     // "none" is the draft saying the line is empty, not a place called None.
     // Anything very short is punctuation noise rather than a name, and
     // linkifying it would match fragments all over the prose.
     if (en.length <= 3 || en.toLowerCase() === "none") continue;
     if (seen.has(en.toLowerCase())) continue;
     seen.add(en.toLowerCase());
-    out.push(ar ? { en, ar } : { en });
+    out.push({ en, ...(ar ? { ar } : {}), ...(kind ? { kind } : {}) });
+  }
+  return out;
+}
+
+/**
+ * Name -> what the thing is, for both languages.
+ *
+ * A map search for a bare name is a guess, and Maps resolves the guess
+ * differently for every reader. "National, Riyadh" returned the National
+ * Museum on one laptop, an oil-change shop when searched in Arabic on another,
+ * and the actual car rental desk on a phone: same link, three answers, because
+ * ranking is personalised. Searching "National car rental, Riyadh" is not a
+ * guess.
+ */
+export function parseNameKinds(internalText: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const { en, ar, kind } of [...readMarkerPairs(internalText, PICKS_LINE), ...readMarkerPairs(internalText, PLACES_LINE)]) {
+    if (!kind) continue;
+    out[en.toLowerCase()] = kind;
+    if (ar) out[ar.toLowerCase()] = kind;
   }
   return out;
 }

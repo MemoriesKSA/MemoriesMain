@@ -87,7 +87,7 @@ const placeLinkStyle: CSSProperties = {
 // placeNamesForCity) so the alternation matches the fullest name rather than
 // a fragment of it. Anything not in the curated list is left as plain text,
 // we never try to guess at place names in prose.
-function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>, placeCities?: Record<string, string>, ar?: boolean): ReactNode {
+function linkifyPlaces(text: string, places: string[], cityLabel: string, officialUrls: Record<string, string>, placeCities?: Record<string, string>, placeKinds?: Record<string, string>, ar?: boolean): ReactNode {
   // Redactions are handled even when there is nothing to link, otherwise a
   // line whose only notable content was the hidden hotel would print the
   // raw marker at the reader.
@@ -103,7 +103,7 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string, offici
   const lookup = new Set(places.map((p) => p.toLowerCase()));
   return parts.map((part, i) =>
     lookup.has(part.toLowerCase()) ? (
-      <a key={i} href={officialUrls[part.toLowerCase()] ?? mapsSearchUrl(part, placeCities?.[part.toLowerCase()] ?? cityLabel)} target="_blank" rel="noopener noreferrer" style={placeLinkStyle}>
+      <a key={i} href={officialUrls[part.toLowerCase()] ?? mapsSearchUrl(part, placeCities?.[part.toLowerCase()] ?? cityLabel, "", placeKinds?.[part.toLowerCase()] ?? "")} target="_blank" rel="noopener noreferrer" style={placeLinkStyle}>
         {part}
       </a>
     ) : (
@@ -164,13 +164,13 @@ export function groupOverviewLines(lines: string[]): { kind: "prose" | "items"; 
   return merged;
 }
 
-function BulletLines({ lines, places, cityLabel, officialUrls, placeCities, ar }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string>; placeCities?: Record<string, string>; ar?: boolean }) {
+function BulletLines({ lines, places, cityLabel, officialUrls, placeCities, placeKinds, ar }: { lines: string[]; places: string[]; cityLabel: string; officialUrls: Record<string, string>; placeCities?: Record<string, string>; placeKinds?: Record<string, string>; ar?: boolean }) {
   return (
     <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "grid", gap: 9 }}>
       {lines.map((line, i) => (
         <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15, lineHeight: 1.7, color: "var(--ink-2)" }}>
           <span style={{ flexShrink: 0, width: 6, height: 6, marginTop: 9, borderRadius: "50%", background: "var(--gold)" }} />
-          <span>{linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}</span>
+          <span>{linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, placeKinds, ar)}</span>
         </li>
       ))}
     </ul>
@@ -182,7 +182,7 @@ function BulletLines({ lines, places, cityLabel, officialUrls, placeCities, ar }
 // unchanged if it doesn't match the expected shape (e.g. a reviewer typed
 // something free-form), so this never hides content it can't confidently
 // restructure.
-export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, lockedDays = [], ar = false }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; lockedDays?: LockedDay[]; ar?: boolean }) {
+export function ItineraryView({ text, places = [], cityLabel = "", officialUrls = {}, placeCities = {}, placeKinds = {}, lockedDays = [], ar = false }: { text: string; places?: string[]; cityLabel?: string; officialUrls?: Record<string, string>; placeCities?: Record<string, string>; placeKinds?: Record<string, string>; lockedDays?: LockedDay[]; ar?: boolean }) {
   const parsed = parseItinerary(text);
   if (!parsed) {
     return <div style={{ color: "var(--ink-2)", fontSize: 16, lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{text}</div>;
@@ -285,11 +285,11 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
                           list per line. */}
                       {groupOverviewLines(lines).map((block, bi) =>
                         block.kind === "items" ? (
-                          <BulletLines key={bi} lines={block.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} placeCities={placeCities} ar={ar} />
+                          <BulletLines key={bi} lines={block.lines} places={places} cityLabel={cityLabel} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} ar={ar} />
                         ) : (
                           block.lines.map((line, li) => (
                             <p key={`${bi}-${li}`} style={{ margin: 0, fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-2)" }}>
-                              {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, ar)}
+                              {linkifyPlaces(line, places, cityLabel, officialUrls, placeCities, placeKinds, ar)}
                             </p>
                           ))
                         ),

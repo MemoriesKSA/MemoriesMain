@@ -5,7 +5,7 @@ import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, redactableNamesForCity } from "./place-links";
 import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop, parseNameAliases } from "./plan-stops";
+import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop, parseNameAliases , parseNameKinds } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -52,6 +52,11 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // Which stop each place belongs to, so a map search for a Jeddah
   // restaurant on a three-city plan says Jeddah and not the whole trip.
   const placeCities = placeCityMapForCity(proposal.city);
+  // What each named thing actually is, so a map search is not a guess.
+  // "National, Riyadh" resolved to the National Museum on one laptop, an
+  // oil-change shop in Arabic on another, and the right car rental desk on a
+  // phone: one link, three answers, because Maps personalises ranking.
+  const placeKinds = parseNameKinds(proposal.notes ?? "");
 
   // The split happens here, on the server. Locked days are removed from the
   // text before it is ever serialised to the browser, so an unpaid reader
@@ -113,7 +118,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={en.lockedDays} />
+            <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={en.lockedDays} />
           </section>
         )}
 
@@ -136,7 +141,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} lockedDays={ar.lockedDays} ar />
+            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={ar.lockedDays} ar />
           </section>
         )}
 

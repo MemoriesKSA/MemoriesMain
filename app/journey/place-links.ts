@@ -60,8 +60,20 @@ export function placeMatchPattern(names: string[]): RegExp | null {
  * correct while the data was Saudi and silently wrong the moment it wasn't:
  * "Hagia Sophia, Istanbul, Saudi Arabia" finds nothing at all.
  */
-export function mapsSearchUrl(placeName: string, cityLabel: string, countryName = "") {
-  const query = [placeName, cityLabel, countryName].filter(Boolean).join(", ");
+export function mapsSearchUrl(placeName: string, cityLabel: string, countryName = "", kind = "") {
+  // The kind rides just behind the name, unpunctuated, because it is a search
+  // term rather than part of an address: "National car rental, Riyadh".
+  //
+  // Without it a common word is a guess, and Maps resolves the guess per
+  // reader. "National, Riyadh" gave the National Museum on one laptop, an
+  // oil-change shop searched in Arabic on another, and the right car rental
+  // desk on a phone. Three answers, one link, because ranking is personalised
+  // and the query never said what we meant. Skipped when the name already
+  // contains it, so "National Car Rental" is not asked for twice.
+  const named = kind && !placeName.toLowerCase().includes(kind.toLowerCase())
+    ? `${placeName} ${kind}`
+    : placeName;
+  const query = [named, cityLabel, countryName].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
