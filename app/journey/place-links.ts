@@ -15,6 +15,44 @@ import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../flagship-cit
 import { officialUrlFor } from "./place-urls";
 import { travelCountries, type CountryOption } from "../components/planner-data";
 
+/** Characters that make a name part of a longer word rather than its own. */
+const WORD_CHAR = "[\\p{L}\\p{N}]";
+
+/**
+ * Arabic attaches و ف ب ك ل to the front of a word, so "وديرة" is still Deira.
+ * One of them is allowed, provided it sits at the start of a word itself.
+ */
+const PROCLITIC = "[وفبكل]";
+
+export function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Matches these names only where each stands as its own word.
+ *
+ * Without the boundaries a name matched anywhere in a line, and a Riyadh plan
+ * linked the rental company National inside the word "international", twice in
+ * one sentence: "King Khalid Inter[national]". Arabic had it worse, because
+ * the definite article makes short names common inside longer words: "جديرة"
+ * (worth knowing) came out as "ج[ديرة]", linking Deira inside an ordinary
+ * adjective.
+ *
+ * The same rule guards the paywall, which redacts from the same list. A missed
+ * boundary there does not add a stray link, it blanks letters out of an
+ * innocent word in a plan somebody is deciding whether to buy.
+ *
+ * Names must arrive longest-first so the alternation prefers the fullest name
+ * over a fragment of it.
+ */
+export function placeMatchPattern(names: string[]): RegExp | null {
+  const usable = names.filter(Boolean);
+  if (!usable.length) return null;
+  const before = `(?:(?<!${WORD_CHAR})|(?<=(?<!${WORD_CHAR})${PROCLITIC}))`;
+  const after = `(?!${WORD_CHAR})`;
+  return new RegExp(`${before}(${usable.map(escapeRegex).join("|")})${after}`, "giu");
+}
+
 /**
  * A map search for a place, in its own city and its own country.
  *

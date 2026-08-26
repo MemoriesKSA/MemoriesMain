@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { parseItinerary, splitOverviewGroup } from "./parse-itinerary";
-import { mapsSearchUrl } from "./place-links";
+import { mapsSearchUrl, placeMatchPattern } from "./place-links";
 import { REDACTION_PATTERN, type LockedDay } from "./paywall";
 
 // Filler for the blurred blocks. Deliberately meaningless: the real words
@@ -82,10 +82,6 @@ const placeLinkStyle: CSSProperties = {
   fontWeight: 600,
 };
 
-function escapeRegex(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 // Wraps any of this city's real place names, wherever they appear in a line,
 // in a link to a Maps search for that place. Names arrive longest-first (see
 // placeNamesForCity) so the alternation matches the fullest name rather than
@@ -96,7 +92,11 @@ function linkifyPlaces(text: string, places: string[], cityLabel: string, offici
   // line whose only notable content was the hidden hotel would print the
   // raw marker at the reader.
   if (!places.length) return renderRedactions(text, "p", ar);
-  const pattern = new RegExp(`(${places.map(escapeRegex).join("|")})`, "gi");
+  // Word-bounded, or a name matches inside a longer word: a Riyadh plan linked
+  // National inside "international" twice in one sentence, and an Arabic one
+  // linked Deira inside "جديرة".
+  const pattern = placeMatchPattern(places);
+  if (!pattern) return renderRedactions(text, "p", ar);
   const parts = text.split(pattern);
   if (parts.length === 1) return renderRedactions(text, "p", ar);
 

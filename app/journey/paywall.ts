@@ -1,3 +1,5 @@
+import { placeMatchPattern } from "./place-links";
+
 // Server-side paywall for published plans (see docs/paid-plans-spec.md).
 //
 // THE RULE THIS FILE EXISTS TO ENFORCE: locked days must never be sent to the
@@ -120,11 +122,18 @@ export function redactPlaceNames(text: string, placeNames: string[]): string {
 
   // Longest first, so a name containing another is matched whole.
   const ordered = [...placeNames].filter(Boolean).sort((a, b) => b.length - a.length);
-  const escape = (name: string) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   let out = text;
   for (const name of ordered) {
-    out = out.replace(new RegExp(escape(name), "gi"), () => REDACTION(name.length));
+    // Word-bounded, using the same rule as the linkifier so the two can never
+    // disagree about where a name begins. Unbounded, this blanked letters out
+    // of innocent words: "National" matched inside "inter[national]", and the
+    // Arabic "ديرة" inside "ج[ديرة]". A stray link is embarrassing; a redaction
+    // eating half a real word corrupts the plan somebody is deciding whether
+    // to buy.
+    const pattern = placeMatchPattern([name]);
+    if (!pattern) continue;
+    out = out.replace(pattern, () => REDACTION(name.length));
   }
   // The tag right after a name goes too: "(4-star suite hotel on Olaya
   // Street)" narrows it to one property as surely as the name does. A
