@@ -847,7 +847,17 @@ const NAMED_REQUEST_MAX = 2;
  * that answers a named request is better; a draft that arrives at all is
  * the floor.
  */
-const NAMED_REQUEST_BUDGET_MS = 100 * 1000;
+//
+// It was 100 seconds, and that number threw away work we had already paid
+// for. A customer asked for Lapita; the search ran, found it, cost 30 cents
+// and produced a full report, and the timer fired a moment before the
+// result landed. The plan then told them we had nothing on it. Paying for
+// an answer and discarding it is worse than never asking.
+//
+// This is a safety net for a search that has genuinely hung, not a budget
+// the normal path is expected to run into. The call itself was made faster
+// below so it lands nowhere near this.
+const NAMED_REQUEST_BUDGET_MS = 180 * 1000;
 
 /**
  * A line that is the model declining, not a place.
@@ -945,9 +955,14 @@ async function researchOneNamedRequest(
   try {
     const response = await anthropic.messages.stream({
       model: "claude-opus-5",
-      max_tokens: 8_000,
+      max_tokens: 6_000,
       thinking: { type: "adaptive" },
-      output_config: { effort: "high" },
+      // Medium, not high. This is one property, not a city's whole dining
+      // scene, and the first version spent 4,363 output tokens on a single
+      // hotel, most of it thinking. The slower it is, the likelier it is to
+      // be cut off, and an answer that arrives beats a better one that does
+      // not arrive at all.
+      output_config: { effort: "medium" },
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
       system: cachedSystem(researchSystemPrompt()),
       messages: [{
@@ -962,7 +977,8 @@ async function researchOneNamedRequest(
           + `- What it costs. Look for published rates: a nightly band for a hotel, an entry or ticket price, a daily hire rate. Give the figure with the source and the date that source published it, and label it indicative. You are not quoting their dates and must never write a number as though you had priced their actual stay, because a live booking engine is the only thing that can do that and you have not opened one. A sourced, dated band plus "price it live for your dates" is the honest answer, and it is far more use to them than silence.\n`
           + `- Its official website as a bare URL, taken from a search result you actually opened rather than assembled from the name. Write it as https://... with nothing around it.\n`
           + `- Whether it genuinely suits this trip, and if it does not, say so plainly and why.\n`
-          + `If the searches turn up nothing you can stand behind, write exactly NOTHING FOUND and then one line on what you looked for. Do not pad it out.\n\n`
+          + `If the searches turn up nothing you can stand behind, write exactly NOTHING FOUND and then one line on what you looked for. Do not pad it out.\n`
+          + `Keep the whole report under 400 words. It is notes for the person writing the plan, not the plan itself, and a customer is waiting while you write it.\n\n`
           + `Search and report now.`,
       }],
     }, RESEARCH_REQUEST_OPTIONS).finalMessage();
@@ -1007,11 +1023,13 @@ export async function researchNamedRequests(
     console.log(`Skipping ${names.length} named request(s): the deadline passed during extraction.`);
     return "";
   }
+  const startedAt = Date.now();
   console.log(`Researching ${names.length} named request(s): ${names.join(", ")}`);
   const reports = (await Promise.all(
     names.map((name) => researchOneNamedRequest(anthropic, name, submission, cityLabelEn, onSpend)),
   )).filter(Boolean);
   if (!reports.length) return "";
+  console.log(`Named requests done in ${Math.round((Date.now() - startedAt) / 1000)}s: ${reports.length} report(s) went into the draft.`);
   return `--- THE CUSTOMER'S OWN NAMED REQUESTS (searched just now, for this customer, not from the city cache) ---\n${reports.join("\n\n")}`;
 }
 
