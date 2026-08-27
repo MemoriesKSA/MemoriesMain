@@ -11,6 +11,9 @@ import { RESEARCH_SCOPE_VERSION, readScopeVersion, researchIsComplete, missingCa
 import { flagshipCityGuideBySlug } from "../app/flagship-city-data";
 
 const slug = process.argv[2] ?? "dubai";
+// The country matters: flagshipCityGuideBySlug is keyed by both, and hardcoding
+// one made this script quietly report "no city guide" for every city outside it.
+const country = process.argv[3] ?? "";
 
 async function main() {
   const supabase = createSupabaseAdminClient();
@@ -23,7 +26,7 @@ async function main() {
 
   const raw = String(data?.research_notes ?? "");
   const { version, notes } = readScopeVersion(raw);
-  const guide = flagshipCityGuideBySlug("uae", slug);
+  const guide = country ? flagshipCityGuideBySlug(country, slug) : flagshipCityGuideBySlug("saudi-arabia", slug) ?? flagshipCityGuideBySlug("uae", slug);
   const wanted = categoriesFor(guide, false).map((c) => c.key);
 
   console.log(`${slug}`);
@@ -35,6 +38,17 @@ async function main() {
   console.log(`  categories present: ${[...notes.matchAll(/^##cat:(\w+)/gm)].map((m) => m[1]).join(", ")}`);
   console.log(`  complete:       ${researchIsComplete(guide, notes, false)}`);
   console.log(`  missing:        ${missingCategories(guide, notes, false).join(", ") || "(none)"}`);
+  // A curated row short-circuits everything: getCachedResearch returns it with
+  // stale:false without ever reading the scope version or counting categories.
+  // Reporting "stale because scope v0 != v5" for one of those is a diagnostic
+  // describing a code path that does not run, and it nearly had me telling the
+  // owner a hand-curated city was broken hours before they spent money on it.
+  if (data?.curated) {
+    console.log(`\n  => NOT stale: hand-curated rows are used exactly as stored.`);
+    console.log(`     The scope version and the category list above do not apply to them,`);
+     console.log(`     and ${notes.length} characters of curated research will be used as-is.`);
+    return;
+  }
   console.log(`\n  => stale because: ${version !== RESEARCH_SCOPE_VERSION ? `scope v${version} != v${RESEARCH_SCOPE_VERSION}` : "scope matches; check age and completeness above"}`);
 }
 
