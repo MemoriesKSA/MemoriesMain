@@ -8,8 +8,8 @@ import { CSSProperties, FocusEvent, PointerEvent, useEffect, useLayoutEffect, us
 import { ThemeToggle } from "./theme-toggle";
 
 const labels = {
-  en: [["Design your dream journey", "/design-your-journey"], ["Discover Saudi Arabia", "/discover-saudi-arabia"], ["Study Abroad", "/study-abroad"], ["About us", "/about"], ["Corporate", "/corporate"]],
-  ar: [["صمّم رحلة أحلامك", "/design-your-journey"], ["اكتشف السعودية", "/discover-saudi-arabia"], ["الدراسة في الخارج", "/study-abroad"], ["من نحن", "/about"], ["الشركات", "/corporate"]],
+  en: [["Design your dream journey", "/design-your-journey"], ["Discover Saudi Arabia", "/discover-saudi-arabia"], ["Study Abroad", "/study-abroad"], ["About us", "/about"], ["Corporate (soon)", "/corporate"]],
+  ar: [["صمّم رحلة أحلامك", "/design-your-journey"], ["اكتشف السعودية", "/discover-saudi-arabia"], ["الدراسة في الخارج", "/study-abroad"], ["من نحن", "/about"], ["الشركات (قريبًا)", "/corporate"]],
 } as const;
 
 export function Header() {

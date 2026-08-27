@@ -153,6 +153,20 @@ export const studyCountries: CountryOption[] = [
  */
 export const STUDY_ABROAD_PAUSED = true;
 
+/**
+ * Corporate travel is paused too, and for a plainer reason than study.
+ *
+ * A company trip is not one traveller multiplied: approvals, delegations,
+ * changing headcounts and cost reporting are their own discipline, and
+ * taking an enquiry we cannot serve properly wastes somebody else's time.
+ *
+ * It lives beside the study switch because between them they are the
+ * answer to one question, what the site is currently open for, and that
+ * answer should be readable in one place rather than inferred from which
+ * pages happen to still have a form on them.
+ */
+export const CORPORATE_PAUSED = true;
+
 const ALL_PATH_OPTIONS: Array<LocalizedOption & { path: PlannerPath; descriptionEn: string; descriptionAr: string }> = [
   { path: "journey", value: "journey", en: "Design your dream journey", ar: "صمّم رحلة أحلامك", descriptionEn: "A complete holiday shaped around you.", descriptionAr: "رحلة متكاملة مصممة حولك." },
   { path: "saudi", value: "saudi", en: "Discover Saudi Arabia", ar: "اكتشف السعودية", descriptionEn: "Visit the Kingdom for leisure, culture or pilgrimage.", descriptionAr: "اكتشف المملكة للسياحة أو الثقافة أو الزيارة الدينية." },
