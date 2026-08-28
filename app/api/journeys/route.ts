@@ -2,6 +2,8 @@ import { Resend } from "resend";
 import { after } from "next/server";
 import { generateDraftGuide } from "../../draft-guide";
 import { isPlannableCountry, STUDY_ABROAD_PAUSED, travelCountries } from "../../components/planner-data";
+import { createSupabaseAdminClient } from "../../supabase-admin";
+import { newFollowToken, followUrl, releaseAt, deliveryPromise } from "../../follow/release";
 
 
 export const runtime = "nodejs";
@@ -77,6 +79,7 @@ type JourneySubmission = {
   phoneCode?: unknown;
   phone?: unknown;
   notes?: unknown;
+  priority?: unknown;
   privacyAccepted?: unknown;
   website?: unknown;
 };
@@ -208,6 +211,9 @@ export async function POST(request: Request) {
     phoneCode: clean(raw.phoneCode, 10),
     phone: clean(raw.phone, 40),
     notes: clean(raw.notes, 2_000),
+    // "yes" when the customer chose the paid priority window. Payment is
+    // not wired yet, so this records the choice and nothing is charged.
+    priority: clean(raw.priority, 3),
     privacyAccepted: clean(raw.privacyAccepted, 3),
   };
 
@@ -257,6 +263,44 @@ export async function POST(request: Request) {
     "", "CUSTOMER NOTES · ملاحظات العميل", textLine({ en: "Final notes", ar: "ملاحظات أخيرة" }, submission.notes),
   ].filter((line, index, lines) => line || (index > 0 && lines[index - 1])).join("\n");
 
+  // The row is created HERE, not when drafting finishes eight minutes
+  // later, so the follow link in the confirmation email works the moment
+  // the customer clicks it. The drafting pass fills the same row in.
+  //
+  // Allowed to fail without failing the submission: the request itself is
+  // already safe in the review inbox, and a customer who cannot watch a
+  // progress bar is in a far better position than one whose request was
+  // refused because a status page could not be prepared.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const followToken = newFollowToken();
+  // Minted here because the column is NOT NULL and the row opens now. It
+  // opens no door yet: the journey page serves nothing that is not
+  // published, and this row is only 'received'.
+  const publicToken = newFollowToken();
+  const submittedAt = new Date();
+  const wantsPriority = submission.priority === "yes";
+  try {
+    const supabase = createSupabaseAdminClient();
+    const { error: rowError } = await supabase.from("proposals").insert({
+      reference,
+      status: "received",
+      customer_name: submission.name,
+      customer_email: submission.email,
+      customer_phone: submission.phone || null,
+      city: readable(submission.city),
+      from_date: submission.fromDate || null,
+      to_date: submission.toDate || null,
+      currency: submission.currency || "SAR",
+      follow_token: followToken,
+      public_token: publicToken,
+      priority: wantsPriority,
+      release_at: releaseAt(submittedAt, wantsPriority).toISOString(),
+    });
+    if (rowError) console.error("Could not open the follow record", rowError.message);
+  } catch (error) {
+    console.error("Could not open the follow record", error);
+  }
+
   const internal = await resend.emails.send({
     from: fromEmail,
     to: [reviewEmail],
@@ -282,8 +326,8 @@ export async function POST(request: Request) {
         ? `رحلة أحلامك وصلت إلينا.\n\nأهلًا ${submission.name}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${readable(submission.city)}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.\n\nرقم الطلب: ${reference}`
         : `Your dream journey has reached us.\n\nHello ${submission.name}, thank you for sharing your journey to ${readable(submission.city)}. Our team will review the details and continue with you through your chosen contact method.\n\nRequest reference: ${reference}`,
       html: submission.locale === "ar"
-        ? `<div dir="rtl" style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:1px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">رحلة أحلامك وصلت إلينا.</h1><p>أهلًا ${escapeHtml(submission.name)}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${escapeHtml(readable(submission.city))}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.</p><p><strong>رقم الطلب:</strong> ${reference}</p></div></div>`
-        : `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">Your dream journey has reached us.</h1><p>Hello ${escapeHtml(submission.name)}, thank you for sharing your journey to ${escapeHtml(readable(submission.city))}. Our team will review the details and continue with you through your chosen contact method.</p><p><strong>Request reference:</strong> ${reference}</p></div></div>`,
+        ? `<div dir="rtl" style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:1px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">رحلة أحلامك وصلت إلينا.</h1><p>أهلًا ${escapeHtml(submission.name)}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${escapeHtml(readable(submission.city))}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.</p><p><strong>رقم الطلب:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, true)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">تابع تقدّم خطتك</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">تصلك الخطة ${deliveryPromise(wantsPriority, true)}.</p></div></div>`
+        : `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">Your dream journey has reached us.</h1><p>Hello ${escapeHtml(submission.name)}, thank you for sharing your journey to ${escapeHtml(readable(submission.city))}. Our team will review the details and continue with you through your chosen contact method.</p><p><strong>Request reference:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, false)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">Follow your plan</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">Your plan will reach you ${deliveryPromise(wantsPriority, false)}.</p></div></div>`,
     }, { idempotencyKey: `journey-confirmation/${submission.submissionId}` });
 
     if (confirmation.error) console.error("Journey confirmation email failed", confirmation.error.name);

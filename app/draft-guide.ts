@@ -2191,19 +2191,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
 
     if (supabase) {
       try {
-        const { data, error } = await supabase
-          .from("proposals")
-          .insert({
-            reference,
-            public_token: publicToken,
+        // The row already exists: the journeys route opened it the moment the
+        // customer submitted, so the follow link in their confirmation email
+        // would resolve immediately. This fills in what drafting produced and
+        // leaves the identity columns alone.
+        //
+        // Falls back to an insert when there is no row, which covers a
+        // submission that predates this change and one whose submit-time write
+        // failed. A plan that exists is worth more than a tidy invariant.
+        const draftFields = {
             status: "draft",
-            customer_name: submission.name,
-            customer_email: submission.email,
-            customer_phone: submission.phone || null,
-            city: cityLabelEn,
-            from_date: submission.fromDate || null,
-            to_date: submission.toDate || null,
-            currency: submission.currency || "SAR",
             // Null rather than a labelled list with firstDay 0. This column
             // feeds the paywall and nothing else, and freeDayNumbers reads
             // those zeros as "day 0 is the free one", which matches no day
@@ -2217,11 +2214,41 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
             // an English plan and no links in it at all. Both later writes
             // rewrite this same column with more in it.
             notes: internalNotesSoFar(englishSplit, null),
-          })
+        };
+
+        const { data: existing } = await supabase
+          .from("proposals")
           .select("id")
-          .single();
-        if (error) console.error("Auto-create proposal failed", error.message);
-        else proposalId = data?.id ?? null;
+          .eq("reference", reference)
+          .maybeSingle();
+
+        if (existing?.id) {
+          const { error } = await supabase.from("proposals").update(draftFields).eq("id", existing.id);
+          if (error) console.error("Filling the proposal failed", error.message);
+          else proposalId = existing.id;
+        } else {
+          const { data, error } = await supabase
+            .from("proposals")
+            .insert({
+              reference,
+              // Only this path mints one. The update path leaves the token
+              // the submit-time row already carries, because the customer's
+              // confirmation email may already quote it.
+              public_token: publicToken,
+              customer_name: submission.name,
+              customer_email: submission.email,
+              customer_phone: submission.phone || null,
+              city: cityLabelEn,
+              from_date: submission.fromDate || null,
+              to_date: submission.toDate || null,
+              currency: submission.currency || "SAR",
+              ...draftFields,
+            })
+            .select("id")
+            .single();
+          if (error) console.error("Auto-create proposal failed", error.message);
+          else proposalId = data?.id ?? null;
+        }
       } catch (error) {
         console.error("Auto-create proposal failed", error);
       }
@@ -2241,6 +2268,10 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         .from("proposals")
         .update({
           itinerary_ar: arabicSplit.customerFacing,
+          // Both languages are written now, which is what the follow page
+          // means by finished. Setting this with the English alone made the
+          // page announce the final stage while the Arabic was still running.
+          drafted_at: new Date().toISOString(),
           // The marker lines ride along here, well before the self-check, the
           // repair and the reviewer's note. They are not internal trivia: the
           // page reads PICKS, PLACES and SITES out of this column to turn

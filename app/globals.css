@@ -665,3 +665,31 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 .pausedActions .button svg{width:16px;height:16px}
 .pausedActions .textLink{color:rgba(255,255,255,.72)}
 @media(max-width:780px){.pausedPanel{padding:36px 26px}}
+
+/* The follow page: one customer, one request, a lot of waiting. Quiet on
+   purpose — it is looked at repeatedly and briefly, so it has to reward a
+   two-second glance rather than reward reading. */
+.followPage{padding:70px 0 110px}
+.followWrap{max-width:640px}
+.followPage h1{margin:10px 0 0;font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.05}
+.followTrip{margin:14px 0 0;color:var(--muted);font-size:.9rem;letter-spacing:.04em}
+.followPromise{display:flex;gap:14px;align-items:center;margin-top:30px;padding:18px 22px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.followPromise svg{flex:none;width:20px;height:20px;color:var(--gold)}
+.followPromise strong{display:block;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.followPromise span{font-size:.95rem}
+.followBar{height:4px;margin-top:34px;border-radius:99px;background:var(--line);overflow:hidden}
+.followBarFill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-light),var(--gold));transition:width .6s ease}
+.followStages{list-style:none;margin:34px 0 0;padding:0;display:grid;gap:2px}
+.followStage{display:flex;gap:15px;align-items:flex-start;padding:15px 0;border-top:1px solid var(--line)}
+.followStage:first-child{border-top:0}
+.followMark{flex:none;display:grid;place-items:center;width:26px;height:26px;margin-top:1px;border:1px solid var(--line);border-radius:50%;color:var(--muted)}
+.followStage.done .followMark{border-color:var(--gold);background:var(--gold);color:#fff}
+.followStage.active .followMark{border-color:var(--gold);color:var(--gold)}
+.followStage.active .followMark svg{animation:followSpin 1.6s linear infinite}
+.followStage strong{display:block;font-size:.98rem}
+.followStage span{font-size:.82rem;color:var(--muted);line-height:1.65}
+.followStage.waiting strong,.followStage.waiting span{opacity:.45}
+.followFoot{margin-top:34px;color:var(--muted);font-size:.84rem;line-height:1.8}
+@keyframes followSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.followStage.active .followMark svg{animation:none}.followBarFill{transition:none}}
+@media(max-width:780px){.followPage{padding:44px 0 70px}}
