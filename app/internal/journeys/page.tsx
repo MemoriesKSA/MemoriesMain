@@ -19,7 +19,7 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
   const supabase = createSupabaseAdminClient();
   const { data: proposals } = await supabase
     .from("proposals")
-    .select("id, reference, customer_name, city, status, updated_at, revision_used, revision_note, revision_requested_at, review_state, release_at, sent_at")
+    .select("id, reference, customer_name, city, status, updated_at, revision_used, revision_note, revision_requested_at, review_state, release_at, sent_at, drafted_at")
     .order("updated_at", { ascending: false });
 
   const draftCount = proposals?.filter((p) => p.status !== "published").length ?? 0;
@@ -32,7 +32,9 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
   // sat finished and unsent for thirty-one hours because nothing surfaced it.
   const needsYou = (proposals ?? []).filter((p) => p.review_state === "flagged" && !p.sent_at);
   const scheduled = (proposals ?? []).filter((p) => p.review_state === "clean" && !p.sent_at && p.status !== "published");
-  const unchecked = (proposals ?? []).filter((p) => !p.review_state && !p.sent_at && p.status !== "published");
+  // Not written yet is not the same as written but unchecked. A request that
+  // arrived two minutes ago has no verdict because there is nothing to check.
+  const unchecked = (proposals ?? []).filter((p) => !p.review_state && !p.sent_at && p.status !== "published" && p.drafted_at);
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", padding: "48px 24px", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>

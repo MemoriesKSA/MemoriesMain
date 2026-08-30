@@ -287,7 +287,12 @@ export async function POST(request: Request) {
     const supabase = createSupabaseAdminClient();
     const { error: rowError } = await supabase.from("proposals").insert({
       reference,
-      status: "received",
+      // "draft", not a new value: the status column carries a check
+      // constraint allowing only draft and published, and inventing
+       // "received" made every insert fail silently. A row with no
+      // itinerary_en is a request that has not been written yet, which is
+      // what the release job and the reviewer page both test for.
+      status: "draft",
       customer_name: submission.name,
       customer_email: submission.email,
       customer_phone: submission.phone || null,
