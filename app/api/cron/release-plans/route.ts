@@ -11,10 +11,16 @@ export const maxDuration = 60;
 // watching, so it is deliberately narrow about what it will touch. A plan is
 // released only when ALL of these hold:
 //
-//   - the drafting pipeline finished it (both languages stored)
+//   - the drafting pipeline finished it (the English is stored)
 //   - its release window has passed
 //   - the self-check came back CLEAN
 //   - it has not already been sent
+//
+// The Arabic half is deliberately NOT required. A customer can ask for English
+// only, and requiring both meant their plan would have sat here forever,
+// finished and never sent. A plan that should have had an Arabic half and does
+// not is caught by the self-check instead, which is what the CLEAN condition
+// above is for.
 //
 // Anything the self-check flagged is left alone forever. Those are the drafts
 // with something actually wrong in them, and the whole point of the flag is
@@ -52,7 +58,7 @@ export async function GET(request: Request) {
     .not("release_at", "is", null)
     .lte("release_at", now)
     .not("itinerary_en", "is", null)
-    .not("itinerary_ar", "is", null)
+    .eq("review_state", "clean")
     .order("release_at", { ascending: true })
     .limit(BATCH);
 
@@ -65,10 +71,10 @@ export async function GET(request: Request) {
   let held = 0;
 
   for (const proposal of data ?? []) {
-    // The self-check's own words. A flagged plan waits for a person, and this
-    // job is not that person.
-    const notes = String(proposal.notes ?? "");
-    if (!/self-check: CLEAN/i.test(notes)) {
+    // review_state is already filtered in the query above. This is the second
+    // lock on the same door: a row that somehow arrives here without a clean
+    // verdict is not sent, whatever the query thought.
+    if (proposal.review_state !== "clean") {
       held++;
       continue;
     }

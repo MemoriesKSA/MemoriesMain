@@ -55,6 +55,9 @@ export type DraftGuideSubmission = {
   flightTiming: string;
   planIncludes: string[];
   packageNotes: string;
+  // "en" skips the Arabic translation. Anything else means both, so a
+  // submission that predates the choice still gets the plan it expected.
+  planLanguages?: string;
   // The customer's own last words on the form. This was collected, emailed
   // to the team, and then never handed to the drafting pass at all, so the
   // one free-text box where somebody writes what they actually want was the
@@ -1606,7 +1609,7 @@ export async function selfCheckDraft(anthropic: Anthropic, englishDraft: string,
       system: cachedSystem(buildSelfCheckSystemPrompt()),
       messages: [{
         role: "user",
-        content: `CUSTOMER REQUEST (their own words from the form, a source in its own right):\n${customerRequest || "not available"}\n\nTRIP CALENDAR (the customer's real dates, and the only authority on which weekday each one is):\n${tripCalendar || "no dates were given for this trip"}\n\nGROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES (cached per city, any window named inside is our plumbing, not this customer's dates):\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\nARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft || "(empty, translation failed)"}\n\nCheck now.`,
+        content: `CUSTOMER REQUEST (their own words from the form, a source in its own right):\n${customerRequest || "not available"}\n\nTRIP CALENDAR (the customer's real dates, and the only authority on which weekday each one is):\n${tripCalendar || "no dates were given for this trip"}\n\nGROUNDED FACTS (English):\n${groundedFactsEn}\n\nGROUNDED FACTS (Arabic):\n${groundedFactsAr}\n\nOPERATIONAL RESEARCH NOTES (cached per city, any window named inside is our plumbing, not this customer's dates):\n${operationalResearch || "none gathered"}\n\nENGLISH DRAFT (the source):\n${englishDraft || "(empty, generation failed)"}\n\n${arabicDraft ? `ARABIC DRAFT (should be a faithful translation of the above):\n${arabicDraft}` : "ARABIC DRAFT: none, and none was expected. This customer asked for English only, so the Arabic pass was skipped deliberately. Do not report the missing translation as a fault; check the English on its own."}\n\nCheck now.`,
       }],
     }).finalMessage();
 
@@ -2254,7 +2257,16 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       }
     }
 
-    let arabicDraft = await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
+    // A customer who asked for English only does not pay for the Arabic pass
+    // in money or in waiting: it is roughly 10,000 output tokens and several
+    // minutes of the window, and skipping it is the whole point of the
+    // option. Everything downstream already copes with an absent Arabic
+    // half, because a translation that failed has always been possible.
+    const englishOnly = submission.planLanguages === "en";
+    let arabicDraft = englishOnly
+      ? ""
+      : await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
+    if (englishOnly) console.log("English only was requested, so the Arabic pass was skipped.");
     const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
     // The split decides what the customer sees, and it fails silently: a
     // false internal heading sends the rest of the document to the planner's
@@ -2263,15 +2275,17 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // and nothing anywhere said so. Compare the halves and say something.
     warnOnLopsidedSplit("English", englishSplit, englishDraft);
     if (arabicSplit) warnOnLopsidedSplit("Arabic", arabicSplit, arabicDraft);
+    // Finished, whether or not there is an Arabic half. This used to hang off
+    // arabicSplit, so an English-only plan never got drafted_at and its owner
+    // watched the follow page sit on "checking every fact" forever.
+    if (supabase && proposalId) {
+      await supabase.from("proposals").update({ drafted_at: new Date().toISOString() }).eq("id", proposalId);
+    }
     if (supabase && proposalId && arabicSplit?.customerFacing) {
       const { error } = await supabase
         .from("proposals")
         .update({
           itinerary_ar: arabicSplit.customerFacing,
-          // Both languages are written now, which is what the follow page
-          // means by finished. Setting this with the English alone made the
-          // page announce the final stage while the Arabic was still running.
-          drafted_at: new Date().toISOString(),
           // The marker lines ride along here, well before the self-check, the
           // repair and the reviewer's note. They are not internal trivia: the
           // page reads PICKS, PLACES and SITES out of this column to turn
@@ -2405,9 +2419,17 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
         ].filter(Boolean);
         const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
 
+        // The verdict as a column, not only as a sentence inside notes.
+        // Whether a plan may go out without a person reading it is the most
+        // consequential fact about it, and it should not live only in prose
+        // that three different regular expressions have to agree about.
+        const reviewState = selfCheck
+          ? (readSelfCheckVerdict(selfCheck).clean ? "clean" : "flagged")
+          : null;
+
         const { error } = await supabase
           .from("proposals")
-          .update({ notes })
+          .update({ notes, review_state: reviewState })
           .eq("id", proposalId);
 
         if (error) console.error("Storing the internal notes failed", error.message);

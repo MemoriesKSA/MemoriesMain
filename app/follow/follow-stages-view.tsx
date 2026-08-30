@@ -12,32 +12,32 @@ import { deliveryPromise } from "./release";
 
 const COPY: Record<StageKey, { en: string; ar: string; note: { en: string; ar: string } }> = {
   received: {
-    en: "Request received", ar: "استلمنا طلبك",
-    note: { en: "Everything you told us is with the team.", ar: "كل ما ذكرته وصل إلى الفريق." },
+    en: "Request received", ar: "وصلنا طلبك",
+    note: { en: "Everything you told us is with the team.", ar: "كل تفصيلة ذكرتها صارت بين يدي الفريق." },
   },
   researching: {
-    en: "Researching your destination", ar: "نبحث في وجهتك",
-    note: { en: "Hotels, restaurants, opening hours, and what is actually worth your time.", ar: "الفنادق والمطاعم وساعات العمل وما يستحق وقتك فعلًا." },
+    en: "Researching your destination", ar: "نستكشف وجهتك",
+    note: { en: "Hotels, restaurants, opening hours, and what is actually worth your time.", ar: "الفنادق والمطاعم وأوقات الزيارة، وكل ما يستحق وقتك فعلًا." },
   },
   writing: {
-    en: "Writing your plan", ar: "نكتب خطتك",
-    note: { en: "The longest part, and the one worth waiting for.", ar: "أطول مرحلة، وهي التي تستحق الانتظار." },
+    en: "Writing your plan", ar: "نكتب خطة أحلامك",
+    note: { en: "The longest part, and the one worth waiting for.", ar: "أطول مرحلة، وهي التي تستحق الانتظار فعلًا." },
   },
   arabic: {
-    en: "Preparing the Arabic version", ar: "نجهّز النسخة العربية",
-    note: { en: "Every plan is written in both languages rather than machine-translated.", ar: "كل خطة تُكتب باللغتين، لا تُترجم آليًا." },
+    en: "Preparing the Arabic version", ar: "نجهّز نسختك العربية",
+    note: { en: "Every plan is written in both languages rather than machine-translated.", ar: "كل خطة تُكتب باللغتين من جديد، لا تُترجم آليًا." },
   },
   checking: {
-    en: "Checking every fact", ar: "نتحقق من كل معلومة",
-    note: { en: "Prices, hours and distances are read back against their sources.", ar: "الأسعار والساعات والمسافات تُراجع على مصادرها." },
+    en: "Checking every fact", ar: "نتأكد من كل تفصيلة",
+    note: { en: "Prices, hours and distances are read back against their sources.", ar: "الأسعار والأوقات والمسافات، نراجعها على مصادرها واحدة واحدة." },
   },
   final: {
-    en: "Final checks", ar: "المراجعة الأخيرة",
-    note: { en: "Your plan is complete and in the queue to be sent.", ar: "خطتك اكتملت وهي في انتظار الإرسال." },
+    en: "Final checks", ar: "اللمسة الأخيرة",
+    note: { en: "Your plan is complete and in the queue to be sent.", ar: "خطتك جاهزة، وما بقي إلا أن تصلك." },
   },
   sent: {
-    en: "Sent to you", ar: "أُرسلت إليك",
-    note: { en: "Check your inbox. The link inside opens your plan.", ar: "تفقّد بريدك، والرابط بداخله يفتح خطتك." },
+    en: "Sent to you", ar: "وصلتك خطتك",
+    note: { en: "Check your inbox. The link inside opens your plan.", ar: "افتح بريدك، والرابط الذي فيه يفتح لك خطتك." },
   },
 };
 
@@ -46,13 +46,14 @@ function clock(d: Date, ar: boolean) {
 }
 
 export function FollowStages({
-  input, city, dates, priority, needsReview, locale = "en",
+  input, city, dates, priority, needsReview, englishOnly = false, locale = "en",
 }: {
   input: FollowInput;
   city: string;
   dates: string;
   priority: boolean;
   needsReview: boolean;
+  englishOnly?: boolean;
   locale?: "en" | "ar";
 }) {
   const ar = locale === "ar";
@@ -64,11 +65,11 @@ export function FollowStages({
   return (
     <main className="innerPage followPage" dir={ar ? "rtl" : "ltr"}>
       <section className="container followWrap">
-        <p className="kicker">{ar ? "متابعة طلبك" : "Following your request"}</p>
+        <p className="kicker">{ar ? "رحلتك تتشكّل" : "Following your request"}</p>
         <h1>
           {sent
-            ? (ar ? <>خطتك في بريدك.</> : <>Your plan is in your inbox.</>)
-            : (ar ? <>نحن نعمل على خطتك.</> : <>We&apos;re working on your plan.</>)}
+            ? (ar ? <>خطتك بين يديك.</> : <>Your plan is in your inbox.</>)
+            : (ar ? <>نعمل على خطة أحلامك.</> : <>We&apos;re working on your plan.</>)}
         </h1>
         <p className="followTrip">{city}{dates ? ` · ${dates}` : ""}</p>
 
@@ -76,7 +77,7 @@ export function FollowStages({
           <div className="followPromise">
             <Mail aria-hidden="true" />
             <div>
-              <strong>{priority ? (ar ? "أولوية" : "Priority") : (ar ? "التسليم المتوقع" : "Expected delivery")}</strong>
+              <strong>{priority ? (ar ? "أولوية لك" : "Priority") : (ar ? "تصلك خلال" : "Expected delivery")}</strong>
               <span>
                 {deliveryPromise(priority, ar)}
                 {priority && due ? ` · ${ar ? "بحلول" : "by"} ${clock(due, ar)}` : ""}
@@ -91,13 +92,17 @@ export function FollowStages({
         </div>
 
         <ol className="followStages">
-          {stages.map((stage) => {
+          {stages
+            // A customer who asked for English only never sees a stage
+            // promising them an Arabic version they did not order.
+            .filter((stage) => !(stage.key === "arabic" && englishOnly))
+            .map((stage) => {
             const copy = COPY[stage.key];
             // The only wording that changes with circumstance: when the
             // self-check flagged something, a person genuinely is reading it.
             const note = stage.key === "final" && needsReview && !sent
               ? (ar
-                  ? "أشار فحصنا إلى نقطة تستحق نظر إنسان، وهذا ما يحدث الآن."
+                  ? "لاحظنا نقطة تستحق عين إنسان، وهذا ما يجري الآن."
                   : "Our checks flagged something worth a human eye, which is what is happening now.")
               : (ar ? copy.note.ar : copy.note.en);
             return (
@@ -116,10 +121,10 @@ export function FollowStages({
 
         <p className="followFoot">
           {ar
-            ? "لا حاجة لإبقاء هذه الصفحة مفتوحة، وسنراسلك على بريدك فور جهوز الخطة."
+            ? "لا داعي لإبقاء هذه الصفحة مفتوحة، فسنراسلك على بريدك أول ما تجهز."
             : "No need to keep this page open. We'll email you the moment it's ready."}
           {" "}
-          <Link href={ar ? "/ar/feedback" : "/feedback"}>{ar ? "أخبرنا برأيك" : "Tell us what you think"}</Link>
+          <Link href={ar ? "/ar/feedback" : "/feedback"}>{ar ? "قل لنا رأيك" : "Tell us what you think"}</Link>
         </p>
       </section>
     </main>

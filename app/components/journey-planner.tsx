@@ -7,6 +7,7 @@ import type { SelectChoice } from "./form-controls";
 import { deepDataCountries, pathOptions, plannableCountries, saudiArabia, studyCountries } from "./planner-data";
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
 import { planFee, NIGHT_RATE, EXTRA_STOP_FEE } from "../journey/pricing";
+import { PRIORITY_PRICE_SAR } from "../follow/release";
 
 const pathIcons = { journey: Sparkles, saudi: Map, study: GraduationCap } as const;
 type LocalChoice = { value: string; en: string; ar: string; detailEn?: string; detailAr?: string };
@@ -135,6 +136,12 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [hasSpecificUniversity, setHasSpecificUniversity] = useState<"" | "yes" | "no">("");
   const [specificUniversity, setSpecificUniversity] = useState("");
   const [stayRating, setStayRating] = useState("");
+  // Both languages by default, because that is what every plan has been so
+  // far and it is the more useful answer for a Saudi traveller sharing a
+  // plan with family. English only exists because some people genuinely do
+  // not want the Arabic half, and skipping it makes the plan arrive sooner.
+  const [planLanguages, setPlanLanguages] = useState("both");
+  const [priority, setPriority] = useState("no");
   // Flight planning is impossible without an origin, so this is required
   // whenever they ask for flights. Free text rather than a picker because
   // they could be flying from anywhere in the world.
@@ -586,6 +593,35 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     <section className={sectionClass(5)} data-step="5"><div className="plannerStep"><span>05</span><div><strong>{text(ar, "Where should we send the plan?", "كيف نرسل لك الخطة؟")}</strong><small>{text(ar, "Choose email, WhatsApp, or both.", "اختر البريد الإلكتروني أو واتساب أو كليهما.")}</small>{requiredWarning(5)}</div></div>
       <MultiChoice legend={text(ar, "Delivery preferences", "طرق الاستلام المفضلة")} name="delivery" options={localize(ar, deliveryChoices)} selected={delivery} onChange={setDelivery} />
       <div className="contactFields"><label><span>{text(ar, "Full name", "الاسم الكامل")} *</span><input name="name" autoComplete="name" required placeholder={text(ar, "Your name", "اسمك")} /></label><label><span>{text(ar, "Email", "البريد الإلكتروني")}{delivery.includes("email") ? " *" : ""}</span><input name="email" type="email" autoComplete="email" required={delivery.includes("email")} placeholder="you@example.com" /></label><div className="phoneField"><ElasticSelect label={text(ar, "Country code", "رمز الدولة")} name="phoneCode" searchable options={phoneCodes} value={phoneCode} onChange={setPhoneCode} placeholder="🇸🇦 +966" searchPlaceholder={text(ar, "Search code…", "ابحث عن الرمز…")} /><label><span>{text(ar, "Phone / WhatsApp", "الجوال / واتساب")}{delivery.includes("whatsapp") ? " *" : ""}</span><input name="phone" type="tel" autoComplete="tel-national" inputMode="tel" required={delivery.includes("whatsapp")} placeholder={text(ar, "5X XXX XXXX", "5X XXX XXXX")} /></label></div><label className="full"><span>{text(ar, "Anything else that will make this journey yours?", "ما الذي سيجعل هذه الرحلة خاصة بك؟")}</span><textarea name="notes" rows={4} placeholder={text(ar, "Tell us about your interests, preferred rhythm, repeated activities, accessibility needs or any final details…", "شاركنا اهتماماتك والتكرار المفضل للأنشطة واحتياجات سهولة الوصول أو أي تفاصيل أخيرة…")} /></label></div>
+      <ElasticSelect
+        label={text(ar, "Which languages should the plan be in?", "بأي لغة تريد الخطة؟")}
+        name="planLanguages"
+        placeholder={text(ar, "Choose the languages", "اختر اللغة")}
+        options={localize(ar, [
+          { value: "both", en: "Arabic and English", ar: "العربية والإنجليزية" },
+          { value: "en", en: "English only \u2014 arrives sooner", ar: "الإنجليزية فقط \u2014 تصل أسرع" },
+        ])}
+        value={planLanguages}
+        onChange={setPlanLanguages}
+      />
+      <ElasticSelect
+        label={text(ar, "How soon do you need it?", "متى تحتاجها؟")}
+        name="priority"
+        placeholder={text(ar, "Choose a delivery speed", "اختر سرعة التسليم")}
+        options={localize(ar, [
+          { value: "no", en: "Standard \u2014 within 4\u20135 hours", ar: "عادي \u2014 خلال 4\u20135 ساعات" },
+          { value: "yes", en: `Priority \u2014 within 1 hour (SAR ${PRIORITY_PRICE_SAR})`, ar: `أولوية \u2014 خلال ساعة (${PRIORITY_PRICE_SAR} ريال)` },
+        ])}
+        value={priority}
+        onChange={setPriority}
+      />
+      {priority === "yes" ? (
+        <p className="privacyHint full">
+          {text(ar,
+            "Nothing is charged here. We will confirm the priority fee with you before your plan is prepared.",
+            "لا يُخصم شيء الآن. سنؤكد لك رسوم الأولوية قبل إعداد خطتك.")}
+        </p>
+      ) : null}
       <label className="consentCheck full"><input type="checkbox" name="privacyAccepted" value="yes" required /><span>{ar ? <>أوافق على استخدام بياناتي للرد على طلب الرحلة وفق <a href="/ar/privacy" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a>، وأقر بأن هذا الطلب ليس حجزًا مؤكدًا وفق <a href="/ar/terms" target="_blank" rel="noopener noreferrer">شروط الاستخدام</a>.</> : <>I agree that MEMORIES may use my information to respond to this journey request under the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and understand that this is not a confirmed booking under the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a>.</>}</span></label>
       <p className="privacyHint full">{text(ar, "Service emails about this request are not marketing. Please do not enter passport, payment-card or medical information in this form.", "رسائل الخدمة المتعلقة بهذا الطلب ليست تسويقًا. لا تدخل بيانات جواز السفر أو البطاقة أو المعلومات الطبية في هذا النموذج.")}</p>
     </section>

@@ -19,11 +19,20 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
   const supabase = createSupabaseAdminClient();
   const { data: proposals } = await supabase
     .from("proposals")
-    .select("id, reference, customer_name, city, status, updated_at, revision_used, revision_note, revision_requested_at")
+    .select("id, reference, customer_name, city, status, updated_at, revision_used, revision_note, revision_requested_at, review_state, release_at, sent_at")
     .order("updated_at", { ascending: false });
 
   const draftCount = proposals?.filter((p) => p.status !== "published").length ?? 0;
   const publishedCount = (proposals?.length ?? 0) - draftCount;
+
+  // The only division that matters day to day: what is waiting for a person,
+  // and what is going out on its own. A plan the self-check flagged is never
+  // released automatically, so if nobody looks at these they wait forever.
+  // That is exactly what happened to a real customer's Langkawi plan, which
+  // sat finished and unsent for thirty-one hours because nothing surfaced it.
+  const needsYou = (proposals ?? []).filter((p) => p.review_state === "flagged" && !p.sent_at);
+  const scheduled = (proposals ?? []).filter((p) => p.review_state === "clean" && !p.sent_at && p.status !== "published");
+  const unchecked = (proposals ?? []).filter((p) => !p.review_state && !p.sent_at && p.status !== "published");
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", padding: "48px 24px", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>
@@ -34,6 +43,25 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
             <h1 style={{ margin: 0, fontFamily: locale === "ar" ? "inherit" : "var(--font-display), Georgia, serif", fontSize: 32, color: "var(--ink)" }}>{t.journeysTitle}</h1>
             {!!proposals?.length && (
               <p style={{ margin: "8px 0 0", fontSize: 13, color: "var(--muted)" }}>{t.journeysSubtitle(draftCount, publishedCount)}</p>
+            )}
+            {(needsYou.length > 0 || scheduled.length > 0 || unchecked.length > 0) && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+                {needsYou.length > 0 && (
+                  <span style={{ padding: "6px 12px", borderRadius: 999, background: "#f7e5e3", color: "#9c2f2a", fontSize: 12, fontWeight: 700 }}>
+                    {needsYou.length} flagged, waiting for you
+                  </span>
+                )}
+                {scheduled.length > 0 && (
+                  <span style={{ padding: "6px 12px", borderRadius: 999, background: "#e7f1ea", color: "#0f6b45", fontSize: 12, fontWeight: 700 }}>
+                    {scheduled.length} clean, sending automatically
+                  </span>
+                )}
+                {unchecked.length > 0 && (
+                  <span style={{ padding: "6px 12px", borderRadius: 999, background: "#f8efdd", color: "#9a6410", fontSize: 12, fontWeight: 700 }}>
+                    {unchecked.length} never checked, will not send
+                  </span>
+                )}
+              </div>
             )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

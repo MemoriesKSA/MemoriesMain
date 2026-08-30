@@ -6,15 +6,20 @@ import type { FollowInput } from "./stages";
 // Fetches one request and hands it to the view.
 //
 // The select is deliberately narrow: the trip and the clocks, nothing about
-// the person and nothing from the plan itself. Somebody who came by this link
-// uninvited learns that a Dubai trip is being written, and nothing else.
+// the person, and nothing from the plan reaches the browser. Somebody who came
+// by this link uninvited learns that a Dubai trip is being written, and nothing
+// else.
+//
+// itinerary_ar is the one exception and it is read server-side only, to answer
+// a yes-or-no question: was an Arabic half ever written? Its contents are never
+// passed to the view, only the boolean.
 
 export async function FollowPageContent({ token, locale = "en" }: { token: string; locale?: "en" | "ar" }) {
   const supabase = createSupabaseAdminClient();
 
   const { data } = await supabase
     .from("proposals")
-    .select("city, from_date, to_date, created_at, drafted_at, release_at, sent_at, priority, notes")
+    .select("city, from_date, to_date, created_at, drafted_at, release_at, sent_at, priority, notes, itinerary_ar")
     .eq("follow_token", token)
     .maybeSingle();
 
@@ -40,6 +45,8 @@ export async function FollowPageContent({ token, locale = "en" }: { token: strin
       dates={[data.from_date, data.to_date].filter(Boolean).join(" — ")}
       priority={data.priority === true}
       needsReview={needsReview}
+      // No Arabic half means none was ordered, so no stage promises one.
+      englishOnly={!data.itinerary_ar && Boolean(data.drafted_at)}
     />
   );
 }

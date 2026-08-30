@@ -79,6 +79,7 @@ type JourneySubmission = {
   phoneCode?: unknown;
   phone?: unknown;
   notes?: unknown;
+  planLanguages?: unknown;
   priority?: unknown;
   privacyAccepted?: unknown;
   website?: unknown;
@@ -213,6 +214,9 @@ export async function POST(request: Request) {
     notes: clean(raw.notes, 2_000),
     // "yes" when the customer chose the paid priority window. Payment is
     // not wired yet, so this records the choice and nothing is charged.
+    // "en" means skip the Arabic pass entirely. Anything else, including a
+    // missing value, means both, so an older client cannot silently lose it.
+    planLanguages: clean(raw.planLanguages, 8),
     priority: clean(raw.priority, 3),
     privacyAccepted: clean(raw.privacyAccepted, 3),
   };
@@ -386,6 +390,7 @@ export async function POST(request: Request) {
       flightTiming: submission.flightTiming,
       planIncludes: submission.planIncludes,
       packageNotes: submission.packageNotes,
+      planLanguages: submission.planLanguages,
       // Their own last words. Collected and emailed since the beginning,
       // and until now never shown to the pass that writes the plan.
       notes: submission.notes,
