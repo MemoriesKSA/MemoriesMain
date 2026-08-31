@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { parseItinerary, splitOverviewGroup } from "./parse-itinerary";
 import { mapsSearchUrl, placeMatchPattern } from "./place-links";
 import { REDACTION_PATTERN, type LockedDay } from "./paywall";
+import { UNLOCK_ANCHOR } from "./plan-unlock";
 
 // Filler for the blurred blocks. Deliberately meaningless: the real words
 // never leave the server (see paywall.ts), only the measurements do, and the
@@ -205,13 +206,28 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
   // starts. What sits under each heading is filler drawn to the real day's
   // measurements, blurred. The real lines were dropped on the server and are
   // not in this component at all, so there is nothing here to un-blur.
+  //
+  // The whole card is a link to the unlock panel. Somebody who taps a day they
+  // cannot read is asking how to read it, and the answer was sitting further
+  // down the page with nothing pointing at it. A plain anchor rather than a
+  // click handler: this renders on the server, it works before any JavaScript
+  // arrives, and the smooth scroll is already global CSS.
   const lockedCards = lockedDays.map((day, i) => {
     const number = day.title.match(/[\d٠-٩]+/)?.[0] ?? "•";
     // A day whose measurements didn't survive still gets a believable block
     // rather than an empty card.
     const lengths = day.lineLengths.length ? day.lineLengths : [88, 104, 76];
     return (
-      <div key={`locked-${i}`} style={{ ...cardStyle, position: "relative", overflow: "hidden" }}>
+      <a
+        key={`locked-${i}`}
+        href={`#${UNLOCK_ANCHOR}`}
+        className="lockedDay"
+        aria-label={ar ? `افتح خطتك واقرأ ${day.title}` : `Unlock the plan to read ${day.title}`}
+        // Staggered so the cards catch the light one after another rather than
+        // flashing together, which reads as a glitch. The sweep itself is in
+        // globals.css, because it needs pseudo-elements.
+        style={{ ...cardStyle, position: "relative", overflow: "hidden", display: "block", color: "inherit", textDecoration: "none", cursor: "pointer", "--shineDelay": `${(0.45 + i * 0.17).toFixed(2)}s` } as CSSProperties}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span
             style={{
@@ -233,7 +249,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
           </span>
           <p style={{ margin: 0, flex: 1, fontFamily: "var(--font-display), Georgia, serif", fontSize: 19, color: "var(--ink)" }}>{day.title}</p>
           <span
-            title="Unlock to read this day"
+            title={ar ? "افتح خطتك واقرأ هذا اليوم" : "Unlock to read this day"}
             style={{
               flexShrink: 0,
               display: "grid",
@@ -261,7 +277,7 @@ export function ItineraryView({ text, places = [], cityLabel = "", officialUrls 
             </li>
           ))}
         </ul>
-      </div>
+      </a>
     );
   });
 

@@ -693,3 +693,29 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 @keyframes followSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.followStage.active .followMark svg{animation:none}.followBarFill{transition:none}}
 @media(max-width:780px){.followPage{padding:44px 0 70px}}
+
+/* A locked day is a link to the unlock panel, so it has to look like one can
+   be tapped without pretending the day is readable. Lift and a warmer gold
+   edge on hover; the blurred filler inside stays exactly as it is. */
+.lockedDay{transition:.2s transform,.2s box-shadow,.2s border-color}
+.lockedDay:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 10px 26px rgba(200,149,63,.18)}
+.lockedDay:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* The shine. Two layers on purpose: one sweeps once shortly after the page
+   settles, so a phone with no pointer still gets told the card can be tapped,
+   and one sweeps on hover. Sharing a single layer replayed the load sweep
+   every time the pointer left a card, which read as a glitch rather than a
+   gloss. Gold and warm white at low alpha, over the blur, not through it. */
+.lockedDay::before,.lockedDay::after{content:"";position:absolute;top:-12%;bottom:-12%;left:-45%;width:26%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(231,185,79,.12) 24%,rgba(231,185,79,.38) 46%,rgba(255,253,249,.30) 52%,rgba(231,185,79,.12) 76%,transparent);transform:skewX(-16deg) translateX(0)}
+.lockedDay::before{animation:lockedShine 1.15s cubic-bezier(.22,.61,.36,1) var(--shineDelay,.45s) 1 both}
+.lockedDay::after{opacity:0}
+.lockedDay:hover::after{opacity:1;animation:lockedShine .7s cubic-bezier(.22,.61,.36,1) 1 both}
+@keyframes lockedShine{from{transform:skewX(-16deg) translateX(0)}to{transform:skewX(-16deg) translateX(580%)}}
+
+/* Arabic reads right to left, and so should the light. */
+[dir="rtl"] .lockedDay::before,[dir="rtl"] .lockedDay::after{left:auto;right:-45%;transform:skewX(16deg) translateX(0)}
+[dir="rtl"] .lockedDay::before{animation-name:lockedShineRtl}
+[dir="rtl"] .lockedDay:hover::after{animation-name:lockedShineRtl}
+@keyframes lockedShineRtl{from{transform:skewX(16deg) translateX(0)}to{transform:skewX(16deg) translateX(-580%)}}
+
+@media(prefers-reduced-motion:reduce){.lockedDay{transition:none}.lockedDay:hover{transform:none}.lockedDay::before,.lockedDay::after{animation:none;display:none}}

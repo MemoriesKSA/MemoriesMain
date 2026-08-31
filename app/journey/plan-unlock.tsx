@@ -9,7 +9,16 @@ import type { CSSProperties } from "react";
 // ages out on its own; inventing urgency on a product whose entire value is
 // honesty would undercut everything else.
 
+// Every locked day links here. A reader who taps a day they cannot read is
+// asking one question, and this panel is the answer to it, so the tap should
+// take them to it rather than leaving them to scroll and find it.
+export const UNLOCK_ANCHOR = "unlock-plan";
+
 const panel: CSSProperties = {
+  // The page already scrolls smoothly (html{scroll-behavior:smooth} in
+  // globals.css); this is just so the panel does not land flush against the
+  // top edge when it is jumped to.
+  scrollMarginTop: 24,
   background: "var(--paper)",
   border: "1px solid var(--gold)",
   borderRadius: 16,
@@ -50,7 +59,7 @@ export function PlanUnlock({
     : `One payment for this trip (${stopCount} ${stopCount === 1 ? "destination" : "destinations"}). Includes one free revision to this same trip.`;
 
   return (
-    <div style={panel}>
+    <div id={UNLOCK_ANCHOR} style={panel}>
       <p style={{ margin: 0, color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>
         {ar ? "الخطة الكاملة" : "THE FULL PLAN"}
       </p>
