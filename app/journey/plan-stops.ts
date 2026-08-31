@@ -1,3 +1,4 @@
+import type { NamedThing } from "./redaction-variants";
 // A trip can visit up to three cities (see docs/paid-plans-spec.md). The
 // drafting pass ends a multi-stop plan with one machine-readable line:
 //
@@ -137,7 +138,7 @@ const ARABIC_LETTER = /[ء-ي]/;
  * parses, because drafts written before this are cached and must keep working;
  * they simply have no Arabic side, exactly as they do today.
  */
-type NamePair = { en: string; ar?: string; kind?: string };
+type NamePair = { en: string; ar?: string; kind?: string; aliases?: string[] };
 
 function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
   if (!internalText) return [];
@@ -153,8 +154,9 @@ function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
   const out: NamePair[] = [];
   const seen = new Set<string>();
   for (const entry of lines.flatMap((line) => line.replace(pattern, "").split("|"))) {
-    // Up to three fields: the English name, the Arabic name, and what the
-    // thing actually is. Two fields still parse, and so does one.
+    // Up to four fields: the English name, the Arabic name, what the thing
+    // actually is, and the short forms the draft says it used for it. Three
+    // fields still parse, and so do two, and so does one.
     const fields = entry.split("=").map((f) => f.trim());
     const en = fields[0] ?? "";
     // Only take the second field when it really is Arabic, so a stray "="
@@ -170,7 +172,16 @@ function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
     if (en.length <= 3 || en.toLowerCase() === "none") continue;
     if (seen.has(en.toLowerCase())) continue;
     seen.add(en.toLowerCase());
-    out.push({ en, ...(ar ? { ar } : {}), ...(kind ? { kind } : {}) });
+    // A declared short form has to be words copied out of this entry's own
+    // name. Anything else is the draft inventing a second name, and behind
+    // the paywall we would be blanking a word out of somebody's plan on its
+    // say-so. This is how the single-word case is closed without guessing:
+    // the draft wrote "in the Danna" and can tell us so.
+    const aliases = (fields[3] ?? "")
+      .split(/[,،]/)
+      .map((a) => a.trim())
+      .filter((a) => a.length > 3 && (en.includes(a) || (ar && ar.includes(a))));
+    out.push({ en, ...(ar ? { ar } : {}), ...(kind ? { kind } : {}), ...(aliases.length ? { aliases } : {}) });
   }
   return out;
 }
@@ -267,6 +278,29 @@ export function parseSiteLinks(internalText: string): Record<string, string> {
       out[name.toLowerCase()] = cleaned;
     }
   }
+  return out;
+}
+
+/**
+ * The marker names, each tagged with whether it is something we are selling.
+ *
+ * PICKS is what the plan recommends and PLACES is the map, which is the whole
+ * distinction the short-form pass needs: it carves runs out of the first and
+ * uses the second as the list of words it must never touch. Reading it off the
+ * marker line rather than off the words in the name is the point - "Oriental
+ * Village" is a shopping complex and "Jeddah Waterfront" is a built
+ * destination, and any rule based on the string gets both wrong.
+ */
+export function parseNamedThings(internalText: string): NamedThing[] {
+  const out: NamedThing[] = [];
+  const add = (pairs: NamePair[], commercial: boolean) => {
+    for (const { en, ar, aliases } of pairs) {
+      out.push({ name: en, commercial, ...(aliases ? { aliases } : {}) });
+      if (ar && ar.length > 3) out.push({ name: ar, commercial, ...(aliases ? { aliases } : {}) });
+    }
+  };
+  add(readMarkerPairs(internalText, PICKS_LINE), true);
+  add(readMarkerPairs(internalText, PLACES_LINE), false);
   return out;
 }
 

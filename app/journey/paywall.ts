@@ -97,6 +97,19 @@ const REDACTION = (length: number) => `⟦R:${length}⟧`;
 export const REDACTION_PATTERN = /⟦R:(\d+)⟧/g;
 
 /**
+ * A name we hide but must never link.
+ *
+ * An object rather than a string, deliberately. These are short forms carved
+ * out of a longer name - "Ritz-Carlton" out of "The Ritz-Carlton, Kuala
+ * Lumpur" - and they exist only so the redactor can find them in prose. Giving
+ * one to the linkifier would send a paying customer to a personalised map
+ * guess for a fragment of a name, which is the exact failure the kind field was
+ * added to kill. As a bare string it would flow into the places list unnoticed,
+ * because that list is also strings; as { hiddenOnly } the compiler refuses.
+ */
+export type HiddenName = { hiddenOnly: string };
+
+/**
  * Hides every name an unpaid reader could act on, while leaving the reasons,
  * the tiers and the prices readable.
  *
@@ -117,11 +130,17 @@ export const REDACTION_PATTERN = /⟦R:(\d+)⟧/g;
  * Done here rather than with a blur in the browser for the same reason as the
  * days: a name blurred in CSS is still a name sitting in the page source.
  */
-export function redactPlaceNames(text: string, placeNames: string[]): string {
-  if (!text || !placeNames.length) return text;
+export function redactPlaceNames(text: string, placeNames: string[], alsoHide: readonly HiddenName[] = []): string {
+  if (!text) return text;
 
-  // Longest first, so a name containing another is matched whole.
-  const ordered = [...placeNames].filter(Boolean).sort((a, b) => b.length - a.length);
+  // Longest first, so a name containing another is matched whole - and so a
+  // full name always beats the short form carved out of it. The marker left
+  // behind holds no letters, so a short form can never then re-match inside a
+  // span the full name has already replaced.
+  const ordered = [...placeNames, ...alsoHide.map((h) => h.hiddenOnly)].filter(Boolean).sort((a, b) => b.length - a.length);
+  // Checked after the merge, not before: guarding on placeNames alone made a
+  // variants-only call silently do nothing.
+  if (!ordered.length) return text;
 
   let out = text;
   for (const name of ordered) {

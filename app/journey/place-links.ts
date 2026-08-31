@@ -13,6 +13,7 @@
 
 import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../flagship-city-data";
 import { officialUrlFor } from "./place-urls";
+import type { NamedThing } from "./redaction-variants";
 import { travelCountries, type CountryOption } from "../components/planner-data";
 
 /**
@@ -195,11 +196,13 @@ export const NATIONAL_CHAINS: { en: string; ar: string }[] = [
 // the Haramain line runs between Saudi cities.
 export const PLATFORMS_COUNTRY = "saudi-arabia";
 
-export const PLATFORMS: { en: string; ar: string }[] = [
-  { en: "Nusuk", ar: "نسك" },
-  { en: "Haramain High-Speed Railway", ar: "قطار الحرمين السريع" },
-  { en: "Haramain High Speed Railway", ar: "قطار الحرمين عالي السرعة" },
-  { en: "Haramain High-Speed Train", ar: "قطار الحرمين" },
+export const PLATFORMS: { en: string; ar: string; commercial: boolean }[] = [
+  { en: "Nusuk", ar: "نسك", commercial: true },
+  // The railway is the transport a multi-stop plan has to name, not an answer
+  // we chose, so its words stay readable and protect every name sharing them.
+  { en: "Haramain High-Speed Railway", ar: "قطار الحرمين السريع", commercial: false },
+  { en: "Haramain High Speed Railway", ar: "قطار الحرمين عالي السرعة", commercial: false },
+  { en: "Haramain High-Speed Train", ar: "قطار الحرمين", commercial: false },
 ];
 
 /**
@@ -345,28 +348,49 @@ export const GLOBAL_PLATFORMS: { en: string; ar: string }[] = [
 ];
 
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
+  // A thin wrapper over cityNamedThings so the two traversals cannot drift:
+  // a name the linkifier can reach is a name the paywall must be able to
+  // reason about, and they used to be two separate walks of the same data.
+  const names = cityNamedThings(cityLabel, ar).map((t) => t.name);
+  return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
+}
+
+/**
+ * The same names, each tagged with whether it is something we are selling.
+ *
+ * Taken from which collection it sits in, never from the words in the name:
+ * attractions are the map, and stays, dining and providers are the answers.
+ * The short-form pass in redaction-variants.ts needs exactly this one bit,
+ * and any rule that guessed it from the string would call "Oriental Village"
+ * geography when it is a shopping complex.
+ */
+export function cityNamedThings(cityLabel: string, ar: boolean): NamedThing[] {
   const guides = guidesForLabel(cityLabel);
   const inSaudi = guides.some((g) => g.countrySlug === NATIONAL_CHAINS_COUNTRY);
+  const out: NamedThing[] = [];
+  const add = (name: string, commercial: boolean) => {
+    if (name && name.trim().length > 3) out.push({ name, commercial });
+  };
 
-  const names = [
-    // First, and outside any guard: a city we hold no guide for used to return
-    // an empty list and therefore no links at all, and Agoda is still the right
-    // answer there whether or not we have written that city's dining list yet.
-    ...GLOBAL_PLATFORMS.map((p) => (ar ? p.ar : p.en)),
-    ...guides.flatMap(({ guide }) => [
-      ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
-      ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
-      ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
-      ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
-    ]),
-    ...(inSaudi ? NATIONAL_CHAINS.map((c) => (ar ? c.ar : c.en)) : []),
-    ...(inSaudi ? PLATFORMS.map((p) => (ar ? p.ar : p.en)) : []),
-  ];
+  // First and outside any guard: a city we hold no guide for used to return
+  // an empty list and therefore no links at all, and Agoda is still the right
+  // answer there whether or not we have written that city's dining list yet.
+  for (const p of GLOBAL_PLATFORMS) add(ar ? p.ar : p.en, true);
 
-  // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
-  // the "Kingdom Centre" sitting inside it: we neither link a fragment nor
-  // redact one and leave the rest of the name standing.
-  return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
+  for (const { guide } of guides) {
+    // Attractions are the map. A museum or a beach is context a reader needs
+    // to picture the trip, and carving words out of one blurs the geography.
+    for (const a of guide.attractions) add(ar ? a.nameAr : a.nameEn, false);
+    for (const d of guide.dining) add(ar ? d.nameAr : d.nameEn, true);
+    for (const s of [...guide.stay, ...(guide.extendedStay ?? [])]) add(ar ? s.nameAr : s.nameEn, true);
+    for (const p of [...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])]) add(ar ? p.nameAr : p.nameEn, true);
+  }
+
+  if (inSaudi) {
+    for (const c of NATIONAL_CHAINS) add(ar ? c.ar : c.en, true);
+    for (const p of PLATFORMS) add(ar ? p.ar : p.en, p.commercial);
+  }
+  return out;
 }
 
 /**

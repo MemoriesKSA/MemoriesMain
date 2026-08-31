@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity } from "./place-links";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, cityNamedThings } from "./place-links";
+import { shortFormsToHide } from "./redaction-variants";
 import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases , parseNameKinds } from "./plan-stops";
+import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -89,8 +90,32 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // Done here rather than by blurring in the browser, for the reason this whole
   // file exists: a name blurred in CSS is still a name sitting in the page
   // source, and anyone who opens devtools has the plan for free.
-  const visibleEn = locked ? redactPlaceNames(en.visibleText, placesEn) : en.visibleText;
-  const visibleAr = locked ? redactPlaceNames(ar.visibleText, placesAr) : ar.visibleText;
+  // The same name, written shorter. The marker line carries one string per
+  // thing and Arabic prose does not: the draft wrote منتجع الدانا لنكاوي on the
+  // line and "في الدانا" in the sentence, so exact matching hid the marker
+  // and left the hotel readable. Computed per render rather than stored,
+  // because a human revision rewrites the prose in a textarea and nothing
+  // would recompute a stored list. See redaction-variants.ts for why this
+  // carves two-word runs and never single words.
+  const hiddenShortForms = locked
+    ? shortFormsToHide(
+        [
+          ...cityNamedThings(proposal.city, false),
+          ...cityNamedThings(proposal.city, true),
+          ...parseNamedThings(proposal.notes ?? ""),
+        ],
+        { tripLabels: [proposal.city, ...(planStops?.map((s) => s.label) ?? [])] },
+      )
+    : [];
+  const visibleEn = locked ? redactPlaceNames(en.visibleText, placesEn, hiddenShortForms) : en.visibleText;
+  const visibleAr = locked ? redactPlaceNames(ar.visibleText, placesAr, hiddenShortForms) : ar.visibleText;
+  // A locked day's heading survives the paywall by design, so the reader can
+  // see the shape of what they are buying. It is still prose we wrote, and
+  // the drafting prompt asks for headings that say which city a day belongs
+  // to, so "Day 4 - Batu Caves" is one draft away from giving a pick away in
+  // the one place nothing was redacting.
+  const lockedEn = locked ? en.lockedDays.map((d) => ({ ...d, title: redactPlaceNames(d.title, placesEn, hiddenShortForms) })) : en.lockedDays;
+  const lockedAr = locked ? ar.lockedDays.map((d) => ({ ...d, title: redactPlaceNames(d.title, placesAr, hiddenShortForms) })) : ar.lockedDays;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFee(nights, stopCount);
 
@@ -125,7 +150,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={en.lockedDays} />
+            <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={lockedEn} />
           </section>
         )}
 
@@ -148,7 +173,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
-            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={ar.lockedDays} ar />
+            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={lockedAr} ar />
           </section>
         )}
 

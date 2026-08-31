@@ -58,7 +58,9 @@ const chainRedacted = redactPlaceNames(chainPlan, riyadh);
 // call sites being given two different lists.
 const page = readFileSync("app/journey/journey-page-content.tsx", "utf8");
 const sameList = (lang: "en" | "ar", prop: string) => {
-  const redacts = page.match(new RegExp(`redactPlaceNames\\(${lang}\\.visibleText,\\s*([A-Za-z]+)\\)`))?.[1];
+  // Not anchored on the closing paren: redactPlaceNames takes a third argument
+  // now, the short forms carved out of those same names.
+  const redacts = page.match(new RegExp(`redactPlaceNames\\(${lang}\\.visibleText,\\s*([A-Za-z]+)`))?.[1];
   const links = page.match(new RegExp(`<ItineraryView text=\\{${prop}\\} places=\\{([A-Za-z]+)\\}`))?.[1];
   return redacts && links && redacts === links ? redacts : `redacts=${redacts} links=${links}`;
 };

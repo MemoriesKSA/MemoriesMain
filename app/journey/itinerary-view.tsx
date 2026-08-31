@@ -47,6 +47,11 @@ function BlurredName({ length, ar }: { length: number; ar?: boolean }) {
         verticalAlign: "baseline",
         fontWeight: 600,
         color: "var(--gold)",
+        // Two pills side by side is routine now that a name and the short form
+        // carved out of it can both be hidden. At this blur radius a single
+        // space between them disappears and the pair reads as one very long
+        // name, which is a different claim about the plan than the truth.
+        marginInline: 1,
       }}
     >
       {fillerLine(Math.max(6, Math.min(length, 40)), length, ar)}
