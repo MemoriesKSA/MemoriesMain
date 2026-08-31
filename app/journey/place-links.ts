@@ -192,6 +192,28 @@ export const PLATFORMS: { en: string; ar: string }[] = [
   { en: "Haramain High-Speed Train", ar: "قطار الحرمين" },
 ];
 
+/**
+ * Every name in this city a plan can link, used for BOTH linkifying a paid
+ * plan and redacting an unpaid one.
+ *
+ * One list, deliberately. A name we can link is a name we have to be able to
+ * hide, and while these were two lists they drifted: the national chains and
+ * the platforms below sat in the linking half and not the hiding half, so an
+ * unpaid reader still got a working link to them.
+ *
+ * The paywall used to hide only the hotels, arguing that blurring anything
+ * more would leave the overview meaningless rather than tantalising. That drew
+ * the line in the wrong place twice over. "Al Hussain, 75/8 Sukhumvit Soi 3/1,
+ * homely cooking with fresh naan" is a finished, actionable answer, and so are
+ * the airport transfer and the district to stay in: all of it is the same
+ * researched work, sitting in a plan nobody has bought.
+ *
+ * What stays readable is everything that proves the work is real and none of
+ * which can be acted on: the reasoning, every price and range, the halal and
+ * prayer guidance, the day structure, the warnings and the hedges. The reader
+ * sees that there is a Muslim-run kitchen at a known price and that we have a
+ * reason for it. They just cannot see which one it is.
+ */
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   const guides = guidesForLabel(cityLabel);
   if (!guides.length) return [];
@@ -209,52 +231,21 @@ export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   ];
 
   // Longest first, so "Four Seasons Hotel Riyadh at Kingdom Centre" wins over
-  // the "Kingdom Centre" sitting inside it and we don't link a fragment.
+  // the "Kingdom Centre" sitting inside it: we neither link a fragment nor
+  // redact one and leave the rest of the name standing.
   return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
 }
 
 /**
  * Just the hotels. Kept because the reviewer tooling and the tests still ask
- * for exactly the stays; the paywall itself now redacts far more than this,
- * see redactableNamesForCity.
+ * for exactly the stays; the paywall itself now redacts every name a plan
+ * could link, see placeNamesForCity.
  */
 export function stayNamesForCity(cityLabel: string, ar: boolean): string[] {
   const names = guidesForLabel(cityLabel).flatMap(({ guide }) =>
     [...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
   );
   return [...new Set(names.filter((n) => n && n.trim().length > 3))];
-}
-
-/**
- * Every name an unpaid reader could act on: hotels, restaurants, drivers and
- * attractions.
- *
- * The paywall used to hide only the hotels, arguing that blurring everything
- * would leave the overview meaningless rather than tantalising. That drew the
- * line in the wrong place. "Al Hussain, 75/8 Sukhumvit Soi 3/1, homely
- * cooking with fresh naan" and "Koh Samui Taxis, fixed prices, over 20 years,
- * flight tracking on airport pickups" are finished, actionable answers, and a
- * reader can use every one of them without paying. The hotel was never the
- * only thing being sold.
- *
- * What stays readable is everything that proves the work is real and none of
- * which can be acted on: the reasoning, every price and range, the halal and
- * prayer guidance, the districts to look in, the day structure, the warnings
- * and the hedges. The reader sees that there is a Muslim-run kitchen in a
- * named district at a known price and that we have a reason for it. They just
- * cannot see which one it is.
- *
- * Longest first, so a name containing another is redacted whole rather than
- * leaving the shorter one's fragment behind.
- */
-export function redactableNamesForCity(cityLabel: string, ar: boolean): string[] {
-  const names = guidesForLabel(cityLabel).flatMap(({ guide }) => [
-    ...[...guide.stay, ...(guide.extendedStay ?? [])].map((s) => (ar ? s.nameAr : s.nameEn)),
-    ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
-    ...[...(guide.trustedProviders ?? []), ...(guide.extendedProviders ?? [])].map((p) => (ar ? p.nameAr : p.nameEn)),
-    ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
-  ]);
-  return [...new Set(names.filter((n) => n && n.trim().length > 3))].sort((a, b) => b.length - a.length);
 }
 
 /**

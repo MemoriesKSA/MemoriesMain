@@ -202,12 +202,19 @@ function readMarkerList(internalText: string, pattern: RegExp): string[] {
   return flatten(readMarkerPairs(internalText, pattern));
 }
 
-/** The things the plan recommends. Redacted from an unpaid teaser. */
+/** The things the plan recommends. */
 export function parsePickNames(internalText: string): string[] {
   return readMarkerList(internalText, PICKS_LINE);
 }
 
-/** Airports, transit, districts and geography. Readable whether or not they paid. */
+/**
+ * Airports, transit, districts and geography.
+ *
+ * These were readable on an unpaid plan, on the reasoning that context is not
+ * a recommendation. But they are linked like everything else, and a tappable
+ * airport in a plan nobody has bought is still our research being given away,
+ * so both lines are now withheld until it is paid for.
+ */
 export function parseContextPlaceNames(internalText: string): string[] {
   return readMarkerList(internalText, PLACES_LINE);
 }

@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../supabase-admin";
 import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
-import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, redactableNamesForCity } from "./place-links";
+import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity } from "./place-links";
 import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
-import { parseAllNamedPlaces, parsePickNames, parseSiteLinks, type PlanStop, parseNameAliases , parseNameKinds } from "./plan-stops";
+import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases , parseNameKinds } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
@@ -70,20 +70,27 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   const totalDays = daysFromNights(nights);
   const en = locked ? applyPaywall(proposal.itinerary_en ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_en ?? "", lockedDays: [] };
   const ar = locked ? applyPaywall(proposal.itinerary_ar ?? "", planStops, totalDays) : { visibleText: proposal.itinerary_ar ?? "", lockedDays: [] };
-  // The chosen hotel names come out of the overview while it is unpaid, with
-  // every reason for choosing them left in place. Done here, on the server,
-  // so the name is genuinely absent rather than merely hidden.
+  // Every name that would have been a link comes out of the overview while it
+  // is unpaid, with every reason for choosing it left in place.
   //
-  // What gets hidden is everything the plan RECOMMENDS: the hotels, the
-  // restaurants, the drivers and the attractions, both from our own data and
-  // from the draft's own PICKS line. What stays readable is the context a
-  // reader needs to judge the work without being able to act on it: the
-  // airport, the districts, the transit, every price, the halal and prayer
-  // guidance.
-  const hiddenEn = [...new Set([...redactableNamesForCity(proposal.city, false), ...parsePickNames(proposal.notes ?? "")])];
-  const hiddenAr = [...new Set([...redactableNamesForCity(proposal.city, true), ...parsePickNames(proposal.notes ?? "")])];
-  const visibleEn = locked ? redactPlaceNames(en.visibleText, hiddenEn) : en.visibleText;
-  const visibleAr = locked ? redactPlaceNames(ar.visibleText, hiddenAr) : ar.visibleText;
+  // It was the recommendations alone, so an unpaid reader still got a tappable
+  // airport, district and metro line. Those are the same researched work as the
+  // restaurants - a name we established is right, in a plan nobody has bought -
+  // so what gets withheld is now placesEn/placesAr themselves: the exact lists
+  // the linkifier works from. Anything linkable is hidden, by construction, and
+  // the two cannot drift apart again. They already had - the linkifier also
+  // links the national chains and booking platforms on a Saudi plan, and the
+  // old hidden list never contained them, so those stayed tappable.
+  //
+  // What still reads is everything that proves the work is real and none of
+  // which can be acted on: the reasoning, every price and distance, the halal
+  // and prayer guidance.
+  //
+  // Done here rather than by blurring in the browser, for the reason this whole
+  // file exists: a name blurred in CSS is still a name sitting in the page
+  // source, and anyone who opens devtools has the plan for free.
+  const visibleEn = locked ? redactPlaceNames(en.visibleText, placesEn) : en.visibleText;
+  const visibleAr = locked ? redactPlaceNames(ar.visibleText, placesAr) : ar.visibleText;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFee(nights, stopCount);
 
