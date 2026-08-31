@@ -14,6 +14,7 @@
 
 import { readFileSync } from "node:fs";
 import { placeNamesForCity } from "../app/journey/place-links";
+import { pillWidth } from "../app/journey/paywall";
 
 const file = process.argv[2] ?? "";
 const city = process.argv[3] ?? "";
@@ -33,14 +34,17 @@ const pills = [...html.matchAll(PILL)].map((m) => m[1].trim());
 // What an outsider can see: our own public city page lists these by name.
 const candidates = [...new Set([...placeNamesForCity(city, false), ...placeNamesForCity(city, true)])];
 
-// The pill is clamped, so only lengths inside the clamp carry information.
-const CLAMP_LOW = 6;
-const CLAMP_HIGH = 40;
-
+// Group the candidates by the width the server would give them. This is the
+// attack: it only works while the width is a function of the name. Once the
+// width comes from the pill's position instead, every candidate lands in
+// every bucket and the map below stops narrowing anything.
 const byLength = new Map<number, string[]>();
 for (const name of candidates) {
-  const key = Math.max(CLAMP_LOW, Math.min(name.length, CLAMP_HIGH));
-  byLength.set(key, [...(byLength.get(key) ?? []), name]);
+  for (let occurrence = 0; occurrence < 4; occurrence++) {
+    const key = pillWidth(occurrence);
+    const bucket = byLength.get(key) ?? [];
+    if (!bucket.includes(name)) byLength.set(key, [...bucket, name]);
+  }
 }
 
 let unique = 0;

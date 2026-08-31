@@ -4,7 +4,7 @@ import { ItineraryView } from "./itinerary-view";
 import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, cityNamedThings } from "./place-links";
 import { shortFormsToHide } from "./redaction-variants";
-import { applyPaywall, shouldPaywall, redactPlaceNames } from "./paywall";
+import { applyPaywall, shouldPaywall, redactPlaceNames, generaliseSearchKeys } from "./paywall";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
 import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
@@ -107,8 +107,11 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
         { tripLabels: [proposal.city, ...(planStops?.map((s) => s.label) ?? [])] },
       )
     : [];
-  const visibleEn = locked ? redactPlaceNames(en.visibleText, placesEn, hiddenShortForms) : en.visibleText;
-  const visibleAr = locked ? redactPlaceNames(ar.visibleText, placesAr, hiddenShortForms) : ar.visibleText;
+  // Hiding the name is not the same as hiding the answer: the sentence beside
+  // a blurred hotel identified it to a search engine on its own. Applied only
+  // while locked, so a paid plan keeps every exact figure.
+  const visibleEn = locked ? generaliseSearchKeys(redactPlaceNames(en.visibleText, placesEn, hiddenShortForms)) : en.visibleText;
+  const visibleAr = locked ? generaliseSearchKeys(redactPlaceNames(ar.visibleText, placesAr, hiddenShortForms)) : ar.visibleText;
   // A locked day's heading survives the paywall by design, so the reader can
   // see the shape of what they are buying. It is still prose we wrote, and
   // the drafting prompt asks for headings that say which city a day belongs

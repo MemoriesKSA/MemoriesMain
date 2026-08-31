@@ -93,7 +93,30 @@ export function applyPaywall(text: string, stops: PlanStop[] | null, totalDays?:
 // Marks a name the reader has not paid to see. Carries the length so the page
 // can draw a blurred pill the right width, and nothing else. Square brackets
 // of a kind no itinerary uses, so it cannot collide with real prose.
-const REDACTION = (length: number) => `⟦R:${length}⟧`;
+/**
+ * Pill widths, which say nothing about the name underneath.
+ *
+ * The hidden text never reaches the browser, but the pill drawn in its place
+ * used to be exactly as long as the name it covered - and we publish a free
+ * page per city listing the names we recommend. So a reader could measure a
+ * pill, look down our own list, and keep the candidates of that exact length.
+ * On one unpaid plan that pinned 2 of 47 pills to a single name and narrowed
+ * 14 more to four or fewer, without a hidden character ever being sent.
+ *
+ * Bucketing the widths was the first fix and it was not enough: the widest
+ * bucket held one name, so scarcity identified it just as well as precision
+ * had. So the width is now taken from the pill's position in the text and not
+ * from the name at all. It is a cycle, so the blurred lines still vary the way
+ * prose does, and it carries exactly zero bits about what is underneath.
+ *
+ * It also breaks the weaker correlation that bucketing left behind: two pills
+ * of the same width no longer suggest the same name, and one name gets
+ * different widths in different sentences.
+ */
+const PILL_WIDTHS = [12, 19, 27, 34];
+export const pillWidth = (occurrence: number) => PILL_WIDTHS[occurrence % PILL_WIDTHS.length];
+
+const REDACTION = (occurrence: number) => `⟦R:${pillWidth(occurrence)}⟧`;
 export const REDACTION_PATTERN = /⟦R:(\d+)⟧/g;
 
 /**
@@ -143,6 +166,9 @@ export function redactPlaceNames(text: string, placeNames: string[], alsoHide: r
   if (!ordered.length) return text;
 
   let out = text;
+  // Counts every pill placed, so each takes the next width in the cycle
+  // rather than one derived from the name it covers.
+  let placed = 0;
   for (const name of ordered) {
     // Word-bounded, using the same rule as the linkifier so the two can never
     // disagree about where a name begins. Unbounded, this blanked letters out
@@ -152,19 +178,90 @@ export function redactPlaceNames(text: string, placeNames: string[], alsoHide: r
     // to buy.
     const pattern = placeMatchPattern([name]);
     if (!pattern) continue;
-    out = out.replace(pattern, () => REDACTION(name.length));
+    out = out.replace(pattern, () => REDACTION(placed++));
   }
   // The tag right after a name goes too: "(4-star suite hotel on Olaya
   // Street)" narrows it to one property as surely as the name does. A
   // parenthetical carrying a figure is left alone, since the prices are the
   // part worth showing.
   return out.replace(/(⟦R:\d+⟧)\s*\(([^)]{0,120})\)/g, (whole, marker: string, inner: string) =>
-    CARRIES_A_FIGURE.test(inner) ? whole : `${marker} ${REDACTION(inner.length + 2)}`,
+    CARRIES_A_FIGURE.test(inner) ? whole : `${marker} ${REDACTION(placed++)}`,
   );
 }
 
 // Old name, kept so the reviewer tooling and existing tests keep compiling.
 export const redactStayNames = redactPlaceNames;
+
+/**
+ * Blunts the phrases that identify a hidden name to a search engine.
+ *
+ * Hiding the name is not the same as hiding the answer. Beside one blurred
+ * hotel the preview still read "a member of Small Luxury Hotels of the World,
+ * listed as a 5.0-star property, with a spa, gym and a children's club, 9.1
+ * from 1,588 reviews". Pasted into a search engine that comes back with the
+ * property, first result. The blur made no difference at all.
+ *
+ * Two things do that work, and only two. A named collection or award is a
+ * membership list somebody can just read. An exact review count is close to a
+ * unique key: thousands of properties are rated 9.1, and one of them has
+ * exactly 1,588 reviews.
+ *
+ * So those two are generalised and nothing else is. The prices stay, the
+ * distances stay, the star rating stays, the halal and prayer guidance stays,
+ * every reason stays. Nobody finds a hotel by searching "32 km from the
+ * airport", and the figures are the part that proves the work is real.
+ *
+ * The replacement has to be generic AND true. The first attempt, "a global
+ * luxury collection", is itself a Marriott brand: searching the generalised
+ * sentence came back with a Luxury Collection resort, which was the wrong
+ * hotel, so nothing leaked - but it implied a membership the property does not
+ * have, and this file does not trade one accuracy problem for another.
+ * * Everything here stays true: "more than 1,500" of 1,588 is not a rounder lie,
+ * it is a rounder truth. The paid plan is untouched.
+ */
+const COLLECTIONS = [
+  // Hotel collections and awards: each is a published list to look down.
+  [/\b(?:a\s+)?member\s+of\s+Small\s+Luxury\s+Hotels(?:\s+of\s+the\s+World)?\b/gi, "a member of a recognised international hotel association"],
+  [/\bSmall\s+Luxury\s+Hotels(?:\s+of\s+the\s+World)?\b/gi, "a recognised international hotel association"],
+  [/\b(?:The\s+)?Leading\s+Hotels\s+of\s+the\s+World\b/gi, "a recognised international hotel association"],
+  [/\bRelais\s*&?\s*Ch[aâ]teaux\b/gi, "a recognised international hotel association"],
+  [/\bPreferred\s+Hotels(?:\s*&?\s*Resorts)?\b/gi, "a recognised international hotel association"],
+  [/\bDesign\s+Hotels\b/gi, "a recognised international design-hotel association"],
+  [/\bAutograph\s+Collection\b/gi, "a recognised international hotel association"],
+  [/\bForbes\s+(?:Travel\s+Guide\s+)?Five[- ]Star\b/gi, "a top international rating"],
+  [/\bAAA\s+(?:Five|Four)[- ]Diamond\b/gi, "a top international rating"],
+  // A Michelin count is a short public list in any one city.
+  [/\b(?:one|two|three|1|2|3)\s+Michelin\s+stars?\b/gi, "a Michelin distinction"],
+  [/\bMichelin[- ]starred\b/gi, "Michelin-recognised"],
+  // Arabic forms of the same.
+  [/عضو\s+في\s+(?:مجموعة\s+)?Small\s+Luxury\s+Hotels(?:\s+of\s+the\s+World)?/g, "عضو في رابطة فنادق عالمية معروفة"],
+  [/نجمتَ?ي\s+ميشلان|نجمة\s+ميشلان|ثلاث\s+نجوم\s+ميشلان/g, "تقدير من ميشلان"],
+] as const;
+
+/** "1,588 reviews" -> "more than 1,500 reviews", in either language. */
+const REVIEW_COUNT = /(\d[\d,،]{2,})(\s*)(reviews?|verified\s+reviews?|traveller\s+reviews?|مراجعة|مراجعات|تقييم|تقييمات|مقيّم|زائر)/gi;
+
+function roundDown(raw: string): number | null {
+  const value = Number(raw.replace(/[,،\s]/g, ""));
+  if (!Number.isFinite(value) || value < 100) return null;
+  const step = value >= 1000 ? 500 : 100;
+  const floored = Math.floor(value / step) * step;
+  return floored > 0 && floored < value ? floored : null;
+}
+
+export function generaliseSearchKeys(text: string): string {
+  if (!text) return text;
+  let out = text;
+  for (const [pattern, replacement] of COLLECTIONS) out = out.replace(pattern, replacement);
+
+  return out.replace(REVIEW_COUNT, (whole, digits: string, gap: string, word: string) => {
+    const floored = roundDown(digits);
+    if (floored === null) return whole;
+    const arabic = /[؀-ۿ]/.test(word);
+    const shown = floored.toLocaleString("en-US");
+    return arabic ? `أكثر من ${shown}${gap}${word}` : `more than ${shown}${gap}${word}`;
+  });
+}
 
 // A parenthetical that quotes money or a rate, which stays readable.
 const CARRIES_A_FIGURE = /SAR|USD|ريال|دولار|\d[\d,.]*\s*(a night|per night|لليلة)/i;

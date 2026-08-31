@@ -64,7 +64,12 @@ const cases: [string, unknown, unknown][] = [
   // Hidden hotel name: gone from the text, reasons intact.
   ["the hotel name is gone from the stay line", stayLine.includes("Novotel Suites Riyadh Olaya"), false],
   ["a marker stands in its place", /⟦R:\d+⟧/.test(stayLine), true],
-  ["the marker carries the length", /⟦R:27⟧/.test(stayLine), true],
+  // A width, and deliberately not the length. The pill used to be exactly as
+  // long as the name it covered, which let a reader measure it against our own
+  // free city page and read the name off by its character count. It now comes
+  // from the pill's position in the text instead.
+  ["the marker carries a width", /⟦R:(12|19|27|34)⟧/.test(stayLine), true],
+  ["every width on the page is from the fixed set", (redacted.match(/⟦R:\d+⟧/g) ?? []).every((m) => ["⟦R:12⟧", "⟦R:19⟧", "⟦R:27⟧", "⟦R:34⟧"].includes(m)), true],
   ["the reason for the choice survives", redacted.includes("A kitchenette and an indoor pool"), true],
   // Only inside the stay section: the same name later is a different point
   // and stays readable.
