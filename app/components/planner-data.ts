@@ -42,16 +42,12 @@ export const saudiArabia: CountryOption = {
 // can actually build a plan for: multi-stop, the plan fee, and the AI draft
 // all key off this.
 //
-// It used to be the single check `country === saudiArabia.value`, written
-// when Saudi was the whole product. It stayed that way after five more
-// countries were added, so a customer choosing Türkiye could not add a
-// second destination and never saw a price - Istanbul and Cappadocia is the
-// commonest Turkish trip there is, and the form simply would not build it.
+// The countries we hold curated city guides for.
 //
-// Kept here rather than derived from flagship-city-data because this file is
-// imported by a client component and that one is thousands of lines of city
-// prose. scripts/test-city-uniqueness.ts asserts the two agree, so it cannot
-// drift the way the hardcoded check did.
+// This no longer decides whether a customer can add a second destination -
+// see multiStopAvailableFor below for why it must not. It stays because it
+// is a true statement about our data that test-city-uniqueness checks against
+// the guides themselves, so the two cannot drift.
 export const deepDataCountries = new Set([
   "saudi-arabia",
   "turkey",
@@ -60,6 +56,31 @@ export const deepDataCountries = new Set([
   "georgia",
   "russia",
 ]);
+
+/**
+ * Whether a trip may have more than one destination.
+ *
+ * Any country we sell trips in, which is the whole tourism list. Not the
+ * countries we happen to hold city guides for: canGroundAPlan in
+ * draft-guide.ts settled that question already, and the pipeline researches
+ * a city it holds no guide for rather than refusing it. Bali is the case that
+ * proved it, through four separate guards saying the same wrong thing.
+ *
+ * This was the fifth. It read `deepDataCountries.has(country)`, and before
+ * that a hardcoded Saudi check, and both were the same mistake at different
+ * sizes: the UAE, Indonesia and the Philippines are sold on this form and
+ * could not add a second stop. Dubai and Abu Dhabi. Bali and Jakarta. Worse,
+ * the plan fee is drawn in the same block, so those customers were quoted
+ * nothing at all.
+ *
+ * Study stays single-destination on purpose. A student picks one city to
+ * live in, and the study prompt is built around exactly that.
+ */
+export function multiStopAvailableFor(path: PlannerPath, countrySlug: string): boolean {
+  if (path === "study") return false;
+  const list = path === "saudi" ? [saudiArabia] : plannableCountries;
+  return list.some((country) => country.value === countrySlug);
+}
 
 export const travelCountries: CountryOption[] = [
   saudiArabia,

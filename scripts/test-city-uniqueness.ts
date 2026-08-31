@@ -60,14 +60,18 @@ const uncatalogued = travelCountries
 // evidence of why.
 const staleHoldbacks = [...CATALOGUE_PENDING].filter((slug) => countryGuideBySlug(slug));
 
-// deepDataCountries drives multi-stop and the plan fee in the planner. It is
-// a hand-written list because the planner is a client component and the
-// flagship data is thousands of lines of city prose, so the two can drift.
+// deepDataCountries is a hand-written list of the countries we hold city
+// guides for, kept separate because the planner is a client component and the
+// flagship data is thousands of lines of city prose. The two can drift, so
+// they are checked against each other here.
 //
-// They already did, badly: the check was hardcoded to Saudi Arabia and stayed
-// that way through five country launches, so a Türkiye customer could not add
-// Cappadocia as a second stop and was never shown a price. Istanbul and
-// Cappadocia is the commonest Turkish trip there is.
+// It used to gate multi-stop and the plan fee, and twice that was wrong: first
+// hardcoded to Saudi Arabia through five country launches, then to this set,
+// which left the UAE, Indonesia and the Philippines unable to add a second
+// stop. Multi-stop now follows multiStopAvailableFor, which asks whether we
+// sell the country rather than whether we have written it up, and
+// test-multi-stop-offer holds that. What is checked below is only that this
+// list still describes the data.
 const dataCountries = new Set(keys.map((k) => k.countrySlug));
 const claimedNotHeld = [...deepDataCountries].filter((slug) => !dataCountries.has(slug));
 const heldNotClaimed = [...dataCountries].filter((slug) => !deepDataCountries.has(slug));
@@ -79,8 +83,8 @@ const cases: [string, unknown, unknown][] = [
   ["every city we offer in a supported country has data behind it", gaps.length, 0],
   ["every planner country is catalogued or knowingly held back", uncatalogued.length, 0],
   ["nothing is held back from the catalogue that already has a profile", staleHoldbacks.length, 0],
-  ["the planner offers multi-stop for every country we hold data for", heldNotClaimed.length, 0],
-  ["and claims no country it has no data for", claimedNotHeld.length, 0],
+  ["every country with city guides is listed here", heldNotClaimed.length, 0],
+  ["and this list claims no country we have no data for", claimedNotHeld.length, 0],
 ];
 
 let pass = 0;
