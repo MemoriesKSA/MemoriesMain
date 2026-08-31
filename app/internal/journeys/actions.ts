@@ -65,13 +65,75 @@ export async function publishProposal(id: string, formData: FormData) {
   const input = readInput(formData);
   const supabase = createSupabaseAdminClient();
 
-  const { data, error } = await supabase.from("proposals").update({ ...input, status: "published" }).eq("id", id).select("*").single();
+  // sent_at is stamped here too, as the release job and sendPlanNow both do.
+  // It is what the customer's tracking page reads to say their plan has gone,
+  // and publishing without it left them watching a page that said we were
+  // still writing while the plan sat in their inbox.
+  //
+  // Left alone once set, so re-publishing an edit does not restate the send
+  // time and move the customer's own record of when they got it.
+  const { data: existing } = await supabase.from("proposals").select("sent_at").eq("id", id).single();
+  const changes = existing?.sent_at
+    ? { ...input, status: "published" }
+    : { ...input, status: "published", sent_at: new Date().toISOString() };
+
+  const { data, error } = await supabase.from("proposals").update(changes).eq("id", id).select("*").single();
 
   if (error || !data) redirect(`/internal/journeys/${id}?error=publish-failed`);
 
   await sendProposalReadyEmail(data);
 
   redirect(`/internal/journeys/${id}?published=1`);
+}
+
+// Sends a finished plan to the customer right now, skipping the wait.
+//
+// The release job holds a plan for its window and refuses anything the
+// self-check flagged, on purpose: it is the one thing here that reaches a
+// customer with nobody watching. This is the other case. A reviewer has the
+// draft open, has decided it is fine, and the only thing between the customer
+// and their plan is a clock or a verdict that a person has now overruled.
+//
+// So this deliberately ignores both release_at and review_state. That is the
+// entire point of the button, and it is safe for the same reason the cron's
+// caution is: a person is doing it, on purpose, having looked.
+//
+// What it will NOT do is send twice or send nothing. sent_at is stamped before
+// the email, with `.is("sent_at", null)` on the update, so two reviewers
+// pressing at once means one send and one refusal rather than two emails. And
+// a plan with no English draft is refused outright: there is nothing to send,
+// and an email announcing an empty plan is worse than no email.
+export async function sendPlanNow(id: string) {
+  await requireReviewer();
+  const supabase = createSupabaseAdminClient();
+
+  const { data: proposal, error: readError } = await supabase.from("proposals").select("*").eq("id", id).single();
+  if (readError || !proposal) redirect(`/internal/journeys?error=${encodeURIComponent("Could not read that plan.")}`);
+  if (proposal.sent_at) redirect(`/internal/journeys?error=${encodeURIComponent(`${proposal.reference} was already sent.`)}`);
+  if (!proposal.itinerary_en) redirect(`/internal/journeys?error=${encodeURIComponent(`${proposal.reference} has no draft yet, so there is nothing to send.`)}`);
+
+  const { data: claimed, error: claimError } = await supabase
+    .from("proposals")
+    .update({ sent_at: new Date().toISOString(), status: "published" })
+    .eq("id", id)
+    .is("sent_at", null)
+    .select("id");
+
+  if (claimError) redirect(`/internal/journeys?error=${encodeURIComponent(claimError.message)}`);
+  // No row came back, so somebody else claimed it between the read and here.
+  if (!claimed?.length) redirect(`/internal/journeys?error=${encodeURIComponent(`${proposal.reference} was sent by someone else just now.`)}`);
+
+  try {
+    await sendProposalReadyEmail({ ...proposal, status: "published" });
+  } catch (sendError) {
+    // The row says sent and the customer has nothing. Say so plainly rather
+    // than reporting success: this is the case that needs a person and will
+    // not fix itself.
+    console.error(`FORCE SEND: claimed ${proposal.reference} but the email failed`, sendError);
+    redirect(`/internal/journeys?error=${encodeURIComponent(`${proposal.reference} is marked sent but the email failed. Send it by hand.`)}`);
+  }
+
+  redirect(`/internal/journeys?sent=${encodeURIComponent(proposal.reference)}`);
 }
 
 export async function deleteProposal(id: string) {

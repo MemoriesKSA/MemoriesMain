@@ -7,7 +7,7 @@ import { getReviewerLocale } from "../get-locale";
 import { LocaleToggle } from "../locale-toggle";
 import { JourneysList } from "./journeys-list";
 
-export default async function JourneysListPage({ searchParams }: { searchParams: Promise<{ error?: string; deleted?: string }> }) {
+export default async function JourneysListPage({ searchParams }: { searchParams: Promise<{ error?: string; deleted?: string; sent?: string }> }) {
   const email = await getReviewerEmail();
   if (!email) redirect("/internal/login");
 
@@ -86,6 +86,11 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
           </div>
         </div>
 
+        {search.sent && (
+          <div style={{ marginBottom: 18, padding: "12px 16px", borderRadius: 10, background: "rgba(19,132,103,.1)", border: "1px solid rgba(19,132,103,.3)", color: "#0f6b52", fontSize: 13, fontWeight: 600 }}>
+            {t.sentBanner(decodeURIComponent(search.sent))}
+          </div>
+        )}
         {search.deleted === "1" && (
           <div style={{ marginBottom: 18, padding: "12px 16px", borderRadius: 10, background: "rgba(19,132,103,.1)", border: "1px solid rgba(19,132,103,.3)", color: "#0f6b52", fontSize: 13, fontWeight: 600 }}>
             {t.deletedBanner}

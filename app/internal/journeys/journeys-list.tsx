@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { reviewerT, type ReviewerLocale } from "../i18n";
-import { deleteProposal } from "./actions";
+import { deleteProposal, sendPlanNow } from "./actions";
 import { DeleteButton } from "./delete-button";
+import { SendNowButton } from "./send-now-button";
 
 type ProposalRow = {
   id: string;
@@ -21,6 +22,11 @@ type ProposalRow = {
   revision_used?: boolean | null;
   revision_note?: string | null;
   revision_requested_at?: string | null;
+  // What the send-now button needs to know: whether there is a draft to
+  // send, whether it has gone already, and whether the self-check flagged it.
+  review_state?: string | null;
+  sent_at?: string | null;
+  drafted_at?: string | null;
 };
 
 function timeAgo(value: string, locale: ReviewerLocale) {
@@ -88,6 +94,12 @@ export function JourneysList({ proposals, locale }: { proposals: ProposalRow[]; 
           const published = p.status === "published";
           const awaitingRevision = !!p.revision_used && !!p.revision_note;
           const label = `${p.customer_name} · ${p.city}`;
+          // Offered only where it can actually do something: the pipeline has
+          // written a draft and the customer has not been sent it yet. A row
+          // with no drafted_at has nothing to send, and offering the button
+          // there would only produce an error a moment later.
+          const flagged = p.review_state === "flagged";
+          const canSendNow = !p.sent_at && !!p.drafted_at;
           return (
             <div
               key={p.id}
@@ -132,6 +144,16 @@ export function JourneysList({ proposals, locale }: { proposals: ProposalRow[]; 
                   {published ? t.statusPublished : t.statusDraft}
                 </span>
               </Link>
+              {canSendNow && (
+                <SendNowButton
+                  action={sendPlanNow.bind(null, p.id)}
+                  confirmText={flagged ? t.sendNowConfirmFlagged(label) : t.sendNowConfirm(label)}
+                  ariaLabel={t.sendNowAria(label)}
+                  title={t.sendNowTitle}
+                  label={t.sendNow}
+                  flagged={flagged}
+                />
+              )}
               <DeleteButton
                 action={deleteProposal.bind(null, p.id)}
                 confirmText={published ? t.deleteConfirmPublished(label) : t.deleteConfirmDraft(label)}
