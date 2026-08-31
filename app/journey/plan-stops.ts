@@ -141,11 +141,18 @@ type NamePair = { en: string; ar?: string; kind?: string };
 
 function readMarkerPairs(internalText: string, pattern: RegExp): NamePair[] {
   if (!internalText) return [];
-  const line = internalText.split(/\r?\n/).find((l) => pattern.test(l));
-  if (!line) return [];
+  // Every matching line, not just the first. A long PICKS line is the normal
+  // case now that the draft is asked to declare its apps and platforms as well
+  // as its places, and a model that runs out of room writes a second PICKS:
+  // line rather than an over-long one. Reading only the first silently dropped
+  // everything after it, which looks exactly like the model having failed to
+  // name them: no error, no gap, just a plan whose last few names are dead
+  // text.
+  const lines = internalText.split(/\r?\n/).filter((l) => pattern.test(l));
+  if (!lines.length) return [];
   const out: NamePair[] = [];
   const seen = new Set<string>();
-  for (const entry of line.replace(pattern, "").split("|")) {
+  for (const entry of lines.flatMap((line) => line.replace(pattern, "").split("|"))) {
     // Up to three fields: the English name, the Arabic name, and what the
     // thing actually is. Two fields still parse, and so does one.
     const fields = entry.split("=").map((f) => f.trim());

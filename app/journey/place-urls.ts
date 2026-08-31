@@ -198,7 +198,7 @@ export const PLACE_URLS: Record<string, string> = {
   "Hotel Astoria": "https://www.roccofortehotels.com/hotels-and-resorts/hotel-astoria/",
   "Radisson Blu Hotel, Kaliningrad": "https://www.radissonhotels.com/en-us/hotels/radisson-blu-kaliningrad",
 
-  // ---- Booking platforms ----
+  // ---- Booking platforms, Saudi ----
   // The permit and ticket systems a plan sends the customer to. Nusuk is the
   // Ministry's own platform for Rawdah and Umrah permits; the Haramain train
   // is booked through Saudi Arabia Railways, which is why the link is theirs.
@@ -206,6 +206,60 @@ export const PLACE_URLS: Record<string, string> = {
   "Haramain High-Speed Railway": "https://www.sar.com.sa/haramain",
   "Haramain High Speed Railway": "https://www.sar.com.sa/haramain",
   "Haramain High-Speed Train": "https://www.sar.com.sa/haramain",
+
+  // ---- Booking platforms, global ----
+  // The names in GLOBAL_PLATFORMS (place-links.ts), which match in every city
+  // rather than in one country. Each is the bare global entry point, not a
+  // language or country path: these sites all geo-negotiate on their own, and a
+  // hardcoded /en/ would be the wrong page for half our readers. bolt.eu
+  // answered a request from here with /ar-sa/ unprompted, which is the
+  // behaviour being relied on.
+  //
+  // Several sit behind DataDome or Cloudflare and answer a script with a 403 or
+  // a captcha page while loading normally for a real visitor: the same
+  // situation as the Marriott and Radisson entries above, and treated the same
+  // way.
+  "Klook": "https://www.klook.com/",
+  "GetYourGuide": "https://www.getyourguide.com/",
+  "Viator": "https://www.viator.com/",
+  "Tiqets": "https://www.tiqets.com/",
+  "Headout": "https://www.headout.com/",
+  "Booking.com": "https://www.booking.com/",
+  "Agoda": "https://www.agoda.com/",
+  "Airbnb": "https://www.airbnb.com/",
+  "Expedia": "https://www.expedia.com/",
+  "Hotels.com": "https://www.hotels.com/",
+  "Traveloka": "https://www.traveloka.com/",
+  "Trip.com": "https://www.trip.com/",
+  // .net, not .com: .net is the domain Skyscanner's own app listing points at,
+  // and the one that answers. A script gets their captcha page, but the domain
+  // is theirs.
+  "Skyscanner": "https://www.skyscanner.net/",
+  "Almosafer": "https://www.almosafer.com/",
+  "Careem": "https://www.careem.com",
+  "Uber": "https://www.uber.com",
+  // One site behind three names, because a bare "Grab" is a verb we refuse to
+  // match. See the rejected list in place-links.ts.
+  "Grab app": "https://www.grab.com",
+  "GrabCar": "https://www.grab.com",
+  "GrabFood": "https://www.grab.com",
+  // bolt.eu, NOT bolt.com: bolt.com is Bolt Financial, a different company.
+  "Bolt app": "https://bolt.eu",
+  "inDrive": "https://indrive.com",
+  "Gojek": "https://www.gojek.com",
+  "Rome2Rio": "https://www.rome2rio.com/",
+  // 12go.co resolves too, but the homepage's own links and assets all use
+  // 12go.asia, so that is the canonical one.
+  "12Go": "https://12go.asia/",
+  "Omio": "https://www.omio.com/",
+  "Rentalcars.com": "https://www.rentalcars.com/",
+  "Discover Cars": "https://www.discovercars.com/",
+  "DiscoverCars.com": "https://www.discovercars.com/",
+  // trainline.com redirects here, which is what ties the brand to the domain.
+  "Trainline": "https://www.thetrainline.com/",
+  // The corporate portal. online.ktmb.com.my is the booking surface but was not
+  // opened, and this file does not carry URLs nobody has looked at.
+  "KTMB": "https://www.ktmb.com.my/",
 
   // City restaurants with their own sites.
   // The brand's own Riyadh page, not the group index, so the link lands on

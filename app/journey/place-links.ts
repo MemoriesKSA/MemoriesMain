@@ -15,8 +15,18 @@ import { flagshipCityGuideBySlug, flagshipCountryForCity } from "../flagship-cit
 import { officialUrlFor } from "./place-urls";
 import { travelCountries, type CountryOption } from "../components/planner-data";
 
-/** Characters that make a name part of a longer word rather than its own. */
-const WORD_CHAR = "[\\p{L}\\p{N}]";
+/**
+ * Characters that make a name part of a longer word rather than its own.
+ *
+ * \p{M} is in here because Arabic diacritics are marks, not letters, and
+ * without it the boundary walked straight past one: "المسافر" matched inside
+ * "أعمار المسافرَين" purely because of the fatha, while the same sentence
+ * unvowelled was correctly left alone. It reaches names we already ship -
+ * "نسك" matched inside "نسكَن" too. Rare in ordinary prose and invisible when
+ * it happens, which is the worst combination for something that blanks words
+ * out of a plan behind the paywall.
+ */
+const WORD_CHAR = "[\\p{L}\\p{N}\\p{M}]";
 
 /**
  * Arabic attaches و ف ب ك ل to the front of a word, so "وديرة" is still Deira.
@@ -214,12 +224,135 @@ export const PLATFORMS: { en: string; ar: string }[] = [
  * sees that there is a Muslim-run kitchen at a known price and that we have a
  * reason for it. They just cannot see which one it is.
  */
+// Checked and rejected, so nobody re-adds them from memory. Every name here is
+// a real platform whose URL we hold; what is wrong with it is the NAME, not the
+// site. This list is also the redaction list, so an ordinary word does double
+// damage: a wrong link on a paid plan, and a blurred everyday word in the free
+// preview somebody is deciding on.
+//
+//   Grab (bare)      an English verb. Our own paywall fixture opens "Grab lunch
+//                    at Al Baik", and the Langkawi plan writes "the macaques
+//                    will grab loose items". Shipped as "Grab app"/GrabCar.
+//   Bolt (bare)      an English noun: a bolt of silk in the souq. As "Bolt app".
+//   Kayak            an English noun, and dangerous exactly where we sell:
+//                    "hire a kayak on the mangrove tour". Skyscanner does the
+//                    same job with no ambiguity, so this one is not worth
+//                    rescuing at all.
+//   Booking, Trip,   the bare, unsuffixed forms. Across the stored plans
+//   Hotels           "Booking" appears mostly as the gerund and "Trip" as the
+//                    ordinary noun; the dotted forms are almost always the
+//                    company. The suffix is the entry. Do not add the bare form
+//                    "so a draft that writes 'book it on Booking' still links":
+//                    that trades one missed link against a blurred word in
+//                    every "your trip to Langkawi".
+//   Discover (bare)  our own navigation label, "Discover Saudi Arabia".
+//   KTM (bare)       also a motorcycle marque. Only the operator's own "KTMB".
+//   كريم             generous, a very common man's name, the loanword for
+//                    cream, and رمضان كريم. The proclitic rule adds وكريم and
+//                    بكريم on top. The worst false positive available to us.
+//                    Shipped only as تطبيق كريم.
+//   غراب             a crow, on an island sold for its birdlife. Only تطبيق غراب.
+//   المسافر          "the traveller", the most predictable noun in a travel plan.
+
+/**
+ * The platforms and apps a plan sends the customer to, anywhere in the world.
+ *
+ * Same argument as the Saudi PLATFORMS list above, minus the border. A plan
+ * that says "Klook and GetYourGuide sell the same charter" and then leaves the
+ * reader to go and find Klook has stopped one step short of the thing being
+ * sold. Every Malaysia plan we have written did exactly that, because the only
+ * platform list we had was gated to Saudi Arabia.
+ *
+ * Not gated to a country, because these are not of one: Klook, Agoda, Uber and
+ * Rome2Rio are the right answer in Langkawi, Istanbul and Tbilisi alike. If a
+ * national operator whose name is not self-gating ever goes in here, give it a
+ * country map rather than letting it match everywhere.
+ *
+ * The Arabic column is the Latin brand string for most entries, which looks
+ * like an oversight and is not: our own Arabic drafts write these names in
+ * Latin inside Arabic sentences ("ويبيع Klook وGetYourGuide النمط نفسه"), and
+ * the matcher already handles a Latin token after a glued Arabic proclitic. So
+ * the Latin form has both the wider coverage and no way at all to collide with
+ * Arabic prose. The attested Arabic spellings follow as extra rows, each one
+ * checked against the ordinary words it could shadow.
+ */
+export const GLOBAL_PLATFORMS: { en: string; ar: string }[] = [
+  // Tours, tickets and activities.
+  { en: "Klook", ar: "Klook" },
+  { en: "GetYourGuide", ar: "GetYourGuide" },
+  { en: "Viator", ar: "Viator" },
+  { en: "Tiqets", ar: "Tiqets" },
+  // Safe bare, because "head out" is two words and cannot match one token.
+  { en: "Headout", ar: "Headout" },
+
+  // Stays. The dotted forms only, for the reason in the rejected list above.
+  { en: "Booking.com", ar: "Booking.com" },
+  { en: "Agoda", ar: "Agoda" },
+  { en: "Airbnb", ar: "Airbnb" },
+  { en: "Expedia", ar: "Expedia" },
+  { en: "Hotels.com", ar: "Hotels.com" },
+
+  // Flights.
+  { en: "Traveloka", ar: "Traveloka" },
+  { en: "Trip.com", ar: "Trip.com" },
+  { en: "Skyscanner", ar: "Skyscanner" },
+  // Latin on purpose: المسافر is "the traveller" long before it is a brand.
+  { en: "Almosafer", ar: "Almosafer" },
+
+  // Ride-hailing, in the forms that are not also ordinary words.
+  { en: "Careem", ar: "Careem" },
+  { en: "Uber", ar: "Uber" },
+  { en: "Grab app", ar: "Grab app" },
+  { en: "GrabCar", ar: "GrabCar" },
+  { en: "GrabFood", ar: "GrabFood" },
+  { en: "Bolt app", ar: "Bolt app" },
+  { en: "inDrive", ar: "inDrive" },
+  { en: "Gojek", ar: "Gojek" },
+
+  // Ground transport, rail and car hire.
+  { en: "Blacklane", ar: "Blacklane" },
+  { en: "Rome2Rio", ar: "Rome2Rio" },
+  { en: "12Go", ar: "12Go" },
+  { en: "Omio", ar: "Omio" },
+  { en: "Rentalcars.com", ar: "Rentalcars.com" },
+  // Two words only, and the company's own one-word spelling. Never "Discover".
+  { en: "Discover Cars", ar: "Discover Cars" },
+  { en: "DiscoverCars.com", ar: "DiscoverCars.com" },
+  { en: "Trainline", ar: "Trainline" },
+  { en: "KTMB", ar: "KTMB" },
+
+  // The attested Arabic spellings. Extra rows rather than replacements: the
+  // English repeats so the same URL attaches to both, and the list is deduped.
+  { en: "Klook", ar: "كلوك" },
+  { en: "GetYourGuide", ar: "جيت يور جايد" },
+  { en: "Traveloka", ar: "ترافيلوكا" },
+  // The trailing alef is what keeps it out of أجود and أجودها.
+  { en: "Agoda", ar: "أجودا" },
+  // The boundary keeps both of these out of أوبرا and دار الأوبرا. Two rows
+  // because the matcher does no hamza normalising, so the bare-alef spelling
+  // needs its own.
+  { en: "Uber", ar: "أوبر" },
+  { en: "Uber", ar: "اوبر" },
+  // Safe bare in Arabic, where a bolt is مسمار or برغي.
+  { en: "Bolt app", ar: "بولت" },
+  { en: "inDrive", ar: "إن درايف" },
+  { en: "inDrive", ar: "ان درايف" },
+  { en: "Gojek", ar: "جوجيك" },
+  { en: "Gojek", ar: "غوجيك" },
+  // The only safe Arabic forms for these two. See the rejected list above.
+  { en: "Careem", ar: "تطبيق كريم" },
+  { en: "Grab app", ar: "تطبيق غراب" },
+];
+
 export function placeNamesForCity(cityLabel: string, ar: boolean): string[] {
   const guides = guidesForLabel(cityLabel);
-  if (!guides.length) return [];
   const inSaudi = guides.some((g) => g.countrySlug === NATIONAL_CHAINS_COUNTRY);
 
   const names = [
+    // First, and outside any guard: a city we hold no guide for used to return
+    // an empty list and therefore no links at all, and Agoda is still the right
+    // answer there whether or not we have written that city's dining list yet.
+    ...GLOBAL_PLATFORMS.map((p) => (ar ? p.ar : p.en)),
     ...guides.flatMap(({ guide }) => [
       ...guide.attractions.map((a) => (ar ? a.nameAr : a.nameEn)),
       ...guide.dining.map((d) => (ar ? d.nameAr : d.nameEn)),
@@ -283,7 +416,6 @@ export function placeCityMapForCity(cityLabel: string): Record<string, string> {
 // itinerary is matched case-insensitively, so key the map that way too.
 export function officialUrlMapForCity(cityLabel: string): Record<string, string> {
   const guides = guidesForLabel(cityLabel);
-  if (!guides.length) return {};
 
   const map: Record<string, string> = {};
   const add = (nameEn: string, nameAr: string) => {
@@ -294,6 +426,10 @@ export function officialUrlMapForCity(cityLabel: string): Record<string, string>
     map[nameEn.toLowerCase()] = url;
     if (nameAr) map[nameAr.toLowerCase()] = url;
   };
+
+  // Global first, so a city holding its own entry for the same name still wins
+  // on the overwrite below.
+  GLOBAL_PLATFORMS.forEach((p) => add(p.en, p.ar));
 
   for (const { guide } of guides) {
   guide.attractions.forEach((a) => add(a.nameEn, a.nameAr));
