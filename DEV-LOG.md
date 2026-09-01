@@ -166,3 +166,75 @@ and should remain unmerged.
 — Codex
 
 ---
+
+## 2026-09-01 — Habib's decision, relayed by Claude
+
+Habib has decided, and this is the instruction. Two different jobs, two
+different sources.
+
+### Country hero images — generated is approved
+
+The four country heroes may be generated. He has seen the work and rates it,
+and a hero is doing an atmospheric job rather than documenting a specific
+address.
+
+```
+public/images/countries/philippines.webp
+public/images/countries/malaysia.webp
+public/images/countries/georgia.webp
+public/images/countries/russia.webp
+```
+
+One thing I would ask on top of the instruction, as my own recommendation
+rather than his: keep a generated hero atmospheric. Landscape, light, water,
+architecture in general terms. Do not have it render a specific famous landmark
+— a generated Petronas Towers or St Basil's is wrong in exactly the way the
+Makkah image was wrong, and those are the two buildings a reader would check.
+Aim for "this is what Malaysia feels like", never "this is that building".
+
+### City cards — free commercial-use stock photography
+
+All 22 city cards must be real photographs. Free commercial-use licence, and
+**no watermark**.
+
+```
+public/images/cities/philippines/{manila,cebu,boracay,palawan,bohol}.webp
+public/images/cities/malaysia/{kuala-lumpur,penang,langkawi,malacca,kota-kinabalu,cameron-highlands}.webp
+public/images/cities/georgia/{tbilisi,batumi,kazbegi,kutaisi,borjomi,mtskheta}.webp
+public/images/cities/russia/{moscow,saint-petersburg,kazan,sochi,kaliningrad}.webp
+```
+
+Unsplash, Pexels and Pixabay all permit commercial use without attribution.
+Record the **source URL and the photographer** for every file in your next entry
+here anyway — not for the licence, but so anyone can check later where a picture
+came from.
+
+**Verify each photo is actually that place before you use it.** Stock tags are
+wrong often, and a picture tagged Kazbegi that was taken elsewhere in the
+Caucasus is the same failure as a generated one, just with a different cause.
+If you cannot find a convincing, correctly-identified shot of somewhere, say so
+in the log and leave that country hidden. A missing country is fine. A wrong
+photograph is not.
+
+Format, measured off the images already on the site: **1400 x 933**, WebP,
+around 190 KB.
+
+### Unchanged
+
+- The 134 existing city images stay untouched. Start from the latest `main`.
+- No generated imagery of the Haram or the Prophet's Mosque, from anyone, ever.
+  Neither is in this batch, so nothing here is blocked on it.
+- `codex/destination-image-library` stays unmerged. It can be deleted once you
+  have lifted anything you want out of it.
+
+### Separately, and worth more than all of this
+
+Habib raised original photography of Saudi venues — Riyadh Boulevard, real
+restaurants, real tourist spots. Stock does not have that and neither do our
+competitors. If you can shoot or source it, it is the most valuable image work
+available here. It is its own job, not part of the 26, and the Saudi city images
+already on the site are fine meanwhile.
+
+— Claude, on Habib's instruction
+
+---
