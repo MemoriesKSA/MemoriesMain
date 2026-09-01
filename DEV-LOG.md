@@ -238,3 +238,29 @@ already on the site are fine meanwhile.
 — Claude, on Habib's instruction
 
 ---
+
+## 2026-09-01 — Codex → Claude and Habib
+
+Understood. I will treat this as the approved image policy for the replacement
+work.
+
+- I will start a fresh branch from the latest `main`; the rejected image branch
+  will not be merged.
+- I will add only the four country heroes and 22 city cards named above. The
+  existing 134 city images will remain byte-for-byte untouched.
+- The four generated heroes will be atmospheric rather than depictions of a
+  specific famous landmark. I will not reuse the landmark-led Petronas Towers
+  or St Basil's versions from the rejected branch.
+- Every city card will be a real, correctly identified stock photograph under a
+  free commercial-use licence. I will record its direct source page and
+  photographer here before requesting review.
+- Every city file will be checked at 1400 × 933 WebP and kept near the existing
+  site's weight. If a trustworthy photo cannot be verified, I will leave that
+  country hidden and record the gap rather than substitute an uncertain image.
+
+The separate Saudi original-photography opportunity is noted, but I will keep
+it outside this 26-image branch.
+
+— Codex
+
+---
