@@ -7,6 +7,7 @@ export type CityGuide = {
   nameEn: string;
   nameAr: string;
   image: string;
+  attractionImage: string;
   introEn: string;
   introAr: string;
   placesEn: string[];
@@ -23,6 +24,8 @@ export type CountryGuide = {
   // the reason: nobody types the U.
   aliases?: string;
   image: string;
+  cuisineImage: string;
+  experienceImage: string;
   region: string;
   regionAr: string;
   taglineEn: string;
@@ -36,7 +39,7 @@ export type CountryGuide = {
   cities: CityGuide[];
 };
 
-type Profile = Omit<CountryGuide, "slug" | "nameEn" | "nameAr" | "cities">;
+type Profile = Omit<CountryGuide, "slug" | "nameEn" | "nameAr" | "cities" | "cuisineImage" | "experienceImage">;
 type CityDetail = Pick<CityGuide, "introEn" | "introAr" | "placesEn" | "placesAr" | "days">;
 
 const profiles: Record<string, Profile> = {
@@ -105,24 +108,18 @@ const fallbackPlaces = (cityEn: string, cityAr: string) => ({
   ar: [`القلب التاريخي والمعالم المميزة في ${cityAr}`, `المتاحف والأسواق والأحياء ذات الطابع المحلي`, `إطلالة أو واجهة مائية أو وجهة طبيعية قريبة`],
 });
 
-// Countries the planner can already build a real trip for, but which the
-// public catalogue has no photography for. A country card is a full-bleed
-// photo with the name over it, so the only two ways to ship one of these
-// today are a broken tile or another country's photo captioned Malaysia,
-// and neither belongs on a page whose whole job is to make a place look
-// worth going to. They stay out of /destinations and stay in the planner,
-// which the catalogue's own empty state already allows for: "We haven't
-// added that country yet. Tell us the place and we'll plan around it."
-//
-// All four are WRITTEN now: the profile text below is complete for each, so
-// the only thing still holding them back is photography. Move one out of here
-// the moment /images/destinations/<slug>.png and /images/cities/<slug>/*.webp
-// exist, and it appears in the catalogue with no other change.
-//
-// test-city-uniqueness.ts fails if a planner country is neither profiled nor
-// named here, and test-catalogue-coverage.ts reports exactly which images are
-// missing, so this list cannot rot quietly.
-export const CATALOGUE_PENDING = new Set(["malaysia", "georgia", "russia", "philippines"]);
+// Keep a country here only while either its profile or required photography is
+// incomplete. The catalogue coverage test verifies every country removed from
+// this set before it can be shipped.
+export const CATALOGUE_PENDING = new Set<string>();
+
+// These countries have approved MEMORIES artwork in the image library. Keep
+// the URLs predictable so replacing an image never requires another data edit.
+const generatedImageCountries = new Set([
+  "saudi-arabia", "france", "italy", "spain", "switzerland", "turkey",
+  "maldives", "united-kingdom", "united-states", "japan", "uae", "greece",
+  "indonesia", "thailand", "australia", "canada", "austria", "portugal",
+]);
 
 export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) => {
   // Pending is checked first, and on its own. It used to be reachable only
@@ -141,6 +138,9 @@ export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) =
       nameEn: city.en,
       nameAr: city.ar,
       image: `/images/cities/${country.value}/${city.value}.webp`,
+      attractionImage: generatedImageCountries.has(country.value)
+        ? `/images/supporting/attractions/${country.value}/${city.value}.webp`
+        : `/images/cities/${country.value}/${city.value}.webp`,
       introEn: detail?.introEn ?? `${city.en} offers a distinct way into ${country.en}, with its own rhythm, neighbourhoods and memorable local experiences.`,
       introAr: detail?.introAr ?? `تمنحك ${city.ar} مدخلًا مختلفًا إلى ${country.ar} بإيقاعها وأحيائها وتجاربها المحلية المميزة.`,
       placesEn: detail?.placesEn ?? fallback.en,
@@ -148,7 +148,18 @@ export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) =
       days: detail?.days ?? "3–5",
     };
   });
-  return [{ slug: country.value, nameEn: country.en, nameAr: country.ar, aliases: country.aliases, ...profile, cities }];
+  const generated = generatedImageCountries.has(country.value);
+  return [{
+    slug: country.value,
+    nameEn: country.en,
+    nameAr: country.ar,
+    aliases: country.aliases,
+    ...profile,
+    image: generated ? `/images/countries/${country.value}.webp` : profile.image,
+    cuisineImage: generated ? `/images/supporting/${country.value}/cuisine.webp` : profile.image,
+    experienceImage: generated ? `/images/supporting/${country.value}/experience.webp` : profile.image,
+    cities,
+  }];
 });
 
 export const countryGuideBySlug = (slug: string) => countryGuides.find((country) => country.slug === slug);

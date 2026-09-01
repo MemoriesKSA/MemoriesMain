@@ -14,7 +14,14 @@ import { WeatherTransportTabs } from "./weather-transport-tabs";
 import { FaqAccordion, type FaqItem } from "./faq-accordion";
 import { KeepExploringCarousel } from "./keep-exploring-carousel";
 
-function ImageSlot({ label }: { label: string }) {
+function ImageSlot({ label, image }: { label: string; image?: string }) {
+  if (image && hasPublicImage(image)) {
+    return (
+      <div className="imageSlot imageSlotPhoto">
+        <Image src={image} alt={label} fill sizes="(max-width: 780px) 100vw, 50vw" />
+      </div>
+    );
+  }
   return (
     <div className="imageSlot" role="img" aria-label={label}>
       <Camera aria-hidden="true" />
@@ -170,7 +177,7 @@ export async function FlagshipCityGuidePage({
           {shownAttractions.map((place: FlagshipPlace) => (
             <article key={place.nameEn} className="placeCard">
               <div className="placeCardMedia">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} image={place.image} />
                 {(ar ? place.badgeAr : place.badgeEn) && (
                   <span className="placeBadge">{ar ? place.badgeAr : place.badgeEn}</span>
                 )}
@@ -192,7 +199,7 @@ export async function FlagshipCityGuidePage({
           <div className="flagshipGrid diningGrid">
             {shownDining.map((place: FlagshipDining) => (
               <article key={place.nameEn} className="diningCard">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} image={place.image} />
                 <span className="placeCategory">{ar ? place.cuisineAr : place.cuisineEn}</span>
                 <h3>{ar ? place.nameAr : place.nameEn}</h3>
                 <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
@@ -219,7 +226,7 @@ export async function FlagshipCityGuidePage({
             {shownStay.map((place: FlagshipStay) => (
               <article key={place.nameEn} className="hotelCard">
                 <div className="placeCardMedia">
-                  <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                  <ImageSlot label={ar ? place.nameAr : place.nameEn} image={place.image} />
                   {place.tier && (
                     <span className="placeBadge">
                       {place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")}

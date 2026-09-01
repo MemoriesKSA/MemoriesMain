@@ -719,3 +719,9 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 @keyframes lockedShineRtl{from{transform:skewX(16deg) translateX(0)}to{transform:skewX(16deg) translateX(-580%)}}
 
 @media(prefers-reduced-motion:reduce){.lockedDay{transition:none}.lockedDay:hover{transform:none}.lockedDay::before,.lockedDay::after{animation:none;display:none}}
+/* Approved MEMORIES imagery inside the generic city story cards. */
+.cityGuideFeatureMedia{position:relative;overflow:hidden;aspect-ratio:16/9;margin:0 0 30px;border-radius:14px;background:var(--mint)}
+.cityGuideFeatureMediaWide{aspect-ratio:16/10}
+.cityGuideFeatureMedia img{object-fit:cover}
+.imageSlotPhoto{position:relative;overflow:hidden}
+.imageSlotPhoto img{object-fit:cover}
