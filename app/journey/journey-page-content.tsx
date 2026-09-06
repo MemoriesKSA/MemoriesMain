@@ -5,6 +5,7 @@ import { journeyStrings, formatJourneyDate, type JourneyLocale } from "./i18n";
 import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, cityNamedThings } from "./place-links";
 import { shortFormsToHide } from "./redaction-variants";
 import { applyPaywall, shouldPaywall, redactPlaceNames, generaliseSearchKeys } from "./paywall";
+import { primaryPlanLanguage } from "./plan-language";
 import { planFee, nightsBetween, daysFromNights } from "./pricing";
 import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
@@ -119,6 +120,12 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // the one place nothing was redacting.
   const lockedEn = locked ? en.lockedDays.map((d) => ({ ...d, title: redactPlaceNames(d.title, placesEn, hiddenShortForms) })) : en.lockedDays;
   const lockedAr = locked ? ar.lockedDays.map((d) => ({ ...d, title: redactPlaceNames(d.title, placesAr, hiddenShortForms) })) : ar.lockedDays;
+  // Which half this page shows. See plan-language.ts for the rule and the
+  // edge case it exists for.
+  const { primary, showingOtherLanguage } = primaryPlanLanguage(locale, !!visibleEn, !!visibleAr);
+  // The unlock panel counts the days the reader can actually see withheld,
+  // not the larger of the two halves.
+  const shownLockedDays = primary === "ar" ? lockedAr : lockedEn;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFee(nights, stopCount);
 
@@ -148,27 +155,43 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           </div>
         )}
 
-        {/* dir alone is not enough. The Arabic site sets text-align:right on
-            .arabicSite, and that inherits straight through a dir="ltr"
-            child: direction changes how the text runs, not how the block is
-            aligned. The English half of an Arabic plan came out reading left
-            to right while flush to the right margin, which looks like a bug
-            to anyone and reads as one. "start" resolves against each
-            section's own dir, so each half aligns to its own language. */}
-        {visibleEn && (
-          <section dir="ltr" style={{ marginBottom: visibleAr ? 32 : 0, textAlign: "start" }}>
-            {locale === "ar" && (
+        {/* One language per page, not both.
+
+            This used to render the whole plan twice, English then Arabic,
+            whatever language the reader arrived in. On a real Madinah plan
+            that is 2,642 words, half of them a copy the reader cannot read,
+            and on a locked plan an Arabic reader scrolled past an entire
+            English plan to reach the unlock panel. The header carries a
+            language switch, so the other version is one click away instead of
+            one long scroll away.
+
+            dir alone is not enough on the section either. .arabicSite sets
+            text-align:right and that inherits straight through a dir="ltr"
+            child: direction decides how the text runs, not how the block is
+            aligned. "start" resolves against the section's own dir. */}
+        {primary === "en" && (
+          <section dir="ltr" style={{ textAlign: "start" }}>
+            {showingOtherLanguage && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
             <ItineraryView text={visibleEn} places={placesEn} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={lockedEn} />
           </section>
         )}
 
-        {locked && (en.lockedDays.length > 0 || ar.lockedDays.length > 0) && (
+        {primary === "ar" && (
+          <section dir="rtl" style={{ textAlign: "start" }}>
+            {showingOtherLanguage && (
+              <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
+            )}
+            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={lockedAr} ar />
+          </section>
+        )}
+
+        {locked && shownLockedDays.length > 0 && (
           <PlanUnlock
             fee={unlockFee}
             currency={proposal.currency || "SAR"}
-            lockedCount={Math.max(en.lockedDays.length, ar.lockedDays.length)}
+            lockedCount={shownLockedDays.length}
             stopCount={stopCount}
             locale={locale}
           />
@@ -177,16 +200,6 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
         {!locked && proposal.revision_used !== true && (
           <RevisionRequest token={token} locale={locale} />
         )}
-
-        {visibleAr && (
-          <section dir="rtl" style={{ textAlign: "start" }}>
-            {locale === "en" && (
-              <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
-            )}
-            <ItineraryView text={visibleAr} places={placesAr} cityLabel={proposal.city} officialUrls={officialUrls} placeCities={placeCities} placeKinds={placeKinds} lockedDays={lockedAr} ar />
-          </section>
-        )}
-
         <p style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, marginTop: 32 }}>
           {questions.before}
           <a href="mailto:memoriesksasupport@gmail.com" style={{ color: "var(--ink)" }} dir="ltr">
