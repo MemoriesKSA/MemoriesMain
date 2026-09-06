@@ -719,3 +719,11 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 @keyframes lockedShineRtl{from{transform:skewX(16deg) translateX(0)}to{transform:skewX(16deg) translateX(-580%)}}
 
 @media(prefers-reduced-motion:reduce){.lockedDay{transition:none}.lockedDay:hover{transform:none}.lockedDay::before,.lockedDay::after{animation:none;display:none}}
+
+/* A slot holding a real photograph rather than the camera placeholder. The
+   placeholder centres an icon in a gradient; this one has to clip an image to
+   the same footprint, so it needs a positioning context for next/image fill
+   and its own overflow. Same aspect ratio either way, so a page does not
+   reflow as pictures arrive city by city. */
+.imageSlot.hasImage{position:relative;overflow:hidden;background:var(--ivory);display:block}
+.imageSlot.hasImage img{object-fit:cover}

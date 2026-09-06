@@ -14,7 +14,28 @@ import { WeatherTransportTabs } from "./weather-transport-tabs";
 import { FaqAccordion, type FaqItem } from "./faq-accordion";
 import { KeepExploringCarousel } from "./keep-exploring-carousel";
 
-function ImageSlot({ label }: { label: string }) {
+/**
+ * A place's photograph, or an honest placeholder where there is none.
+ *
+ * Both halves of this earn their place. Nothing read `place.image` before,
+ * so the field existed in the data and could never reach a page: 442 places
+ * across 47 cities rendered an empty slot, and sourcing pictures for them
+ * would have changed nothing on screen until this was fixed.
+ *
+ * The existence check is the other half. A named file that is not there
+ * renders as the browser's broken-image icon, which is what the Aseer card
+ * on /destinations/saudi-arabia has been showing. A placeholder says "no
+ * picture yet"; a broken icon says "this site is broken", and only one of
+ * those is true.
+ */
+function ImageSlot({ label, src }: { label: string; src?: string }) {
+  if (src && hasPublicImage(src)) {
+    return (
+      <div className="imageSlot hasImage">
+        <Image src={src} alt={label} fill sizes="(max-width: 780px) 100vw, 380px" style={{ objectFit: "cover" }} />
+      </div>
+    );
+  }
   return (
     <div className="imageSlot" role="img" aria-label={label}>
       <Camera aria-hidden="true" />
@@ -170,7 +191,7 @@ export async function FlagshipCityGuidePage({
           {shownAttractions.map((place: FlagshipPlace) => (
             <article key={place.nameEn} className="placeCard">
               <div className="placeCardMedia">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
                 {(ar ? place.badgeAr : place.badgeEn) && (
                   <span className="placeBadge">{ar ? place.badgeAr : place.badgeEn}</span>
                 )}
@@ -192,7 +213,7 @@ export async function FlagshipCityGuidePage({
           <div className="flagshipGrid diningGrid">
             {shownDining.map((place: FlagshipDining) => (
               <article key={place.nameEn} className="diningCard">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
                 <span className="placeCategory">{ar ? place.cuisineAr : place.cuisineEn}</span>
                 <h3>{ar ? place.nameAr : place.nameEn}</h3>
                 <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
@@ -219,7 +240,7 @@ export async function FlagshipCityGuidePage({
             {shownStay.map((place: FlagshipStay) => (
               <article key={place.nameEn} className="hotelCard">
                 <div className="placeCardMedia">
-                  <ImageSlot label={ar ? place.nameAr : place.nameEn} />
+                  <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
                   {place.tier && (
                     <span className="placeBadge">
                       {place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")}
