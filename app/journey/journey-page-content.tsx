@@ -148,8 +148,15 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           </div>
         )}
 
+        {/* dir alone is not enough. The Arabic site sets text-align:right on
+            .arabicSite, and that inherits straight through a dir="ltr"
+            child: direction changes how the text runs, not how the block is
+            aligned. The English half of an Arabic plan came out reading left
+            to right while flush to the right margin, which looks like a bug
+            to anyone and reads as one. "start" resolves against each
+            section's own dir, so each half aligns to its own language. */}
         {visibleEn && (
-          <section dir="ltr" style={{ marginBottom: visibleAr ? 32 : 0 }}>
+          <section dir="ltr" style={{ marginBottom: visibleAr ? 32 : 0, textAlign: "start" }}>
             {locale === "ar" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
@@ -172,7 +179,7 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
         )}
 
         {visibleAr && (
-          <section dir="rtl">
+          <section dir="rtl" style={{ textAlign: "start" }}>
             {locale === "en" && (
               <p style={{ margin: "0 0 16px", color: "var(--gold)", fontSize: 11, fontWeight: 800, letterSpacing: 1.5 }}>{t.otherVersionLabel}</p>
             )}
