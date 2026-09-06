@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, Lock, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
 import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data";
 import { countryGuideBySlug } from "../destination-guide-data";
 import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
@@ -40,6 +40,48 @@ function ImageSlot({ label, src }: { label: string; src?: string }) {
     <div className="imageSlot" role="img" aria-label={label}>
       <Camera aria-hidden="true" />
     </div>
+  );
+}
+
+// Widths for the bar standing in for a name. A cycle, not the name's own
+// length: a bar sized to what it hides is a bar that tells you what it hides,
+// which is the mistake the journey page's blur pills made until the width was
+// taken from position instead. Four values keep a grid from looking ruled.
+const NAME_WIDTHS = [72, 54, 84, 63];
+
+/**
+ * A hotel or restaurant we recommend, shown as something to ask for.
+ *
+ * The name and the description are not rendered at all, rather than rendered
+ * and blurred. A CSS blur over real text is a blur anyone removes in devtools,
+ * and this is the same list a customer pays us to research; the journey page
+ * settled that argument already and this follows it.
+ *
+ * What stays is what makes the card worth looking at without giving it away:
+ * the category, the tier, and the count of them. "Six seafood places we would
+ * send you to" is a reason to ask. Naming them is the thing being asked for.
+ *
+ * Attractions are deliberately NOT locked. Al-Balad is a public place, it is
+ * why the page is worth reading at all, and nobody is paying us to be told it
+ * exists.
+ */
+function LockedPlaceCard({ category, badge, index, ar, href }: { category?: string; badge?: string; index: number; ar: boolean; href: string }) {
+  return (
+    <Link
+      href={href}
+      className="lockedPlaceCard"
+      aria-label={ar ? "اطلب خطتك لتعرف هذا المكان" : "Request your plan to see this place"}
+    >
+      <div className="lockedPlaceMedia">
+        <span className="lockedPlaceLock" aria-hidden="true"><Lock size={15} /></span>
+        {badge && <span className="placeBadge">{badge}</span>}
+      </div>
+      {category && <span className="placeCategory">{category}</span>}
+      <span className="lockedPlaceName" aria-hidden="true" style={{ width: `${NAME_WIDTHS[index % NAME_WIDTHS.length]}%` }} />
+      <span className="lockedPlaceHint">
+        {ar ? "يجيك مع خطتك" : "Named in your plan"}
+      </span>
+    </Link>
   );
 }
 
@@ -211,15 +253,25 @@ export async function FlagshipCityGuidePage({
             <h2>{ar ? "مشهد طعام يستحق ليلة إضافية." : "A dining scene worth staying an extra night for."}</h2>
           </div>
           <div className="flagshipGrid diningGrid">
-            {shownDining.map((place: FlagshipDining) => (
-              <article key={place.nameEn} className="diningCard">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
-                <span className="placeCategory">{ar ? place.cuisineAr : place.cuisineEn}</span>
-                <h3>{ar ? place.nameAr : place.nameEn}</h3>
-                <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
-              </article>
+            {shownDining.map((place: FlagshipDining, i: number) => (
+              <LockedPlaceCard
+                key={place.nameEn}
+                category={ar ? place.cuisineAr : place.cuisineEn}
+                index={i}
+                ar={ar}
+                href={planHref}
+              />
             ))}
           </div>
+          <Link href={planHref} className="lockedNote">
+            <Lock size={14} aria-hidden="true" />
+            <span>
+              {ar
+                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك أنت. احكِ لنا عن رحلتك وتواريخك، ونرسلها لك بالأسماء والأسعار وأوقات الحجز.`
+                : `The places we would actually send you to in ${cityName} come with your own plan. Tell us your dates and who is travelling, and they arrive named, priced and with when to book each one.`}
+            </span>
+            <ArrowRight size={15} aria-hidden="true" className="directionArrow" />
+          </Link>
         </section>
       )}
 
@@ -237,21 +289,25 @@ export async function FlagshipCityGuidePage({
             </h2>
           </div>
           <div className="flagshipGrid stayGrid">
-            {shownStay.map((place: FlagshipStay) => (
-              <article key={place.nameEn} className="hotelCard">
-                <div className="placeCardMedia">
-                  <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
-                  {place.tier && (
-                    <span className="placeBadge">
-                      {place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")}
-                    </span>
-                  )}
-                </div>
-                <h3>{ar ? place.nameAr : place.nameEn}</h3>
-                <p>{ar ? place.descriptionAr : place.descriptionEn}</p>
-              </article>
+            {shownStay.map((place: FlagshipStay, i: number) => (
+              <LockedPlaceCard
+                key={place.nameEn}
+                badge={place.tier ? (place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")) : undefined}
+                index={i}
+                ar={ar}
+                href={planHref}
+              />
             ))}
           </div>
+          <Link href={planHref} className="lockedNote">
+            <Lock size={14} aria-hidden="true" />
+            <span>
+              {ar
+                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك أنت. احكِ لنا عن رحلتك وتواريخك، ونرسلها لك بالأسماء والأسعار وأوقات الحجز.`
+                : `The places we would actually send you to in ${cityName} come with your own plan. Tell us your dates and who is travelling, and they arrive named, priced and with when to book each one.`}
+            </span>
+            <ArrowRight size={15} aria-hidden="true" className="directionArrow" />
+          </Link>
         </section>
       )}
 
