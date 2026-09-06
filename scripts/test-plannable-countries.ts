@@ -69,10 +69,18 @@ const cases: [string, unknown, unknown][] = [
   ["and Italy", countryGuides.some((c) => c.slug === "italy"), true],
 
   // A plannable country with no photography stays out of the catalogue
-  // rather than shipping a broken tile, and the Philippines just joined it.
-  ["the Philippines is held out of the catalogue", CATALOGUE_PENDING.has("philippines"), true],
-  ["but is still plannable while it waits", isPlannableCountry("philippines"), true],
-  ["and every pending country is one we can actually plan", [...CATALOGUE_PENDING].every(isPlannableCountry), true],
+  // rather than shipping a broken tile. Four sat there for weeks - the
+  // Philippines, Malaysia, Georgia and Russia - and their photography has
+  // now landed, so the holdback is empty and every one of them is browsable.
+  //
+  // The rule is what this guards, not the list: nothing may be catalogued
+  // without its images, and nothing held back that we cannot plan.
+  ["the Philippines is in the catalogue now", CATALOGUE_PENDING.has("philippines"), false],
+  ["so is Malaysia", CATALOGUE_PENDING.has("malaysia"), false],
+  ["so is Georgia", CATALOGUE_PENDING.has("georgia"), false],
+  ["so is Russia", CATALOGUE_PENDING.has("russia"), false],
+  ["and all four are still plannable", ["philippines", "malaysia", "georgia", "russia"].every(isPlannableCountry), true],
+  ["anything still held back is one we can actually plan", [...CATALOGUE_PENDING].every(isPlannableCountry), true],
 
   // Research from nothing. Three separate guards used to refuse this.
   ["a city with no guide researches the full set", noGuide.length, 7],
