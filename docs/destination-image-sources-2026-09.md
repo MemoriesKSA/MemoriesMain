@@ -165,3 +165,41 @@ York and Chiang Mai are approximately 237 KB and 249 KB respectively after the s
 - Trabzon showed Sümela Monastery as a sliver behind leaves; the window moved down (`--offset-y 0.72`) so the monastery reads at card size. 190 KB.
 - Dubai had a road barrier and chevron signs in front of the skyline; the window moved to the top of the frame (`--offset-y 0`). The photograph is still hazy. 63 KB.
 - Bath's photographer is credited on the Pexels page as Jimmyk photos, not Jimmys Pixels, and the Istanbul row now names the Sultan Ahmed Mosque rather than repeating the source's Hagia Sophia label.
+
+## International city-card batch 2: France, Greece, Italy and Portugal
+
+Reviewed and installed 10 September 2026. These 29 replacements use photographs licensed under the [Pexels License](https://www.pexels.com/license/). Each source page and its location metadata were checked, the downloaded photograph was visually matched to the named scene, and the final 1400 × 933 WebP crop was inspected on a country contact sheet. No Saudi Arabia file is part of this batch.
+
+| File | Photographer | Source | Identified scene |
+| --- | --- | --- | --- |
+| public/images/cities/france/annecy.webp | Magda Ehlers | [Pexels 12780984](https://www.pexels.com/photo/canal-and-bridge-in-annecy-12780984/) | Annecy old-town canal, bridge and historic facades |
+| public/images/cities/france/bordeaux.webp | Miguel Cuenca | [Pexels 17356595](https://www.pexels.com/photo/place-de-la-bourse-in-bordeaux-france-17356595/) | Place de la Bourse reflected in the Miroir d'eau |
+| public/images/cities/france/cannes.webp | Carlo Giovanni Ghiardelli | [Pexels 35294184](https://www.pexels.com/photo/scenic-night-view-of-cannes-harbor-in-france-35294184/) | Cannes harbour, marina and waterfront at blue hour |
+| public/images/cities/france/colmar.webp | Vish Pix | [Pexels 11988892](https://www.pexels.com/photo/people-riding-a-boat-traversing-a-river-canal-11988892/) | La Petite Venise canal and half-timbered houses in Colmar |
+| public/images/cities/france/lyon.webp | zeydeey | [Pexels 32867332](https://www.pexels.com/photo/scenic-view-of-lyon-architecture-with-basilica-32867332/) | Lyon riverside and the Basilica of Notre-Dame de Fourvière |
+| public/images/cities/france/marseille.webp | Kabyle Sauvage | [Pexels 20768162](https://www.pexels.com/photo/photo-of-the-old-port-of-marseille-in-france-20768162/) | Vieux-Port with Notre-Dame de la Garde in the distance |
+| public/images/cities/france/nice.webp | Huy Phan | [Pexels 28602937](https://www.pexels.com/photo/promenade-des-anglais-during-vibrant-sunset-walk-28602937/) | Promenade des Anglais and Nice waterfront at sunset |
+| public/images/cities/france/paris.webp | Zak H | [Pexels 36388307](https://www.pexels.com/photo/eiffel-tower-and-seine-river-at-daytime-in-paris-36388307/) | Eiffel Tower and Seine in daylight |
+| public/images/cities/france/strasbourg.webp | Serge Hulne | [Pexels 36722683](https://www.pexels.com/photo/charming-half-timbered-houses-in-strasbourg-36722683/) | La Petite France canal and half-timbered houses in Strasbourg |
+| public/images/cities/greece/athens.webp | Pedro Vinicius Garrett | [Pexels 37167038](https://www.pexels.com/photo/majestic-view-of-acropolis-in-athens-greece-37167038/) | Athens Acropolis and Parthenon in daylight |
+| public/images/cities/greece/crete.webp | Krystian Dawidowski | [Pexels 26846156](https://www.pexels.com/photo/old-venetian-harbor-in-chania-greece-26846156/) | Chania Old Venetian Harbour in Crete |
+| public/images/cities/greece/mykonos.webp | K | [Pexels 37844814](https://www.pexels.com/photo/scenic-aerial-view-of-mykonos-windmills-at-sunset-37844814/) | Mykonos windmills and Little Venice coastline at sunset |
+| public/images/cities/greece/rhodes.webp | Mark Thomas | [Pexels 33151488](https://www.pexels.com/photo/scenic-view-of-rhodes-old-town-with-medieval-walls-33151488/) | Rhodes Old Town and medieval walls |
+| public/images/cities/greece/santorini.webp | Fernando Reyes | [Pexels 6110642](https://www.pexels.com/photo/blue-domed-church-in-santorini-6110642/) | Blue-domed church and caldera in Oia, Santorini |
+| public/images/cities/greece/thessaloniki.webp | Ioanna Mengenidou | [Pexels 17505177](https://www.pexels.com/photo/white-tower-in-thessaloniki-17505177/) | White Tower of Thessaloniki |
+| public/images/cities/italy/amalfi.webp | Alina Chernii | [Pexels 18771876](https://www.pexels.com/photo/town-on-amalfi-coast-18771876/) | Amalfi town, hillside and harbour |
+| public/images/cities/italy/bologna.webp | Ivan Dražić | [Pexels 29481123](https://www.pexels.com/photo/historic-two-towers-of-bologna-italy-29481123/) | Asinelli and Garisenda towers in Bologna |
+| public/images/cities/italy/florence.webp | Anna Holodna | [Pexels 29548846](https://www.pexels.com/photo/panoramic-view-of-florence-with-duomo-29548846/) | Florence skyline and Cathedral of Santa Maria del Fiore |
+| public/images/cities/italy/lake-como.webp | Sabine Otten | [Pexels 30341726](https://www.pexels.com/photo/scenic-view-of-lake-como-in-italy-30341726/) | Bellagio waterfront on Lake Como |
+| public/images/cities/italy/milan.webp | Ezgi Kaya | [Pexels 31778722](https://www.pexels.com/photo/milan-s-duomo-cathedral-with-crowds-in-daylight-31778722/) | Milan Cathedral and Piazza del Duomo in daylight |
+| public/images/cities/italy/naples.webp | Balázs Gábor | [Pexels 35504403](https://www.pexels.com/photo/aerial-view-of-naples-bay-with-mount-vesuvius-35504403/) | Bay of Naples with Mount Vesuvius |
+| public/images/cities/italy/rome.webp | Jcmotive | [Pexels 29054871](https://www.pexels.com/photo/iconic-roman-colosseum-in-daylight-29054871/) | Colosseum in Rome in daylight |
+| public/images/cities/italy/venice.webp | Gotta Be Worth It | [Pexels 31447941](https://www.pexels.com/photo/vibrant-view-of-venice-s-grand-canal-31447941/) | Venice Grand Canal and historic architecture |
+| public/images/cities/portugal/coimbra.webp | Pedro Rodrigues Barros | [Pexels 38825928](https://www.pexels.com/photo/scenic-view-of-coimbra-city-and-mondego-river-38825928/) | Coimbra skyline and the Mondego River |
+| public/images/cities/portugal/faro.webp | Sergei Gussev | [Pexels 16648572](https://www.pexels.com/photo/view-of-a-cobblestone-street-between-historical-houses-16648572/) | Historic cobblestone street in Faro Old Town |
+| public/images/cities/portugal/lisbon.webp | Naimish Verma | [Pexels 29743114](https://www.pexels.com/photo/iconic-yellow-tram-on-lisbon-s-alfama-street-29743114/) | Yellow tram in Lisbon's Alfama district |
+| public/images/cities/portugal/madeira.webp | Ad Thiry | [Pexels 35658671](https://www.pexels.com/photo/dramatic-cliffs-of-funchal-madeira-coastline-35658671/) | Ponta de São Lourenço cliffs in Madeira |
+| public/images/cities/portugal/porto.webp | Camilo Cifuentes Riaño | [Pexels 35350369](https://www.pexels.com/photo/ribeira-district-and-dom-luis-i-bridge-in-porto-35350369/) | Ribeira district and Dom Luís I Bridge in Porto |
+| public/images/cities/portugal/sintra.webp | Efrem Efre | [Pexels 29088670](https://www.pexels.com/photo/scenic-view-of-pena-palace-in-sintra-portugal-29088670/) | Clock tower and facade of Pena Palace in Sintra |
+
+Strasbourg is approximately 265 KB and Rhodes approximately 239 KB after the installer reached its quality-50 floor; every other image is at or below 200 KB. No watermarks or close-up faces are present.
