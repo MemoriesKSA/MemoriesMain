@@ -93,3 +93,27 @@ with a clean licence, under the [Pixabay Content License](https://pixabay.com/se
   in testing, where that does not show. A sharper install needs the original,
   which Pixabay only gives to a signed-in account.
 - Its grade is darker and moodier than the neighbouring Saudi cards.
+
+## The two holy mosques, 10 September 2026
+
+`makkah.webp` and `madinah.webp` were generated images of the Haram and of the
+Prophet's Mosque. A fabricated picture of either is not something a Saudi travel
+company can publish, and it is the reason the original generated batch was
+rejected on 1 September, so these two were replaced ahead of everything else.
+Both are photographs under the [Pexels License](https://www.pexels.com/license/),
+installed with `scripts/install-stock-image.py` at 1400 × 933 WebP.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/saudi-arabia/makkah.webp | Konevi | [Pexels 34246980](https://www.pexels.com/photo/34246980/) | Masjid al-Haram, Makkah: the Kaaba in daylight with the mosque's arcades behind |
+| public/images/cities/saudi-arabia/madinah.webp | Tarik Sami | [Pexels 33169789](https://www.pexels.com/photo/33169789/) | Al-Masjid an-Nabawi, Madinah: the Green Dome, the silver dome and the minarets from the courtyard |
+
+Each was chosen from roughly 20 landscape results, after portrait shots were
+dropped because they do not survive a 3:2 crop. The picks are in daylight,
+recognisable at card size, and have no close-up faces of pilgrims. Pexels
+records the Makkah photo's location as Makkah and the Madinah photo's as
+Medina. Makkah is about 311 KB, the heaviest card on the site, because tens of
+thousands of individual figures do not compress, and it was still above budget
+at quality 50; Madinah, mostly sky, is 91 KB. The attraction slots on those two guides ("Masjid al-Haram & the
+Kaaba", "Al-Masjid an-Nabawi") are still placeholders, and must only ever get
+real photographs.
