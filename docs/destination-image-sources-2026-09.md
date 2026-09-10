@@ -186,7 +186,7 @@ Reviewed and installed 10 September 2026. These 29 replacements use photographs 
 | public/images/cities/greece/mykonos.webp | K | [Pexels 37844814](https://www.pexels.com/photo/scenic-aerial-view-of-mykonos-windmills-at-sunset-37844814/) | Mykonos windmills and Little Venice coastline at sunset |
 | public/images/cities/greece/rhodes.webp | Mark Thomas | [Pexels 33151488](https://www.pexels.com/photo/scenic-view-of-rhodes-old-town-with-medieval-walls-33151488/) | Rhodes Old Town and medieval walls |
 | public/images/cities/greece/santorini.webp | Fernando Reyes | [Pexels 6110642](https://www.pexels.com/photo/blue-domed-church-in-santorini-6110642/) | Blue-domed church and caldera in Oia, Santorini |
-| public/images/cities/greece/thessaloniki.webp | Ioanna Mengenidou | [Pexels 17505177](https://www.pexels.com/photo/white-tower-in-thessaloniki-17505177/) | White Tower of Thessaloniki |
+| public/images/cities/greece/thessaloniki.webp | NIKOLAOS IOANNIDIS | [Pexels 17505177](https://www.pexels.com/photo/white-tower-in-thessaloniki-17505177/) | White Tower of Thessaloniki |
 | public/images/cities/italy/amalfi.webp | Alina Chernii | [Pexels 18771876](https://www.pexels.com/photo/town-on-amalfi-coast-18771876/) | Amalfi town, hillside and harbour |
 | public/images/cities/italy/bologna.webp | Ivan Dražić | [Pexels 29481123](https://www.pexels.com/photo/historic-two-towers-of-bologna-italy-29481123/) | Asinelli and Garisenda towers in Bologna |
 | public/images/cities/italy/florence.webp | Anna Holodna | [Pexels 29548846](https://www.pexels.com/photo/panoramic-view-of-florence-with-duomo-29548846/) | Florence skyline and Cathedral of Santa Maria del Fiore |
@@ -261,3 +261,10 @@ This batch replaces 18 generated city cards in Indonesia, Japan and the Maldives
 | public/images/cities/maldives/vaavu-atoll.webp | Hamody Omar | [Pexels 3855951](https://www.pexels.com/photo/palm-tree-on-the-beach-3855951/) | Fulidhoo beach in Vaavu Atoll |
 
 The Maldives cards deliberately use different local scenes rather than repeating one generic resort view. Dhigurah is in Ari Atoll, Huvafen Fushi is in North Malé Atoll and Fulidhoo is in Vaavu Atoll; those island-to-atoll mappings were checked before installation. Every final file is at or below 200 KB, with no watermarks or close-up faces.
+
+## Review of batches 2 to 4 at merge, 10 September 2026
+
+All 69 credited sources were downloaded and matched against the installed cards, and every card was opened. North Malé is the one Unsplash photograph; its page states the free Unsplash License and it is not Unsplash+.
+
+- The Thessaloniki credit was corrected from Ioanna Mengenidou to NIKOLAOS IOANNIDIS, the photographer the Pexels page names.
+- Four cards are merged as delivered but flagged for replacement. Bologna is a black-and-white photograph in a colour set. Madrid shows the Royal Palace too small to read at card size. Fukuoka is a hazy skyline with no recognisable landmark. Naples could not be confirmed as Naples and Vesuvius is not clearly visible, so its "Identified as" entry repeats the source page's claim rather than a verified one.
