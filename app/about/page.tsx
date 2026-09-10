@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Compass, HeartHandshake, ListChecks, Search, Sparkles, Waypoints } from "lucide-react";
+import { COMPANY } from "../company";
 
 export const metadata: Metadata = { title: "About MEMORIES", description: "MEMORIES is a Saudi-born travel platform for dream journeys, visits to Saudi Arabia and study-abroad planning." };
 
@@ -13,7 +14,7 @@ const principles = [
 
 export default function AboutPage() {
   return <main className="innerPage aboutPage">
-    <section className="pageHero container"><p className="kicker">What we are</p><h1>One dream.<br /><em>One complete journey.</em></h1><p>MEMORIES is a Saudi-born travel platform designed to turn an idea into a coordinated journey. We bring destinations, dates, flights, stays, transport, experiences and practical support into one thoughtful plan.</p></section>
+    <section className="pageHero container"><p className="kicker">What we are</p><h1>One dream.<br /><em>One complete journey.</em></h1><p>MEMORIES is a Saudi-born travel platform designed to turn an idea into a coordinated journey. We bring destinations, dates, flights, stays, transport, experiences and practical support into one thoughtful plan.</p><p>MEMORIES is a brand of {COMPANY.legalNameEn}, registered in Saudi Arabia.</p></section>
     <section className="container storyGrid"><article><span>01</span><h2>Dream journeys</h2><p>Personal holidays for families, couples, friends and explorers, built around the country, cities, dates, pace and total budget that work for them.</p></article><article><span>02</span><h2>Discover Saudi Arabia</h2><p>Welcoming journeys for visitors coming to experience the Kingdom&apos;s cities, heritage, landscapes, culture and sacred destinations.</p></article><article><span>03</span><h2>Study abroad</h2><p>A clearer route for students planning an overseas education, including destination, university, travel, accommodation and visa-application guidance.</p></article></section>
     <section className="container aboutPurpose"><div><p className="kicker">Why MEMORIES exists</p><h2>Good travel planning should feel clear, human and considered.</h2></div><p>Search engines and AI can produce endless lists. Our role is to turn your preferences into a focused brief, research the right possibilities and make the next decision easier. We combine local understanding with a wider view of the world, then organise the details around the traveller.</p></section>
     <section className="section container"><div className="aboutPrinciples">{principles.map(({ icon: Icon, title, text }) => <article key={title}><Icon /><h3>{title}</h3><p>{text}</p></article>)}</div></section>
