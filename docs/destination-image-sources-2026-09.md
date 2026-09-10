@@ -234,3 +234,30 @@ This batch replaces 22 generated city cards in Austria, Spain and Switzerland wi
 | public/images/cities/switzerland/zurich.webp | Mehmet Turgut Kirkgoz | [Pexels 36955436](https://www.pexels.com/photo/zurich-s-grossmunster-with-limmat-river-view-36955436/) | Grossmünster, Münsterbrücke and the Limmat River |
 
 Montreux is approximately 248 KB after the script reached its quality-50 floor; every other file is at or below 200 KB. The first Zurich candidate was rejected during contact-sheet review because its straight-down crop did not read clearly as a destination card; it was replaced with the recognisable Grossmünster riverfront view documented above. There are no watermarks or close-up faces.
+
+## International city card replacements, batch 4, 10 September 2026
+
+This batch replaces 18 generated city cards in Indonesia, Japan and the Maldives with real photographs. Seventeen are under the [Pexels License](https://www.pexels.com/license/) and the North Malé photograph is under the [Unsplash License](https://unsplash.com/license). Each source page was checked on 10 September 2026. The files are centre-cropped to 1400 × 933 WebP and were reviewed in country contact sheets after cropping.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/indonesia/bali.webp | Evert jan Hoek | [Pexels 36832125](https://www.pexels.com/photo/scenic-view-of-bali-temple-and-reflection-36832125/) | Balinese temple reflected beside a rice field |
+| public/images/cities/indonesia/jakarta.webp | Jeffry Surianto | [Pexels 34786065](https://www.pexels.com/photo/jakarta-cityscape-with-iconic-landmark-34786065/) | Selamat Datang Monument and central Jakarta skyline |
+| public/images/cities/indonesia/labuan-bajo.webp | Ronny Buol | [Pexels 16609699](https://www.pexels.com/photo/padar-island-at-labuan-bajo-indonesia-16609699/) | Padar Island near Labuan Bajo |
+| public/images/cities/indonesia/lombok.webp | Luqman Hakim | [Pexels 38675673](https://www.pexels.com/photo/scenic-aerial-view-of-serene-lombok-coastline-38675673/) | Lombok coastline and turquoise sea |
+| public/images/cities/indonesia/yogyakarta.webp | Charl Durand | [Pexels 6488342](https://www.pexels.com/photo/the-prambanan-temples-in-indonesia-6488342/) | Prambanan Temple near Yogyakarta |
+| public/images/cities/japan/fukuoka.webp | arnaud audoin | [Pexels 38932293](https://www.pexels.com/photo/fukuoka-city-skyline-view-from-fukuoka-castle-38932293/) | Fukuoka skyline from the castle grounds |
+| public/images/cities/japan/hiroshima.webp | Luca Arfini | [Pexels 32853965](https://www.pexels.com/photo/iconic-torii-gate-by-the-sea-in-hiroshima-japan-32853965/) | Itsukushima Shrine torii on Miyajima, Hiroshima |
+| public/images/cities/japan/kyoto.webp | Joe Chen | [Pexels 31028690](https://www.pexels.com/photo/kiyomizu-dera-temple-pagoda-in-kyoto-japan-31028690/) | Kiyomizu-dera pagoda in Kyoto |
+| public/images/cities/japan/nara.webp | ALPEREN GÜMÜŞSOY | [Pexels 38729274](https://www.pexels.com/photo/deer-in-front-of-todai-ji-temple-gate-nara-japan-38729274/) | Sika deer at the Tōdai-ji Temple gate in Nara |
+| public/images/cities/japan/osaka.webp | Maxim Makarov | [Pexels 30737819](https://www.pexels.com/photo/osaka-castle-against-clear-blue-sky-in-japan-30737819/) | Osaka Castle |
+| public/images/cities/japan/sapporo.webp | 貴彦 佐藤 | [Pexels 36699544](https://www.pexels.com/photo/sapporo-tv-tower-and-fountain-in-spring-36699544/) | Sapporo TV Tower and Odori Park fountain |
+| public/images/cities/japan/tokyo.webp | Teresa Jang | [Pexels 32983930](https://www.pexels.com/photo/aerial-view-of-tokyo-tower-amid-urban-skyline-32983930/) | Tokyo Tower and the metropolitan skyline |
+| public/images/cities/japan/yokohama.webp | Boris Dahm | [Pexels 31474677](https://www.pexels.com/photo/scenic-view-of-yokohama-red-brick-warehouse-area-31474677/) | Yokohama Red Brick Warehouse, Ferris wheel and skyline |
+| public/images/cities/maldives/ari-atoll.webp | Asad Photo Maldives | [Pexels 15883404](https://www.pexels.com/photo/aerial-view-of-island-shore-by-turquoise-sea-15883404/) | Dhigurah in Ari Atoll |
+| public/images/cities/maldives/baa-atoll.webp | Tholaal Mohamed | [Pexels 7832616](https://www.pexels.com/photo/picturesque-view-of-tropical-island-7832616/) | Baa Atoll island, beach and lagoon |
+| public/images/cities/maldives/male.webp | Asad Photo Maldives | [Pexels 1450339](https://www.pexels.com/photo/bird-s-eye-view-photography-of-coastline-1450339/) | Malé city and harbour from above |
+| public/images/cities/maldives/north-male.webp | Husen Siraaj | [Unsplash AINpad2J_Pk](https://unsplash.com/photos/aerial-photography-of-seaside-resort-during-daytime-AINpad2J_Pk) | Huvafen Fushi in North Malé Atoll |
+| public/images/cities/maldives/vaavu-atoll.webp | Hamody Omar | [Pexels 3855951](https://www.pexels.com/photo/palm-tree-on-the-beach-3855951/) | Fulidhoo beach in Vaavu Atoll |
+
+The Maldives cards deliberately use different local scenes rather than repeating one generic resort view. Dhigurah is in Ari Atoll, Huvafen Fushi is in North Malé Atoll and Fulidhoo is in Vaavu Atoll; those island-to-atoll mappings were checked before installation. Every final file is at or below 200 KB, with no watermarks or close-up faces.
