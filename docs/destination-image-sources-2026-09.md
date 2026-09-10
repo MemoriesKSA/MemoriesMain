@@ -117,3 +117,44 @@ thousands of individual figures do not compress, and it was still above budget
 at quality 50; Madinah, mostly sky, is 91 KB. The attraction slots on those two guides ("Masjid al-Haram & the
 Kaaba", "Al-Masjid an-Nabawi") are still placeholders, and must only ever get
 real photographs.
+
+
+## International city card replacements, batch 1, 10 September 2026
+
+This batch replaces 27 generated city cards in the UAE, Turkey, the United Kingdom and Thailand with real photographs under the [Pexels License](https://www.pexels.com/license/). Each source page was checked on 10 September 2026. The files are centre-cropped to 1400 × 933 WebP with `scripts/install-stock-image.py` and were reviewed in country contact sheets after cropping.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/uae/abu-dhabi.webp | charlie k kuriakose | [Pexels 15181069](https://www.pexels.com/photo/view-of-the-sheikh-zayed-grand-mosque-abu-dhabi-uae-15181069/) | Sheikh Zayed Grand Mosque and gardens in Abu Dhabi |
+| public/images/cities/uae/dubai.webp | Zaur Takhgiriev | [Pexels 29497729](https://www.pexels.com/photo/iconic-view-of-burj-khalifa-in-dubai-skyline-29497729/) | Burj Khalifa above the daylight Downtown Dubai skyline |
+| public/images/cities/uae/ras-al-khaimah.webp | Saugat Shrestha | [Pexels 32762474](https://www.pexels.com/photo/scenic-view-of-jebel-jais-mountain-range-32762474/) | Jebel Jais mountain road in Ras Al Khaimah |
+| public/images/cities/uae/sharjah.webp | Siarhei Nester | [Pexels 36879667](https://www.pexels.com/photo/sharjah-skyline-with-mosque-by-waterfront-36879667/) | Sharjah waterfront skyline across Khalid Lagoon |
+| public/images/cities/turkey/ankara.webp | Ömer Derinyar | [Pexels 20465746](https://www.pexels.com/photo/view-of-the-anitkabir-in-ankara-turkey-20465746/) | Anıtkabir ceremonial plaza and Hall of Honour in Ankara |
+| public/images/cities/turkey/antalya.webp | Elaine Krige | [Pexels 35389856](https://www.pexels.com/photo/scenic-view-of-kaleici-harbor-in-antalya-turkiye-35389856/) | Kaleiçi harbour and old town in Antalya |
+| public/images/cities/turkey/bodrum.webp | ugur gurtekin | [Pexels 33135680](https://www.pexels.com/photo/stunning-view-of-bodrum-castle-and-marina-in-turkiye-33135680/) | Bodrum Castle above the marina |
+| public/images/cities/turkey/bursa.webp | Musa Ortaç | [Pexels 34329418](https://www.pexels.com/photo/stunning-bursa-cityscape-featuring-ulu-mosque-34329418/) | Bursa skyline with Ulu Mosque and Uludağ behind |
+| public/images/cities/turkey/cappadocia.webp | Betül Şen | [Pexels 29021807](https://www.pexels.com/photo/hot-air-balloons-over-cappadocia-landscape-29021807/) | Göreme rock formations and hot-air balloons in Cappadocia |
+| public/images/cities/turkey/fethiye.webp | Sami TÜRK | [Pexels 34129422](https://www.pexels.com/photo/aerial-view-of-fethiye-marina-filled-with-boats-34129422/) | Fethiye marina with its mountain backdrop |
+| public/images/cities/turkey/istanbul.webp | Emre Gokceoglu | [Pexels 29414503](https://www.pexels.com/photo/hagia-sophia-and-bosphorus-view-in-istanbul-29414503/) | Hagia Sophia and the Bosphorus in Istanbul |
+| public/images/cities/turkey/izmir.webp | Kadir Akman | [Pexels 22726065](https://www.pexels.com/photo/izmir-clock-tower-in-turkey-22726065/) | İzmir Clock Tower in Konak Square |
+| public/images/cities/turkey/trabzon.webp | Zeynep YILMAZ | [Pexels 33802438](https://www.pexels.com/photo/sumela-monastery-in-lush-mountain-landscape-33802438/) | Sümela Monastery in Maçka, Trabzon Province |
+| public/images/cities/united-kingdom/bath.webp | Jimmys Pixels | [Pexels 35422658](https://www.pexels.com/photo/scenic-view-of-pulteney-bridge-in-bath-during-daytime-35422658/) | Pulteney Bridge and River Avon in Bath |
+| public/images/cities/united-kingdom/cotswolds.webp | Samuel Sweet | [Pexels 8202752](https://www.pexels.com/photo/old-houses-in-cirencester-8202752/) | Arlington Row stone cottages in Bibury, Cotswolds |
+| public/images/cities/united-kingdom/edinburgh.webp | Michelle Chadwick | [Pexels 30639160](https://www.pexels.com/photo/edinburgh-castle-at-sunrise-in-scotland-30639160/) | Edinburgh Castle on Castle Rock |
+| public/images/cities/united-kingdom/liverpool.webp | Mike Bird | [Pexels 13517892](https://www.pexels.com/photo/harbor-in-liverpool-13517892/) | Liverpool waterfront with Mann Island and the Royal Liver Building |
+| public/images/cities/united-kingdom/london.webp | Adrien Olichon | [Pexels 16230717](https://www.pexels.com/photo/the-sun-shines-over-the-big-ben-clock-tower-in-london-16230717/) | Elizabeth Tower and the Palace of Westminster from the Thames |
+| public/images/cities/united-kingdom/manchester.webp | Max W | [Pexels 34760017](https://www.pexels.com/photo/urban-skyline-of-manchester-with-red-brick-buildings-34760017/) | Manchester city centre, with City Tower and its red-brick roofscape |
+| public/images/cities/united-kingdom/oxford.webp | Shaun Iwasawa | [Pexels 16009514](https://www.pexels.com/photo/oxford-university-u-k-august-5-2019-an-outside-shot-of-bodleian-library-at-oxford-university-on-a-sunny-day-with-partly-cloudy-skie-16009514/) | Radcliffe Camera and Oxford University rooftops |
+| public/images/cities/united-kingdom/york.webp | Lewis Ashton | [Pexels 10569318](https://www.pexels.com/photo/aerial-photography-of-york-minister-10569318/) | York Minster and the surrounding city |
+| public/images/cities/thailand/bangkok.webp | Ahmet Yüksek ✪ | [Pexels 37713644](https://www.pexels.com/photo/sunset-at-wat-arun-temple-bangkok-37713644/) | Wat Arun across the Chao Phraya at sunset in Bangkok |
+| public/images/cities/thailand/chiang-mai.webp | Maher Meskko | [Pexels 10466504](https://www.pexels.com/photo/steps-in-diminishing-perspective-10466504/) | Naga stairway to Wat Phra That Doi Suthep in Chiang Mai |
+| public/images/cities/thailand/koh-samui.webp | foad niestat | [Pexels 30852253](https://www.pexels.com/photo/scenic-koh-samui-coastline-in-thailand-30852253/) | Rocky Koh Samui coastline and hillside resorts |
+| public/images/cities/thailand/krabi.webp | Margo Evardson | [Pexels 36724884](https://www.pexels.com/photo/scenic-view-of-railay-beach-in-krabi-thailand-36724884/) | Railay Beach limestone cliffs and long-tail boats in Krabi |
+| public/images/cities/thailand/pattaya.webp | Andreas Maier | [Pexels 32652997](https://www.pexels.com/photo/beachfront-skyline-in-pattaya-thailand-32652997/) | Pattaya beachfront and city skyline |
+| public/images/cities/thailand/phuket.webp | anmarinina | [Pexels 36687409](https://www.pexels.com/photo/scenic-view-of-tropical-beach-and-mountains-in-phuket-36687409/) | A forested bay and hillside coast in Phuket |
+
+The Istanbul source calls the pictured building Hagia Sophia, but the six minarets and cascade of domes identify it as the Sultan Ahmed Mosque (Blue Mosque); the photograph is still correctly located in Istanbul and is documented here by what it actually shows. The Cotswolds source page title says Cirencester, while the photograph and its own location metadata show Arlington Row in Bibury.
+
+The clearly identifiable landmark set includes Sheikh Zayed Grand Mosque, Burj Khalifa, Anıtkabir, Kaleiçi harbour, Bodrum Castle, Ulu Mosque, İzmir Clock Tower, Sümela Monastery, Pulteney Bridge, Edinburgh Castle, Radcliffe Camera, York Minster, Wat Arun, Doi Suthep's Naga stairway and Railay's limestone cliffs. The exact placement of the more atmospheric Jebel Jais, Fethiye, Manchester, Koh Samui, Pattaya and Phuket views was not independently geolocated beyond the Pexels location record, so no more specific claim is made.
+
+York and Chiang Mai are approximately 237 KB and 249 KB respectively after the script reached its quality-50 floor; every other file is at or below 200 KB. There are no watermarks or close-up faces.
