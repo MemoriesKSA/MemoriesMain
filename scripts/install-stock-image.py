@@ -52,10 +52,10 @@ def crop_to(image: Image.Image, size: tuple[int, int]) -> Image.Image:
 def save_under(image: Image.Image, out: Path, target_kb: int) -> int:
     """Highest quality that still fits the budget, so one file is not twice its neighbours."""
     out.parent.mkdir(parents=True, exist_ok=True)
-    for quality in (86, 82, 78, 74, 70, 66):
+    for quality in (86, 82, 78, 74, 70, 66, 62, 58, 54, 50):
         buffer = io.BytesIO()
         image.save(buffer, "WEBP", quality=quality, method=6)
-        if buffer.tell() <= target_kb * 1024 or quality == 66:
+        if buffer.tell() <= target_kb * 1024 or quality == 50:
             out.write_bytes(buffer.getvalue())
             return buffer.tell() // 1024
     return 0

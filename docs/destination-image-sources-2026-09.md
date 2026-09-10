@@ -47,3 +47,33 @@ Prompt briefs (all premium photorealistic portrait travel-editorial imagery):
 - `public/images/countries/philippines.webp`: aerial tropical coast, turquoise shallows, white sand, palms and distant island silhouettes; no named landmark or buildings.
 
 The original generation files remain in the local Codex generated-images directory; the website uses only these optimized exports.
+
+## Saudi city card replacements, 10 September 2026
+
+The Saudi city cards on `main` came from the same generated batch as the rejected
+`codex/destination-image-library` branch. One was demonstrably wrong:
+`cities/saudi-arabia/jeddah.webp` showed Qasr al-Farid at Hegra, in AlUla, about
+a thousand kilometres from Jeddah. One was missing entirely: `aseer.webp` was
+referenced by the catalogue and never added, so the card rendered a broken image
+on the live Saudi Arabia page.
+
+Both are now real photographs under the [Pexels License](https://www.pexels.com/license/),
+installed with `scripts/install-stock-image.py` at 1400 × 933 WebP. Each was
+opened and identified before use, not taken on the source page's word alone.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/saudi-arabia/jeddah.webp | abdullah alallah | [Pexels 28558770](https://www.pexels.com/photo/jeddah-historical-architecture-in-sunlight-28558770/) | Al-Balad, Jeddah: coral-stone houses with wooden *rawasheen* balconies |
+| public/images/cities/saudi-arabia/aseer.webp | MUSTAFA AHMED | [Pexels 35450189](https://www.pexels.com/photo/historic-architecture-in-rijal-almaa-aseer-province-35450189/) | Rijal Almaa, Aseer: stone tower houses on the mountainside |
+
+Aseer is about 246 KB, above the ~200 KB norm, because dry-stone walls and dense
+foliage do not compress; the quality ladder was extended to quality 50 and it
+still did not reach 200.
+
+**Al-Jouf is not replaced.** Neither Pexels nor Unsplash returned a photograph
+correctly identified as Al-Jouf, Sakaka or Dumat al-Jandal: the searches came
+back with AlUla, Madinah, Jeddah, a Jordanian site and unrelated portraits. The
+existing `al-jouf.webp` is still the generated one and still looks like an AlUla
+rock formation. It is left in place rather than removed, because the country and
+city pages render `city.image` without checking the file exists, so deleting it
+would reproduce the broken tile Aseer had.
