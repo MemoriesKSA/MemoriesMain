@@ -7,6 +7,11 @@ neighbours.
 
     python scripts/install-stock-image.py 28558770 public/images/cities/saudi-arabia/jeddah.webp
     python scripts/install-stock-image.py 28558770 public/images/countries/x.webp --portrait
+    python scripts/install-stock-image.py 29021807 public/images/cities/turkey/cappadocia.webp --offset-y 1
+
+--offset-x and --offset-y move the crop window from the centre (0.5) towards an
+edge (0 or 1). Look at the crop before accepting it: a centre crop can keep a
+photograph's sky and lose its subject.
 
 It deliberately does NOT record the licence for you. That goes in
 docs/destination-image-sources-2026-09.md by hand, with the photographer and
@@ -40,12 +45,18 @@ def fetch(photo_id: str, width: int) -> Image.Image:
     with Image.open(temp) as image:
         return image.convert("RGB")
 
-def crop_to(image: Image.Image, size: tuple[int, int]) -> Image.Image:
+def crop_to(image: Image.Image, size: tuple[int, int], offset_x: float = 0.5, offset_y: float = 0.5) -> Image.Image:
+    """Cover-scale, then cut the window. 0.5 is centre, 0 is left/top, 1 is right/bottom.
+
+    Centre is right for most photographs and wrong whenever the subject sits at
+    an edge. The first Cappadocia card was a portrait of balloons with the
+    valley in its bottom strip, and a centre crop kept only the sky.
+    """
     target_w, target_h = size
     scale = max(target_w / image.width, target_h / image.height)
     resized = image.resize((round(image.width * scale), round(image.height * scale)), Image.LANCZOS)
-    left = (resized.width - target_w) // 2
-    top = (resized.height - target_h) // 2
+    left = round((resized.width - target_w) * offset_x)
+    top = round((resized.height - target_h) * offset_y)
     return resized.crop((left, top, left + target_w, top + target_h))
 
 
@@ -64,8 +75,9 @@ def save_under(image: Image.Image, out: Path, target_kb: int) -> int:
 if __name__ == "__main__":
     photo_id, destination = sys.argv[1], Path(sys.argv[2])
     size = COUNTRY if "--portrait" in sys.argv else CITY
+    flag = lambda name: float(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else 0.5
     source = fetch(photo_id, 2400)
-    result = crop_to(source, size)
+    result = crop_to(source, size, flag("--offset-x"), flag("--offset-y"))
     written = save_under(result, destination, TARGET_KB)
     print(f"pexels {photo_id} -> {destination}  {size[0]}x{size[1]}  {written} KB")
     print(f"  source page: https://www.pexels.com/photo/{photo_id}/")

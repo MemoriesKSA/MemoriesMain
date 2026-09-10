@@ -135,10 +135,10 @@ This batch replaces 27 generated city cards in the UAE, Turkey, the United Kingd
 | public/images/cities/turkey/bursa.webp | Musa Ortaç | [Pexels 34329418](https://www.pexels.com/photo/stunning-bursa-cityscape-featuring-ulu-mosque-34329418/) | Bursa skyline with Ulu Mosque and Uludağ behind |
 | public/images/cities/turkey/cappadocia.webp | Betül Şen | [Pexels 29021807](https://www.pexels.com/photo/hot-air-balloons-over-cappadocia-landscape-29021807/) | Göreme rock formations and hot-air balloons in Cappadocia |
 | public/images/cities/turkey/fethiye.webp | Sami TÜRK | [Pexels 34129422](https://www.pexels.com/photo/aerial-view-of-fethiye-marina-filled-with-boats-34129422/) | Fethiye marina with its mountain backdrop |
-| public/images/cities/turkey/istanbul.webp | Emre Gokceoglu | [Pexels 29414503](https://www.pexels.com/photo/hagia-sophia-and-bosphorus-view-in-istanbul-29414503/) | Hagia Sophia and the Bosphorus in Istanbul |
+| public/images/cities/turkey/istanbul.webp | Emre Gokceoglu | [Pexels 29414503](https://www.pexels.com/photo/hagia-sophia-and-bosphorus-view-in-istanbul-29414503/) | Sultan Ahmed Mosque (Blue Mosque) above the Istanbul rooftops |
 | public/images/cities/turkey/izmir.webp | Kadir Akman | [Pexels 22726065](https://www.pexels.com/photo/izmir-clock-tower-in-turkey-22726065/) | İzmir Clock Tower in Konak Square |
 | public/images/cities/turkey/trabzon.webp | Zeynep YILMAZ | [Pexels 33802438](https://www.pexels.com/photo/sumela-monastery-in-lush-mountain-landscape-33802438/) | Sümela Monastery in Maçka, Trabzon Province |
-| public/images/cities/united-kingdom/bath.webp | Jimmys Pixels | [Pexels 35422658](https://www.pexels.com/photo/scenic-view-of-pulteney-bridge-in-bath-during-daytime-35422658/) | Pulteney Bridge and River Avon in Bath |
+| public/images/cities/united-kingdom/bath.webp | Jimmyk photos | [Pexels 35422658](https://www.pexels.com/photo/scenic-view-of-pulteney-bridge-in-bath-during-daytime-35422658/) | Pulteney Bridge and River Avon in Bath |
 | public/images/cities/united-kingdom/cotswolds.webp | Samuel Sweet | [Pexels 8202752](https://www.pexels.com/photo/old-houses-in-cirencester-8202752/) | Arlington Row stone cottages in Bibury, Cotswolds |
 | public/images/cities/united-kingdom/edinburgh.webp | Michelle Chadwick | [Pexels 30639160](https://www.pexels.com/photo/edinburgh-castle-at-sunrise-in-scotland-30639160/) | Edinburgh Castle on Castle Rock |
 | public/images/cities/united-kingdom/liverpool.webp | Mike Bird | [Pexels 13517892](https://www.pexels.com/photo/harbor-in-liverpool-13517892/) | Liverpool waterfront with Mann Island and the Royal Liver Building |
@@ -158,3 +158,10 @@ The Istanbul source calls the pictured building Hagia Sophia, but the six minare
 The clearly identifiable landmark set includes Sheikh Zayed Grand Mosque, Burj Khalifa, Anıtkabir, Kaleiçi harbour, Bodrum Castle, Ulu Mosque, İzmir Clock Tower, Sümela Monastery, Pulteney Bridge, Edinburgh Castle, Radcliffe Camera, York Minster, Wat Arun, Doi Suthep's Naga stairway and Railay's limestone cliffs. The exact placement of the more atmospheric Jebel Jais, Fethiye, Manchester, Koh Samui, Pattaya and Phuket views was not independently geolocated beyond the Pexels location record, so no more specific claim is made.
 
 York and Chiang Mai are approximately 237 KB and 249 KB respectively after the script reached its quality-50 floor; every other file is at or below 200 KB. There are no watermarks or close-up faces.
+
+**Fixed in review before merge (Claude, 10 September 2026).** Every credited source was downloaded and matched against its installed card, and all 27 match. Four corrections:
+
+- Cappadocia was a portrait frame whose centre crop kept only balloons and sky. It was re-cropped to the bottom of the frame (`--offset-y 1`) so the Göreme valley is in the card. 114 KB.
+- Trabzon showed Sümela Monastery as a sliver behind leaves; the window moved down (`--offset-y 0.72`) so the monastery reads at card size. 190 KB.
+- Dubai had a road barrier and chevron signs in front of the skyline; the window moved to the top of the frame (`--offset-y 0`). The photograph is still hazy. 63 KB.
+- Bath's photographer is credited on the Pexels page as Jimmyk photos, not Jimmys Pixels, and the Istanbul row now names the Sultan Ahmed Mosque rather than repeating the source's Hagia Sophia label.
