@@ -203,3 +203,34 @@ Reviewed and installed 10 September 2026. These 29 replacements use photographs 
 | public/images/cities/portugal/sintra.webp | Efrem Efre | [Pexels 29088670](https://www.pexels.com/photo/scenic-view-of-pena-palace-in-sintra-portugal-29088670/) | Clock tower and facade of Pena Palace in Sintra |
 
 Strasbourg is approximately 265 KB and Rhodes approximately 239 KB after the installer reached its quality-50 floor; every other image is at or below 200 KB. No watermarks or close-up faces are present.
+
+## International city card replacements, batch 3, 10 September 2026
+
+This batch replaces 22 generated city cards in Austria, Spain and Switzerland with real photographs under the [Pexels License](https://www.pexels.com/license/). Each source page was checked on 10 September 2026. The files are centre-cropped to 1400 × 933 WebP with `scripts/install-stock-image.py` and were reviewed in country contact sheets after cropping.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/austria/graz.webp | Lukas Kaufmann | [Pexels 37277266](https://www.pexels.com/photo/historic-graz-clock-tower-on-a-bright-day-37277266/) | Graz Clock Tower (Uhrturm) |
+| public/images/cities/austria/hallstatt.webp | Josh Withers | [Pexels 17215294](https://www.pexels.com/photo/hallstatt-lake-in-austria-17215294/) | Hallstatt village, lake and mountains |
+| public/images/cities/austria/innsbruck.webp | Eduardo Ortiz | [Pexels 30736618](https://www.pexels.com/photo/colorful-innsbruck-houses-against-snowy-alps-30736618/) | Colorful Inn River houses and the snowy Alps |
+| public/images/cities/austria/salzburg.webp | Anna Wilhelm | [Pexels 34115682](https://www.pexels.com/photo/scenic-view-of-salzburg-with-hohensalzburg-fortress-34115682/) | Salzburg Old Town, Salzach River and Hohensalzburg Fortress |
+| public/images/cities/austria/vienna.webp | YL Lew | [Pexels 36285970](https://www.pexels.com/photo/schonbrunn-palace-exterior-with-gardens-36285970/) | Schönbrunn Palace and gardens |
+| public/images/cities/spain/barcelona.webp | Mehmet Turgut Kirkgoz | [Pexels 14364597](https://www.pexels.com/photo/sagrada-familia-in-barcelona-spain-14364597/) | Sagrada Família |
+| public/images/cities/spain/granada.webp | Igor Passchier | [Pexels 37490619](https://www.pexels.com/photo/alhambra-palace-in-granada-during-daytime-37490619/) | Alhambra Palace |
+| public/images/cities/spain/madrid.webp | Enric Cruz López | [Pexels 9989500](https://www.pexels.com/photo/royal-palace-of-madrid-spain-9989500/) | Royal Palace of Madrid |
+| public/images/cities/spain/malaga.webp | Taras Chuiko | [Pexels 26754840](https://www.pexels.com/photo/cathedral-and-old-town-buildings-in-malaga-spain-26754840/) | Málaga Cathedral and Old Town |
+| public/images/cities/spain/mallorca.webp | David Vives | [Pexels 27953191](https://www.pexels.com/photo/the-cathedral-of-palma-de-mallorca-spain-27953191/) | Palma Cathedral and Almudaina reflected in the water |
+| public/images/cities/spain/san-sebastian.webp | caterina pellizzer | [Pexels 17870219](https://www.pexels.com/photo/breakwaters-on-sea-shore-in-city-17870219/) | La Concha Bay and San Sebastián cityscape |
+| public/images/cities/spain/seville.webp | Maria Carmona | [Pexels 12200751](https://www.pexels.com/photo/plaza-de-espana-12200751/) | Plaza de España |
+| public/images/cities/spain/valencia.webp | Francesco Ungaro | [Pexels 32038180](https://www.pexels.com/photo/city-of-arts-and-sciences-in-valencia-spain-32038180/) | City of Arts and Sciences |
+| public/images/cities/switzerland/bern.webp | David Ruh | [Pexels 18842994](https://www.pexels.com/photo/old-town-in-bern-switzerland-18842994/) | Bern Old Town and the Aare River |
+| public/images/cities/switzerland/geneva.webp | Ryan Klaus | [Pexels 32980057](https://www.pexels.com/photo/scenic-view-of-jet-d-eau-in-geneva-switzerland-32980057/) | Jet d'Eau, Lake Geneva and the city |
+| public/images/cities/switzerland/interlaken.webp | Victor Lavaud | [Pexels 2419307](https://www.pexels.com/photo/mountains-near-the-body-of-water-2419307/) | Lake Thun and the Alps near Interlaken |
+| public/images/cities/switzerland/lucerne.webp | Melike B | [Pexels 27910187](https://www.pexels.com/photo/a-view-of-a-city-with-a-church-and-a-bridge-27910187/) | Chapel Bridge, Water Tower and Lucerne |
+| public/images/cities/switzerland/lugano.webp | Michael Giugliano | [Pexels 14434843](https://www.pexels.com/photo/city-by-lake-lugano-in-switzerland-14434843/) | Lugano city, lake and mountains |
+| public/images/cities/switzerland/montreux.webp | Nathan Quaranta | [Pexels 33594103](https://www.pexels.com/photo/chillon-castle-by-lake-geneva-in-switzerland-33594103/) | Chillon Castle by Lake Geneva |
+| public/images/cities/switzerland/st-moritz.webp | Ptah G | [Pexels 34347849](https://www.pexels.com/photo/scenic-view-of-lake-and-mountains-in-st-moritz-34347849/) | Lake St. Moritz and the Alps |
+| public/images/cities/switzerland/zermatt.webp | Stephan Leuzinger | [Pexels 33824440](https://www.pexels.com/photo/scenic-view-of-matterhorn-from-zermatt-village-33824440/) | Matterhorn above Zermatt village |
+| public/images/cities/switzerland/zurich.webp | Mehmet Turgut Kirkgoz | [Pexels 36955436](https://www.pexels.com/photo/zurich-s-grossmunster-with-limmat-river-view-36955436/) | Grossmünster, Münsterbrücke and the Limmat River |
+
+Montreux is approximately 248 KB after the script reached its quality-50 floor; every other file is at or below 200 KB. The first Zurich candidate was rejected during contact-sheet review because its straight-down crop did not read clearly as a destination card; it was replaced with the recognisable Grossmünster riverfront view documented above. There are no watermarks or close-up faces.
