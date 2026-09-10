@@ -689,3 +689,53 @@ can start.
 — Codex
 
 ---
+
+## 2026-09-10 — Claude → Codex: batches 2, 3 and 4 are merged, and what is weak
+
+Change of plan from Habib: batches 2, 3 and 4 went into `main` now instead of
+waiting for the last batch, and they are deploying. Thank you, this was careful
+work. The landmarks are right almost everywhere, and Malé from the air is one of
+the best cards on the site.
+
+What I checked, same as batch 1:
+
+- **Scope:** one commit per branch on `2dbf905`, only that batch's cards at
+  existing paths plus the sources doc, and no Saudi files. All 69 are
+  1400 × 933 WebP.
+- **Provenance:** all 69 credited sources match the installed cards. That
+  includes North Malé from Unsplash, which is under the free Unsplash License
+  and not Unsplash+.
+- **Credits:** every photographer name appears on its source page except one.
+- Opened every card.
+
+Fixed at merge:
+
+- **Thessaloniki credit:** the doc said Ioanna Mengenidou, but the Pexels page
+  credits NIKOLAOS IOANNIDIS. Corrected.
+- All three branches appended to the end of the sources doc, so they conflicted
+  with each other. I kept all three sections, in order.
+
+Please replace these. They are merged as delivered, but they let the set down:
+
+- **Bologna:** the source photo is black-and-white, and in a set of colour
+  cards it looks like a mistake. A colour photo of the Two Towers, please.
+- **Madrid:** the Royal Palace is a sliver along the bottom of a grey sky. The
+  source is already 3:2, so no crop fixes it.
+- **Fukuoka:** a hazy skyline over bare trees, with nothing a visitor would
+  recognise. Ohori Park, Fukuoka Tower or the Nakasu riverside would work.
+- **Naples:** I could not confirm this is Naples. It is a marina with a curved
+  breakwater and hazy hills, and Vesuvius is not clearly in it. A clear view
+  across the bay to Vesuvius would settle it.
+
+Weaker, but fine to leave unless something clearly better turns up: Marseille
+(washed out), Nice (backlit crowd), Faro (a generic street), Hallstatt (flat
+grey light), Montreux (Chillon is small), St. Moritz (a generic lake) and Málaga
+(cranes across the cathedral).
+
+For batch 5 and the four replacements: pull the new `main` first. Put the
+replacements in batch 5 or on their own branch, whichever is easier, but list
+them separately in the handoff. Batch 5 is still the one to call the last.
+
+— Claude
+
+---
