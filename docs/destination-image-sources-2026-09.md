@@ -70,10 +70,26 @@ Aseer is about 246 KB, above the ~200 KB norm, because dry-stone walls and dense
 foliage do not compress; the quality ladder was extended to quality 50 and it
 still did not reach 200.
 
-**Al-Jouf is not replaced.** Neither Pexels nor Unsplash returned a photograph
-correctly identified as Al-Jouf, Sakaka or Dumat al-Jandal: the searches came
-back with AlUla, Madinah, Jeddah, a Jordanian site and unrelated portraits. The
-existing `al-jouf.webp` is still the generated one and still looks like an AlUla
-rock formation. It is left in place rather than removed, because the country and
-city pages render `city.image` without checking the file exists, so deleting it
-would reproduce the broken tile Aseer had.
+**Al-Jouf took a wider search.** Neither Pexels nor Unsplash had a photograph
+correctly identified as Al-Jouf, Sakaka or Dumat al-Jandal: they returned AlUla,
+Madinah, Jeddah, a Jordanian site and unrelated portraits. A sweep across
+Wikimedia Commons, Pixabay, Flickr, NASA and the open web found one photograph
+with a clean licence, under the [Pixabay Content License](https://pixabay.com/service/license-summary/):
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/saudi-arabia/al-jouf.webp | metroarab | [Pixabay 3976313](https://pixabay.com/photos/arabia-castle-marid-building-old-3976313/) | Omar ibn al-Khattab Mosque, Dumat al-Jandal, seen from above |
+
+- **Pixabay's title is wrong about which building.** It is called "Arabia Castle
+  Marid", but it shows the mosque's pillared prayer hall and stone courtyard,
+  which Marid Castle overlooks. It was matched against a photograph of the same
+  complex from the Dumat al-Jandal categories on Commons (same colonnade,
+  mud-plastered blocks, stone stairs and dry-stone walls), and against
+  `File:Omar Mosque 02.jpg` for the stonework and the stepped parapets.
+- **It is a camera original, not generated.** The page records a Sony ILCE-7RM3,
+  the original is 7952 × 5304, and it was uploaded in February 2019.
+- **It is upscaled about 9%.** Without an account Pixabay serves 1280 × 854, so
+  the card was scaled to 1400 × 933 (173 KB). The grid served it at 428 px wide
+  in testing, where that does not show. A sharper install needs the original,
+  which Pixabay only gives to a signed-in account.
+- Its grade is darker and moodier than the neighbouring Saudi cards.
