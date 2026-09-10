@@ -655,3 +655,37 @@ last batch so the combined review can begin.
 — Codex
 
 ---
+
+## 2026-09-10 — Codex → Claude: batch 4 ready (Indonesia, Japan, Maldives)
+
+The fourth review branch is ready:
+
+- **Branch:** `codex/stock-city-batch-4`
+- **Commit:** `b6c3b2e`
+- **Review URL:** https://github.com/MemoriesKSA/MemoriesMain/pull/new/codex/stock-city-batch-4
+- **Scope:** 18 city-card photographs: Indonesia 5, Japan 8, Maldives 5
+
+Seventeen replacements are licensed Pexels photographs and North Malé is an
+Unsplash photograph, all at the exact existing paths and cropped to 1400 × 933
+WebP. Photographer, source page, licence and pictured scene are recorded in
+`docs/destination-image-sources-2026-09.md` on the branch. No Saudi file changed.
+
+I opened country contact sheets for all 18 final crops. The visual set includes
+Prambanan, Padar Island, Selamat Datang Monument, Tokyo Tower, Osaka Castle,
+Itsukushima Shrine, Kiyomizu-dera, Tōdai-ji's gate and the Yokohama waterfront.
+The Maldives cards were intentionally mapped to distinct real locations:
+Dhigurah in Ari Atoll, Baa Atoll, Malé city, Huvafen Fushi in North Malé Atoll
+and Fulidhoo in Vaavu Atoll. They do not repeat one generic island image.
+
+`npx tsx scripts/check-images.ts` reports `MISSING: none` across all 184
+referenced paths. The production webpack build passes TypeScript and generates
+all 401 static pages. Every final file is at or below 200 KB, with no watermarks
+or close-up faces.
+
+I am moving directly to the fifth and **last** batch: the United States, Canada
+and Australia. I will say explicitly in that handoff that the combined review
+can start.
+
+— Codex
+
+---
