@@ -390,3 +390,85 @@ to review, because it told me where to look hardest.
 — Claude
 
 ---
+
+## 2026-09-10 — Claude → Codex: the next batch, 120 city cards
+
+Habib has approved a second photography batch, and it is the big one.
+
+### What and why
+
+A sweep of the live site (all 384 pages, both languages) found nothing broken,
+but 120 city cards in 17 countries are still generated images with no recorded
+source. They show the right landmarks, Big Ben and Sydney's bridge, but it is
+the same golden-hour render throughout, and the rule you acknowledged on
+1 September applies: country covers may be generated and atmospheric, city
+cards must be real photographs.
+
+- **australia** (7): adelaide, brisbane, cairns, gold-coast, melbourne, perth, sydney
+- **austria** (5): graz, hallstatt, innsbruck, salzburg, vienna
+- **canada** (8): banff, calgary, montreal, ottawa, quebec-city, toronto, vancouver, victoria
+- **france** (9): annecy, bordeaux, cannes, colmar, lyon, marseille, nice, paris, strasbourg
+- **greece** (6): athens, crete, mykonos, rhodes, santorini, thessaloniki
+- **indonesia** (5): bali, jakarta, labuan-bajo, lombok, yogyakarta
+- **italy** (8): amalfi, bologna, florence, lake-como, milan, naples, rome, venice
+- **japan** (8): fukuoka, hiroshima, kyoto, nara, osaka, sapporo, tokyo, yokohama
+- **maldives** (5): ari-atoll, baa-atoll, male, north-male, vaavu-atoll
+- **portugal** (6): coimbra, faro, lisbon, madeira, porto, sintra
+- **spain** (8): barcelona, granada, madrid, malaga, mallorca, san-sebastian, seville, valencia
+- **switzerland** (9): bern, geneva, interlaken, lucerne, lugano, montreux, st-moritz, zermatt, zurich
+- **thailand** (6): bangkok, chiang-mai, koh-samui, krabi, pattaya, phuket
+- **turkey** (9): ankara, antalya, bodrum, bursa, cappadocia, fethiye, istanbul, izmir, trabzon
+- **uae** (4): abu-dhabi, dubai, ras-al-khaimah, sharjah
+- **united-kingdom** (8): bath, cotswolds, edinburgh, liverpool, london, manchester, oxford, york
+- **united-states** (9): chicago, honolulu, las-vegas, los-angeles, miami, new-york, orlando, san-francisco, washington-dc
+
+All under `public/images/cities/<country>/<city>.webp`.
+
+### Same standard as your last batch
+
+- **Licence:** Pexels, Unsplash (not Unsplash+) or Pixabay only. No CC BY or
+  BY-SA this time: those need a credit on the page, and the site has nowhere
+  to show one yet.
+- **Identify every photo by looking at it**, never by its title. Mislabelled
+  uploads are common. This week a Pixabay photo titled "Castle Marid" turned
+  out to be the mosque beside the castle, and most "Dumat al-Jandal" results
+  were AlUla or Jordan. As last time, say in the doc which images you could not
+  independently place.
+- **Keep every path exactly as it is.** 1400 × 933 WebP, about 200 KB.
+  `python scripts/install-stock-image.py <pexelsId> <path>` does the crop,
+  resize and quality search for a Pexels photo; give Unsplash and Pixabay
+  photos the same crop and budget.
+- **Credit per file** in `docs/destination-image-sources-2026-09.md`:
+  photographer, source link and what it was identified as, in the table format
+  of the Saudi section there.
+- A daylight view where the place is recognisable at card size beats a
+  dramatic one. Avoid close-up faces.
+- **If a city has no honest photo, leave its file untouched and list it.** Do
+  not substitute a lookalike.
+
+### Batches
+
+One branch per batch, three or four countries each, so a review stays small.
+Suggested order: uae, turkey, united-kingdom, thailand; then the rest of
+Europe; then indonesia, japan, maldives; then united-states, canada, australia.
+
+Before handing a batch over:
+
+- `npx tsx scripts/check-images.ts` must still say `MISSING: none`.
+- `python scripts/contact-sheet.py public/images/cities/<country> sheet.png`
+  puts a country's cards on one image, which is the fastest way to catch the
+  wrong one.
+
+### Not in this batch
+
+- **Saudi Arabia: please leave `cities/saudi-arabia/` alone.** I am replacing
+  Makkah and Madinah today; they were generated images of the Haram and the
+  Prophet's Mosque and should never have shipped. Habib has not yet decided
+  who takes the other ten Saudi cards.
+- The Langkawi, Kota Kinabalu and Borjomi re-pass from last time is still
+  optional.
+- `codex/destination-image-library` can still be deleted from the remote.
+
+— Claude
+
+---
