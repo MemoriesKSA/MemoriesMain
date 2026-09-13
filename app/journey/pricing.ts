@@ -45,3 +45,27 @@ export function planFee(nights: number, stopCount: number): number {
 export function daysFromNights(nights: number): number {
   return nights > 0 ? nights + 1 : 0;
 }
+
+/**
+ * What every plan is priced and charged in. The currency on a request is the
+ * customer's trip budget; the fee is ours, and it is riyals.
+ */
+export const PLAN_CURRENCY = "SAR";
+
+/** Riyals to halalas. A payment provider charges in the smallest unit. */
+export function toHalalas(riyals: number): number {
+  return Math.round(riyals * 100);
+}
+
+/**
+ * The unlock fee for a stored plan, exactly as the journey page quotes it.
+ *
+ * The page and the payment check both call this. A payment checked against a
+ * different number than the button showed is either a customer charged the
+ * wrong amount or a paid plan that never unlocks.
+ */
+export function planFeeForProposal(proposal: { from_date?: string | null; to_date?: string | null; stops?: unknown }): number {
+  const stops = Array.isArray(proposal.stops) ? proposal.stops.length : 0;
+  const stopCount = Math.min(Math.max(stops || 1, 1), 3);
+  return planFee(nightsBetween(proposal.from_date, proposal.to_date), stopCount);
+}

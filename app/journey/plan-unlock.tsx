@@ -1,4 +1,5 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { PLAN_CURRENCY } from "./pricing";
 
 // The unlock panel an unpaid reader sees under their plan. Deliberately calm
 // rather than pushy: they can already read the whole overview and a full day
@@ -31,16 +32,17 @@ const panel: CSSProperties = {
 
 export function PlanUnlock({
   fee,
-  currency,
   lockedCount,
   stopCount,
   locale,
+  checkout,
 }: {
   fee: number;
-  currency: string;
   lockedCount: number;
   stopCount: number;
   locale: "en" | "ar";
+  /** The payment form, once payments are configured. Without it the button stays disabled. */
+  checkout?: (ctaLabel: string) => ReactNode;
 }) {
   const ar = locale === "ar";
 
@@ -52,7 +54,10 @@ export function PlanUnlock({
     ? `لقد قرأت خطتك كاملة من حيث الإقامة والتنقل، ويومًا كاملًا من كل وجهة. باقي الأيام جاهزة بالتفصيل نفسه: الأماكن والمطاعم والأسعار التقريبية ومتى تحجز كل شيء.`
     : `You've read the full overview and a complete day of every stop. The remaining days are ready in the same detail: the places, the meals, what things cost, and when to book each one.`;
 
-  const cta = ar ? `افتح الخطة كاملة · ${fee} ${currency}` : `Unlock the full plan · ${currency} ${fee}`;
+  // Always riyals. This used to print the currency the customer picked for
+  // their trip budget beside a fee worked out in riyals, so a customer who
+  // chose USD was shown "USD 60" for a SAR 60 plan.
+  const cta = ar ? `افتح الخطة كاملة · ${fee} ريال` : `Unlock the full plan · ${PLAN_CURRENCY} ${fee}`;
 
   const terms = ar
     ? `دفعة واحدة لهذه الرحلة (${stopCount} ${stopCount === 1 ? "وجهة" : "وجهات"}). تشمل تعديلًا مجانيًا واحدًا على الرحلة نفسها.`
@@ -68,28 +73,32 @@ export function PlanUnlock({
       </p>
       <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.7, color: "var(--ink-2)" }}>{body}</p>
 
-      {/* Checkout is not wired yet: this is deliberately a disabled control
-          rather than a link to nowhere, so nobody can start a payment that
-          cannot complete. Swap in the provider's checkout when it exists. */}
-      <button
-        type="button"
-        disabled
-        style={{
-          justifySelf: ar ? "end" : "start",
-          marginTop: 4,
-          padding: "13px 22px",
-          border: 0,
-          borderRadius: 10,
-          background: "var(--ink)",
-          color: "var(--gold-light)",
-          fontSize: 14,
-          fontWeight: 800,
-          cursor: "not-allowed",
-          opacity: 0.75,
-        }}
-      >
-        {cta}
-      </button>
+      {/* Until payments are configured this stays a disabled control rather
+          than a link to nowhere, so nobody can start a payment that cannot
+          complete. With Moyasar's keys set, the checkout replaces it. */}
+      {checkout ? (
+        checkout(cta)
+      ) : (
+        <button
+          type="button"
+          disabled
+          style={{
+            justifySelf: ar ? "end" : "start",
+            marginTop: 4,
+            padding: "13px 22px",
+            border: 0,
+            borderRadius: 10,
+            background: "var(--ink)",
+            color: "var(--gold-light)",
+            fontSize: 14,
+            fontWeight: 800,
+            cursor: "not-allowed",
+            opacity: 0.75,
+          }}
+        >
+          {cta}
+        </button>
+      )}
 
       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: "var(--muted)" }}>{terms}</p>
     </div>

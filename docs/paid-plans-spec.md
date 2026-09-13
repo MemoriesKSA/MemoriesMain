@@ -228,3 +228,45 @@ real authentication first.
 - Whether SAR 99 is the right anchor. It is cheap for a researched,
   personalised multi-day plan; chosen for low friction and fast learning, and
   worth revisiting once conversion is known.
+
+---
+
+## 11. Payments as built (13 September 2026)
+
+Provider: **Moyasar**, the only Saudi gateway found that offers mada, Visa,
+Mastercard, Apple Pay, Samsung Pay and STC Pay in one web form.
+
+- **Off until configured.** With no Moyasar keys the unlock button stays
+  disabled, exactly as before. Code: `app/journey/payments.ts`.
+- **Charged in riyals.** The fee is always SAR, in halalas at Moyasar. The
+  button used to print the customer's budget currency beside a riyal fee.
+- **Checkout.** The customer ticks that the plan unlocks at once and is not
+  refundable on a change of mind, then Moyasar's form loads
+  (`app/journey/plan-checkout.tsx`, pinned `moyasar-payment-form` 2.2.13 from
+  jsDelivr with integrity hashes).
+- **Unlocking.** Never from the redirect's query string. The callback
+  (`/api/journeys/payment/callback`) and the webhook
+  (`/api/payments/moyasar/webhook`, `payment_paid`) both fetch the payment back
+  with the secret key and require status `paid`, currency SAR, the exact fee,
+  and this plan's id in the payment metadata. Recording is idempotent and a
+  payment can unlock only one plan. `amount` stores what was charged.
+
+### Going live
+
+1. Moyasar account approved (commercial registration + business bank account).
+2. In Vercel, set `MOYASAR_PUBLISHABLE_KEY` and `MOYASAR_SECRET_KEY` (test keys
+   first), `MOYASAR_WEBHOOK_SECRET`, and `MOYASAR_METHODS=creditcard`.
+3. In Moyasar, add the webhook for `payment_paid` pointing at
+   `https://memories.tours/api/payments/moyasar/webhook` with the same secret.
+4. Test end to end with Moyasar's test cards, then swap to live keys.
+5. Wallets, one at a time, each added to `MOYASAR_METHODS` only when ready:
+   - `applepay`: register memories.tours in the Moyasar dashboard and commit
+     their file to `public/.well-known/apple-developer-merchantid-domain-association`
+     (no extension).
+   - `stcpay`: once Moyasar enables it on the account.
+   - `samsungpay`: set `SAMSUNG_PAY_SERVICE_ID` from the Samsung Developer
+     account. There are no Samsung Pay test cards; testing needs a real card.
+
+Still open from section 10: Saudi consumer law on digital-goods refunds, and
+whether the activity on the commercial registration needs a Ministry of Tourism
+licence for this product. Ask Moyasar during onboarding.

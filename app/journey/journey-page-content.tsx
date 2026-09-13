@@ -6,12 +6,14 @@ import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, cityName
 import { shortFormsToHide } from "./redaction-variants";
 import { applyPaywall, shouldPaywall, redactPlaceNames, generaliseSearchKeys } from "./paywall";
 import { primaryPlanLanguage } from "./plan-language";
-import { planFee, nightsBetween, daysFromNights } from "./pricing";
+import { planFeeForProposal, nightsBetween, daysFromNights, toHalalas } from "./pricing";
+import { checkoutConfig, paymentNoticeFor, type PaymentNotice } from "./payments";
+import { PlanCheckout } from "./plan-checkout";
 import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
 import { RevisionRequest } from "./revision-request";
 
-export async function JourneyPageContent({ token, locale }: { token: string; locale: JourneyLocale }) {
+export async function JourneyPageContent({ token, locale, paymentNotice }: { token: string; locale: JourneyLocale; paymentNotice?: string | null }) {
   const t = journeyStrings[locale];
   const dir = locale === "ar" ? "rtl" : "ltr";
 
@@ -127,7 +129,14 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
   // not the larger of the two halves.
   const shownLockedDays = primary === "ar" ? lockedAr : lockedEn;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
-  const unlockFee = planFee(nights, stopCount);
+  const unlockFee = planFeeForProposal(proposal);
+  // Payments switch on when Moyasar's keys are set, and not before: until
+  // then the unlock button stays disabled exactly as it was.
+  const checkout = locked && unlockFee > 0 ? checkoutConfig() : null;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://memories.tours").replace(/\/$/, "");
+  // The ?payment= a customer comes back with only chooses the wording.
+  // Whether the plan is open was decided above, from the database.
+  const notice = paymentNoticeFor(paymentNotice, locked);
 
   return (
     <div dir={dir} style={{ minHeight: "100vh", background: "var(--ivory)", fontFamily: locale === "ar" ? "Tahoma, Arial, sans-serif" : undefined }}>
@@ -152,6 +161,12 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
           <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 16, boxShadow: "var(--shadow)", padding: "22px 28px", marginBottom: 28 }}>
             <p style={{ margin: "0 0 4px", fontSize: 12, color: "var(--muted)", fontWeight: 600, letterSpacing: 0.5 }}>{t.total}</p>
             <p style={{ margin: 0, fontFamily: "var(--font-display), Georgia, serif", fontSize: 30, color: "var(--ink)" }}>{priceLine}</p>
+          </div>
+        )}
+
+        {notice && (
+          <div role="status" style={{ background: "var(--paper)", border: `1px solid ${notice === "failed" ? "#c0563f" : "var(--gold)"}`, borderRadius: 14, padding: "14px 20px", marginBottom: 22, fontSize: 14.5, lineHeight: 1.6, color: "var(--ink)" }}>
+            {PAYMENT_NOTICES[locale][notice]}
           </div>
         )}
 
@@ -190,10 +205,28 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
         {locked && shownLockedDays.length > 0 && (
           <PlanUnlock
             fee={unlockFee}
-            currency={proposal.currency || "SAR"}
             lockedCount={shownLockedDays.length}
             stopCount={stopCount}
             locale={locale}
+            checkout={
+              checkout
+                ? (ctaLabel) => (
+                    <PlanCheckout
+                      publishableKey={checkout.publishableKey}
+                      live={checkout.live}
+                      methods={checkout.methods}
+                      samsungPayServiceId={checkout.samsungPayServiceId}
+                      amountHalalas={toHalalas(unlockFee)}
+                      planId={proposal.id}
+                      reference={proposal.reference}
+                      callbackUrl={`${siteUrl}/api/journeys/payment/callback?plan=${encodeURIComponent(proposal.id)}&locale=${locale}`}
+                      termsHref={`${locale === "ar" ? "/ar" : ""}/booking-terms`}
+                      ctaLabel={ctaLabel}
+                      locale={locale}
+                    />
+                  )
+                : undefined
+            }
           />
         )}
 
@@ -211,3 +244,19 @@ export async function JourneyPageContent({ token, locale }: { token: string; loc
     </div>
   );
 }
+
+// What a customer sees on returning from the payment form. Arabic is written
+// the way you would say it, not the way a bank would.
+const PAYMENT_NOTICES: Record<JourneyLocale, Record<PaymentNotice, string>> = {
+  en: {
+    paid: "Payment received. Your full plan is open below.",
+    pending:
+      "We're confirming your payment. The plan unlocks as soon as it lands, so refresh in a minute. If it's still locked and money has left your account, email memoriesksasupport@gmail.com.",
+    failed: "That payment didn't go through. You can try again below.",
+  },
+  ar: {
+    paid: "وصلتنا دفعتك، وخطتك كاملة مفتوحة تحت.",
+    pending: "نتأكد من دفعتك الحين. الخطة تنفتح أول ما يوصلنا التأكيد، حدّث الصفحة بعد دقيقة. ولو بقيت مقفلة وانخصم منك المبلغ، راسلنا على memoriesksasupport@gmail.com.",
+    failed: "ما تمت عملية الدفع. تقدر تحاول مرة ثانية تحت.",
+  },
+};

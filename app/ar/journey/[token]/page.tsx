@@ -1,6 +1,13 @@
 import { JourneyPageContent } from "../../../journey/journey-page-content";
 
-export default async function JourneyPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function JourneyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ payment?: string | string[] }>;
+}) {
   const { token } = await params;
-  return <JourneyPageContent token={token} locale="ar" />;
+  const { payment } = await searchParams;
+  return <JourneyPageContent token={token} locale="ar" paymentNotice={typeof payment === "string" ? payment : null} />;
 }
