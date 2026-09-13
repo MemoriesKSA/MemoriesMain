@@ -211,7 +211,14 @@ export function PlanCheckout({
           {ar
             ? "فاهم إن الخطة كاملة تنفتح أول ما أدفع، وإن ما فيه استرداد إذا غيّرت رأيي. "
             : "I understand the full plan unlocks the moment I pay, and that it isn't refundable if I change my mind. "}
-          <a href={termsHref} style={{ color: "var(--ink)" }}>
+          {/* Gold and underlined: in the dark theme --ink is near-white, so the
+              link read as plain text. A new tab keeps the half-filled checkout. */}
+          <a
+            href={termsHref}
+            target="_blank"
+            rel="noopener"
+            style={{ color: "var(--gold)", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3 }}
+          >
             {ar ? "الخطط والدفع والاسترداد" : "Plans, payment & refunds"}
           </a>
         </span>
