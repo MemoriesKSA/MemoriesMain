@@ -6,9 +6,10 @@
 // costs. The redirect a customer lands on after paying carries a status in
 // its query string; that is a claim, not a receipt, and is never read as one.
 //
-// Inert until configured. With no keys set, the journey page shows the same
-// disabled unlock button it always has, so this can sit in production before
-// the Moyasar account exists.
+// A preview until configured. With no keys set, the journey page still opens
+// Moyasar's form so the checkout can be seen, but Pay is stopped in the
+// browser before anything is sent (see previewCheckout), so this can sit in
+// production before the Moyasar account exists.
 
 import { timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -23,6 +24,8 @@ export type CheckoutConfig = {
   methods: CheckoutMethod[];
   samsungPayServiceId: string | null;
   live: boolean;
+  /** A look at the checkout before Moyasar is live: Pay never sends anything. */
+  preview: boolean;
 };
 
 /**
@@ -48,7 +51,21 @@ export function checkoutConfig(env: Record<string, string | undefined> = process
   const samsungPayServiceId = env.SAMSUNG_PAY_SERVICE_ID?.trim() || null;
   const methods = parseMethods(env.MOYASAR_METHODS, samsungPayServiceId);
   if (!methods.length) return null;
-  return { publishableKey, methods, samsungPayServiceId, live };
+  return { publishableKey, methods, samsungPayServiceId, live, preview: false };
+}
+
+/**
+ * The checkout as it will look, before Moyasar is live.
+ *
+ * The form renders in full, but Pay is stopped in the browser by
+ * on_initiating, which Moyasar calls before any information is sent to its
+ * API, so a card typed into the preview never leaves the page. The key is not
+ * a real one either, so no payment could be created even if that failed.
+ * Wallets that need their own setup are left out: their buttons would open a
+ * flow that errors in the customer's hand.
+ */
+export function previewCheckout(): CheckoutConfig {
+  return { publishableKey: "pk_test_preview", methods: ["creditcard", "stcpay"], samsungPayServiceId: null, live: false, preview: true };
 }
 
 export type MoyasarPayment = {

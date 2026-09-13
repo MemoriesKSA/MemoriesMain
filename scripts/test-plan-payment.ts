@@ -14,6 +14,7 @@ import {
   isPlanId,
   parseMethods,
   paymentNoticeFor,
+  previewCheckout,
   secretsMatch,
   verifyPlanPayment,
   type MoyasarPayment,
@@ -38,6 +39,7 @@ const unlock = read("app/journey/plan-unlock.tsx");
 const page = read("app/journey/journey-page-content.tsx");
 const callback = read("app/api/journeys/payment/callback/route.ts");
 const webhook = read("app/api/payments/moyasar/webhook/route.ts");
+const checkoutFile = read("app/journey/plan-checkout.tsx");
 
 const cases: [string, unknown, unknown][] = [
   // ---- The price is riyals, in halalas at the provider ----
@@ -94,6 +96,15 @@ const cases: [string, unknown, unknown][] = [
   ["and in Arabic", unlock.includes("${fee} ريال"), true],
   ["the button stays disabled without a checkout", unlock.includes("checkout ? (") && unlock.includes("disabled"), true],
   ["the page quotes the shared fee", page.includes("planFeeForProposal(proposal)"), true],
+
+  // ---- Preview before Moyasar is live: the form, never a payment ----
+  ["without keys the page previews checkout", page.includes("checkoutConfig() ?? previewCheckout()"), true],
+  ["the preview is marked as a preview", previewCheckout().preview, true],
+  ["real keys are not a preview", checkoutConfig(keys)?.preview, false],
+  ["the preview key is not a real key", previewCheckout().publishableKey, "pk_test_preview"],
+  ["the preview offers no wallet that needs setup", JSON.stringify(previewCheckout().methods), '["creditcard","stcpay"]'],
+  ["the preview stops Pay before anything is sent", /on_initiating: async \(\) => \{\s*setBlocked\(true\);\s*return false;/.test(checkoutFile), true],
+  ["and only in preview", checkoutFile.includes("...(preview"), true],
   ["the callback fetches the payment back", callback.includes("fetchMoyasarPayment(paymentId)"), true],
   ["the callback ignores the status Moyasar appended", /searchParams\.get\("status"\)/.test(callback), false],
   ["the callback does not put the plan token in the provider's URL", page.includes("callback?plan=${encodeURIComponent(proposal.id)}"), true],

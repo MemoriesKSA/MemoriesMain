@@ -76,6 +76,7 @@ const button: CSSProperties = {
 
 export function PlanCheckout({
   publishableKey,
+  preview,
   live,
   methods,
   samsungPayServiceId,
@@ -88,6 +89,7 @@ export function PlanCheckout({
   locale,
 }: {
   publishableKey: string;
+  preview: boolean;
   live: boolean;
   methods: CheckoutMethod[];
   samsungPayServiceId: string | null;
@@ -103,6 +105,7 @@ export function PlanCheckout({
   const [agreed, setAgreed] = useState(false);
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [blocked, setBlocked] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const methodKey = methods.join(",");
 
@@ -126,6 +129,17 @@ export function PlanCheckout({
           supported_networks: ["mada", "visa", "mastercard"],
           language: ar ? "ar" : "en",
           metadata: { proposal_id: planId, reference },
+          // Preview, before Moyasar is live: the whole form, but Pay stops
+          // here. Moyasar calls on_initiating before anything is sent to its
+          // API, so a card typed into the preview never leaves the page.
+          ...(preview
+            ? {
+                on_initiating: async () => {
+                  setBlocked(true);
+                  return false;
+                },
+              }
+            : {}),
           ...(offered.includes("applepay")
             ? { apple_pay: { country: "SA", label: "MEMORIES", validate_merchant_url: "https://api.moyasar.com/v1/applepay/initiate" } }
             : {}),
@@ -148,7 +162,7 @@ export function PlanCheckout({
     return () => {
       cancelled = true;
     };
-  }, [open, ar, amountHalalas, reference, publishableKey, callbackUrl, methodKey, planId, samsungPayServiceId, live]);
+  }, [open, ar, amountHalalas, reference, publishableKey, callbackUrl, methodKey, planId, samsungPayServiceId, live, preview]);
 
   if (failed) {
     return (
@@ -169,8 +183,22 @@ export function PlanCheckout({
     // labels came out dark on dark, so the form gets a light card of its own
     // and renders the way Moyasar designed it, whichever theme the reader has.
     return (
-      <div style={{ background: "#fffdf9", borderRadius: 12, padding: 16, colorScheme: "light", color: "#123c35" }}>
-        <div ref={formRef} className="mysr-form" dir={ar ? "rtl" : "ltr"} style={{ minHeight: 120 }} />
+      <div style={{ display: "grid", gap: 10 }}>
+        {preview && (
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--gold)" }}>
+            {ar ? "معاينة: الدفع يفتح قريب، وما راح ينخصم منك شي." : "Preview: payments open soon, and nothing will be charged."}
+          </p>
+        )}
+        <div style={{ background: "#fffdf9", borderRadius: 12, padding: 16, colorScheme: "light", color: "#123c35" }}>
+          <div ref={formRef} className="mysr-form" dir={ar ? "rtl" : "ltr"} style={{ minHeight: 120 }} />
+        </div>
+        {blocked && (
+          <p role="status" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)" }}>
+            {ar
+              ? "الدفع ما فتح إلى الآن، فما انخصم شي وما طلع شي من اللي كتبته من الصفحة. هذا شكل الدفع لما يفتح."
+              : "Payments aren't open yet, so nothing was charged and nothing you typed left this page. This is how checkout will look."}
+          </p>
+        )}
       </div>
     );
   }

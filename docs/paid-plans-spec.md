@@ -236,8 +236,10 @@ real authentication first.
 Provider: **Moyasar**, the only Saudi gateway found that offers mada, Visa,
 Mastercard, Apple Pay, Samsung Pay and STC Pay in one web form.
 
-- **Off until configured.** With no Moyasar keys the unlock button stays
-  disabled, exactly as before. Code: `app/journey/payments.ts`.
+- **Preview until configured.** With no Moyasar keys the unlock button still
+  opens Moyasar's form, marked as a preview, but Pay is stopped in the browser
+  (`on_initiating` returns false) before anything is sent to Moyasar. Code:
+  `app/journey/payments.ts`.
 - **Charged in riyals.** The fee is always SAR, in halalas at Moyasar. The
   button used to print the customer's budget currency beside a riyal fee.
 - **Checkout.** The customer ticks that the plan unlocks at once and is not

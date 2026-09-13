@@ -7,7 +7,7 @@ import { shortFormsToHide } from "./redaction-variants";
 import { applyPaywall, shouldPaywall, redactPlaceNames, generaliseSearchKeys } from "./paywall";
 import { primaryPlanLanguage } from "./plan-language";
 import { planFeeForProposal, nightsBetween, daysFromNights, toHalalas } from "./pricing";
-import { checkoutConfig, paymentNoticeFor, type PaymentNotice } from "./payments";
+import { checkoutConfig, previewCheckout, paymentNoticeFor, type PaymentNotice } from "./payments";
 import { PlanCheckout } from "./plan-checkout";
 import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
 import { PlanUnlock } from "./plan-unlock";
@@ -130,9 +130,10 @@ export async function JourneyPageContent({ token, locale, paymentNotice }: { tok
   const shownLockedDays = primary === "ar" ? lockedAr : lockedEn;
   const stopCount = Math.min(Math.max(planStops?.length ?? 1, 1), 3);
   const unlockFee = planFeeForProposal(proposal);
-  // Payments switch on when Moyasar's keys are set, and not before: until
-  // then the unlock button stays disabled exactly as it was.
-  const checkout = locked && unlockFee > 0 ? checkoutConfig() : null;
+  // With Moyasar's keys set this is the real checkout. Without them it is a
+  // preview of the same form where Pay stops in the browser and nothing is
+  // sent, so the page shows what checkout looks like before it is live.
+  const checkout = locked && unlockFee > 0 ? (checkoutConfig() ?? previewCheckout()) : null;
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://memories.tours").replace(/\/$/, "");
   // The ?payment= a customer comes back with only chooses the wording.
   // Whether the plan is open was decided above, from the database.
@@ -213,6 +214,7 @@ export async function JourneyPageContent({ token, locale, paymentNotice }: { tok
                 ? (ctaLabel) => (
                     <PlanCheckout
                       publishableKey={checkout.publishableKey}
+                      preview={checkout.preview}
                       live={checkout.live}
                       methods={checkout.methods}
                       samsungPayServiceId={checkout.samsungPayServiceId}
