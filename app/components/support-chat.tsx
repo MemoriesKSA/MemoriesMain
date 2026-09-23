@@ -187,7 +187,7 @@ export function SupportChat() {
         {messages.length === 0 ? (
           <>
             <span className="supportSpark"><Image src="/images/memories-logo-full.webp" alt="" width={22} height={22} /></span>
-            <p className="supportGreeting">{copy(ar, "Hi, I'm Memory. What would you like to ask?", "أهلًا، أنا ذكرى. بماذا يمكننا مساعدتك؟")}</p>
+            <p className="supportGreeting">{copy(ar, "Hi, I'm Memory. What would you like to ask?", "كيف نقدر نساعدك؟")}</p>
             <p>{copy(ar, "Ask about a destination, your dream journey or studying abroad.", "اسأل عن وجهة أو رحلة أحلامك أو الدراسة في الخارج.")}</p>
             <div className="supportSuggestions" aria-label={copy(ar, "Suggested questions", "أسئلة مقترحة")}>
               {suggestions.map((suggestion) => (
