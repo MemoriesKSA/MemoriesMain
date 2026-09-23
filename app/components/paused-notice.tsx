@@ -54,26 +54,34 @@ export function PausedNotice({ section, locale = "en" }: { section: "study" | "c
   const [firstLine, secondLine] = (ar ? copy.title.ar : copy.title.en).split("|");
   const p = ar ? "/ar" : "";
 
+  // The head and body are wrapped so a page can put them side by side. On
+  // their own the two wrappers are display:contents, so the panel reads as one
+  // column exactly as before; the corporate page, where the panel stands alone
+  // across the full width, turns them into two columns instead.
   return (
     <div className="pausedPanel" dir={ar ? "rtl" : "ltr"}>
-      <Icon aria-hidden="true" />
-      <p className="kicker light">{ar ? copy.kicker.ar : copy.kicker.en}</p>
-      <h2>
-        {firstLine}
-        <br />
-        <em>{secondLine}</em>
-      </h2>
-      {copy.body.map((paragraph, i) => (
-        <p key={i}>{ar ? paragraph.ar : paragraph.en}</p>
-      ))}
-      <div className="pausedActions">
-        <Link className="button gold" href={`${p}/design-your-journey`}>
-          <Compass aria-hidden="true" />
-          {ar ? "خطط لرحلة بدلًا من ذلك" : "Plan a trip instead"}
-        </Link>
-        <Link className="textLink" href={`${p}/feedback`}>
-          {ar ? "أخبرنا أنك تنتظر هذا" : "Tell us you're waiting for this"}
-        </Link>
+      <div className="pausedHead">
+        <Icon aria-hidden="true" />
+        <p className="kicker light">{ar ? copy.kicker.ar : copy.kicker.en}</p>
+        <h2>
+          {firstLine}
+          <br />
+          <em>{secondLine}</em>
+        </h2>
+      </div>
+      <div className="pausedBody">
+        {copy.body.map((paragraph, i) => (
+          <p key={i}>{ar ? paragraph.ar : paragraph.en}</p>
+        ))}
+        <div className="pausedActions">
+          <Link className="button gold" href={`${p}/design-your-journey`}>
+            <Compass aria-hidden="true" />
+            {ar ? "خطط لرحلة بدلًا من ذلك" : "Plan a trip instead"}
+          </Link>
+          <Link className="textLink" href={`${p}/feedback`}>
+            {ar ? "أخبرنا أنك تنتظر هذا" : "Tell us you're waiting for this"}
+          </Link>
+        </div>
       </div>
     </div>
   );

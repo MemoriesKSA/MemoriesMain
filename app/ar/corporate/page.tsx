@@ -19,6 +19,6 @@ export default function CorporatePage() {
       <div className="corporateHeroMedia"><Image src="/images/corporate-business-travel.png" alt="مسافران سعوديان يراجعان تفاصيل رحلة عمل" fill sizes="(max-width: 900px) 100vw, 42vw" priority /></div>
     </div></section>
     <section className="section container"><div className="serviceGrid corporateGrid">{items.map(({ icon: Icon, title, text }) => <article key={title}><Icon /><h3>{title}</h3><p>{text}</p></article>)}</div></section>
-    <section className="container corporateCta corporatePaused"><PausedNotice section="corporate" locale="ar" /></section>
+    <section className="container pausedSplitSection"><PausedNotice section="corporate" locale="ar" /></section>
   </main>;
 }

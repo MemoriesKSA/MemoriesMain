@@ -20,7 +20,7 @@ const revealSelector = [
   ".plannerStoryChapter",
   ".launchNote",
   ".manifesto",
-  ".corporateCta",
+  ".pausedSplitSection .pausedPanel",
 ].join(",");
 
 export function MotionEnhancer() {

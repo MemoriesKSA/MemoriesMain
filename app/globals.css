@@ -655,7 +655,8 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
    is built like the story chapters beside it rather than like the white form
    it replaced: the section reads as closed, not as broken. */
 .pausedPanel{align-self:start;padding:56px 48px;border:1px solid rgba(230,185,93,.22);border-radius:18px;background:linear-gradient(145deg,rgba(93,153,166,.14),rgba(255,255,255,.02));color:white}
-.pausedPanel>svg{width:34px;height:34px;color:var(--gold-light)}
+.pausedHead,.pausedBody{display:contents}
+.pausedHead>svg{width:34px;height:34px;color:var(--gold-light)}
 .pausedPanel .kicker{margin:26px 0 10px}
 .pausedPanel h2{margin:0;font-size:clamp(2.4rem,3.6vw,3.6rem);line-height:1.02}
 .pausedPanel h2 em{color:var(--gold-light)}
@@ -665,6 +666,17 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 .pausedActions .button svg{width:16px;height:16px}
 .pausedActions .textLink{color:rgba(255,255,255,.72)}
 @media(max-width:780px){.pausedPanel{padding:36px 26px}}
+/* Standing alone across a full-width page, the panel reads as two columns:
+   what is closed on the left, why and what to do instead on the right. It
+   also carries its own dark surface, because here there is no dark section
+   behind it to sit on. */
+.pausedSplitSection{margin-bottom:100px}
+.pausedSplitSection .pausedPanel{display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:0 70px;align-items:start;padding:56px;border-color:rgba(230,185,93,.26);background:radial-gradient(circle at 88% 6%,rgba(93,153,166,.28),transparent 46%),linear-gradient(140deg,#09221f,#11302f)}
+.pausedSplitSection .pausedHead,.pausedSplitSection .pausedBody{display:block}
+.pausedSplitSection .pausedHead h2{font-size:clamp(2rem,3vw,3rem)}
+.pausedSplitSection .pausedBody p:not(.kicker){max-width:none}
+.pausedSplitSection .pausedBody p:first-child{margin-top:4px}
+@media(max-width:900px){.pausedSplitSection .pausedPanel{display:block;padding:40px 28px}.pausedSplitSection .pausedBody p:first-child{margin-top:22px}}
 
 /* The follow page: one customer, one request, a lot of waiting. Quiet on
    purpose — it is looked at repeatedly and briefly, so it has to reward a
