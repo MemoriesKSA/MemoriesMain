@@ -278,3 +278,26 @@ A new Turkish city card, so the catalogue, the planner and the drafting data all
 | public/images/cities/turkey/uzungol.webp | Samer Daboul | [Pexels 8131397](https://www.pexels.com/photo/8131397/) | Uzungöl, Çaykara: the lake, the twin-minaret mosque and the village on the slope |
 
 Chosen from about 30 Pexels results, nearly all of which were genuinely Uzungöl: the lake, that mosque and the valley are unmistakable. 165 KB.
+
+## Mood images behind locked cards, 23 September 2026
+
+The locked hotel and restaurant cards showed an empty gradient. They now show a
+licensed stock photograph, blurred to 16px at half opacity, purely as texture.
+**None of these is the place on the card.** A sharp photo of somewhere else, or
+a scraped one, would be both a copyright problem and a quiet lie about the very
+thing a customer pays to be told, which is why they are blurred this hard and
+why the lock and the "Named in your plan" line stay on top of them.
+
+Six files under `public/images/locked/`, 480 × 320 WebP, 6 to 26 KB, all under
+the [Pexels License](https://www.pexels.com/license/), cycled by card position.
+They are referenced through a template literal, so `check-images.ts` lists them
+as orphans; that is expected.
+
+| File | Photographer | Source |
+| --- | --- | --- |
+| dining-1.webp | Kathrine Birch | [Pexels 15945563](https://www.pexels.com/photo/15945563/) |
+| dining-2.webp | Astrid Sosa | [Pexels 23947763](https://www.pexels.com/photo/23947763/) |
+| dining-3.webp | Sheyda Nedaii | [Pexels 29090531](https://www.pexels.com/photo/29090531/) |
+| stay-1.webp | Iván Rivero | [Pexels 1001965](https://www.pexels.com/photo/1001965/) |
+| stay-2.webp | K (as credited on the page) | [Pexels 2869215](https://www.pexels.com/photo/2869215/) |
+| stay-3.webp | Roy Serafin | [Pexels 38197473](https://www.pexels.com/photo/38197473/) |
