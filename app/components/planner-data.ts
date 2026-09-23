@@ -139,13 +139,40 @@ const PLANNABLE = new Set([
   "indonesia",
   "philippines",
   "uae",
+  // Opened for London alone. See PLANNER_CITIES.
+  "united-kingdom",
 ]);
+
+/**
+ * Cities a plannable country offers in the planner, where that is not all of
+ * them.
+ *
+ * A country is normally all or nothing: its cities are researched together,
+ * so they open together. The UK is the first exception. London is the city
+ * Saudi travellers actually ask for, and it is the one we are prepared to
+ * plan; Edinburgh, Bath, Oxford, York, Manchester, Liverpool and the
+ * Cotswolds keep their story pages and stay out of the planner until they are
+ * researched too.
+ *
+ * The "other-" option is never trimmed. Someone who wants Edinburgh picks
+ * "Another UK city", names it, and reads the note saying a person will plan it
+ * by hand, which is exactly what happens. That is an honest answer rather than
+ * a dropdown entry we cannot serve.
+ */
+const PLANNER_CITIES: Record<string, string[]> = {
+  "united-kingdom": ["london"],
+};
 
 export function isPlannableCountry(slug: string): boolean {
   return PLANNABLE.has(slug);
 }
 
-export const plannableCountries: CountryOption[] = travelCountries.filter((c) => PLANNABLE.has(c.value));
+export const plannableCountries: CountryOption[] = travelCountries
+  .filter((c) => PLANNABLE.has(c.value))
+  .map((c) => {
+    const only = PLANNER_CITIES[c.value];
+    return only ? { ...c, cities: c.cities.filter((x) => only.includes(x.value) || x.value.startsWith("other-")) } : c;
+  });
 
 /** Countries kept for browsing only: a story page, no journey request. */
 export const showcaseCountries: CountryOption[] = travelCountries.filter((c) => !PLANNABLE.has(c.value));
