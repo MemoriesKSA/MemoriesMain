@@ -579,6 +579,8 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 .feedbackIntro h1{margin:0 0 18px;font-size:clamp(2.3rem,4.4vw,3.4rem);line-height:1.06}
 .feedbackIntro h1 em{color:var(--gold);font-style:italic}
 .feedbackIntro p{margin:0;color:var(--muted);font-size:1.02rem;line-height:1.75}
+/* The intro is three separate thoughts now, not one block. */
+.feedbackIntro p+p{margin-top:15px}
 .feedbackFormWrap{max-width:660px;margin-top:34px}
 .feedbackForm{display:flex;flex-direction:column;gap:18px}
 .feedbackForm label{display:block;margin-bottom:7px;font-size:.79rem;font-weight:800;letter-spacing:.02em}

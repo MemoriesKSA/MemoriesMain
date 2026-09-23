@@ -66,7 +66,7 @@ export function FeedbackForm({ locale = "en", about = "" }: { locale?: "en" | "a
 
   return (
     <form dir={ar ? "rtl" : "ltr"} className="feedbackForm" onSubmit={submit}>
-      <label htmlFor="feedback-message">{ar ? "ما الذي تود قوله؟" : "What would you like to tell us?"}</label>
+      <label htmlFor="feedback-message">{ar ? "وش ودك تقول لنا؟" : "What would you like to tell us?"}</label>
       <textarea
         id="feedback-message"
         name="message"

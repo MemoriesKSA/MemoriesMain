@@ -11,12 +11,14 @@ export default async function FeedbackPageAr({ searchParams }: { searchParams: P
   return (
     <main className="innerPage feedbackPage" dir="rtl">
       <section className="container feedbackIntro">
-        <p className="kicker">قل لنا رأيك</p>
-        <h1>نسمع منك<br /><em>خير من ألا نسمع.</em></h1>
+        <p className="kicker">عطنا رأيك</p>
+        <h1>نبي نسمع منك<br /><em>لأن رأيك يفرق معنا.</em></h1>
+        <p>ميموريز مشروع صغير ولسه قاعدة نبنيه ونطوره، وأحلى شيء فيه إن كلامك يوصل لنا بشكل مباشرة.</p>
         <p>
-          ميموريز مشروع صغير وما زال يُبنى، وهذا هو الجانب الجميل فيه: ما تكتبه هنا يصل إلى من يبنيه فعلًا، لا إلى
-          طابور انتظار. قل لنا ما الذي نفع، وما الذي وقف في طريقك، أو أي وجهة تتمنى أن نغطيها. ولست مضطرًا لترك اسمك.
+          قل لنا وش اللي عجبك، وش اللي ما ضبط معك، أو إذا فيه شيء حسّيت إنه عطّلك أو يحتاج تحسين. وإذا فيه وجهة
+          تتمنى نشملها في ميموريز، علّمنا عنها.
         </p>
+        <p>ولا تشيل هم، مو لازم تكتب اسمك.</p>
       </section>
       <section className="container feedbackFormWrap">
         <FeedbackForm locale="ar" about={about} />
