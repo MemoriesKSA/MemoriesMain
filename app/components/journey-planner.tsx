@@ -193,6 +193,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : plannableCountries;
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
   const selectedCity = selectedCountry?.cities.find((item) => item.value === city);
+  // An "Another ... destination" option is a real choice, not a mistake: someone
+  // whose city we do not list should still be able to ask for it. It is the one
+  // pick the drafting pipeline cannot ground, though, because canGroundAPlan in
+  // draft-guide.ts refuses an "other-" slug. No draft is written and a person
+  // takes it by hand, which is a good outcome the customer has no way of knowing
+  // about. Keep this test in step with that one.
+  const unresearchedPick = city.startsWith("other-") || extraStops.some((stop) => stop.city.startsWith("other-"));
   const purposeOptions = path === "saudi" ? saudiPurposes : journeyStyles;
   // Stop one is the primary city; extras follow it in travel order.
   const stops = [city, ...extraStops.map((s) => s.city)].filter(Boolean);
@@ -370,6 +377,9 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
+      {unresearchedPick ? <p className="destinationNote" role="status"><MapPin aria-hidden="true" />{text(ar,
+        "We don't hold research for this one yet, so a person on our team takes it by hand instead of our system drafting it. Send the form as normal and we'll email you to confirm we can plan it well before anything else.",
+        "ما عندنا بحث جاهز لهالوجهة إلى الآن، فراح يتولاها واحد من الفريق بنفسه بدل ما يكتبها النظام. أرسل الطلب عادي، وبنرسل لك إيميل نتأكد فيه إننا نقدر نرتبها لك صح قبل أي شي.")}</p> : null}
       {multiStopAvailable ? <div className="stopsBlock">
         {extraStops.map((stop, index) => (
           <div className="extraStop" key={index}>
