@@ -65,7 +65,14 @@ const NAME_WIDTHS = [72, 54, 84, 63];
  * why the page is worth reading at all, and nobody is paying us to be told it
  * exists.
  */
-function LockedPlaceCard({ category, badge, index, ar, href }: { category?: string; badge?: string; index: number; ar: boolean; href: string }) {
+// Three images per kind, cycled by position. Licensed stock, blurred hard:
+// they are mood, not evidence. None of them is the actual restaurant or
+// hotel, and a sharp photo of somewhere else would be a quiet lie about the
+// very thing the customer is paying to be told.
+const MOOD_IMAGES = { dining: 3, stay: 3 } as const;
+
+function LockedPlaceCard({ category, badge, index, ar, href, kind }: { category?: string; badge?: string; index: number; ar: boolean; href: string; kind: "dining" | "stay" }) {
+  const mood = `/images/locked/${kind}-${(index % MOOD_IMAGES[kind]) + 1}.webp`;
   return (
     <Link
       href={href}
@@ -73,6 +80,7 @@ function LockedPlaceCard({ category, badge, index, ar, href }: { category?: stri
       aria-label={ar ? "اطلب خطتك لتعرف هذا المكان" : "Request your plan to see this place"}
     >
       <div className="lockedPlaceMedia">
+        <Image src={mood} alt="" fill sizes="(max-width: 780px) 50vw, 260px" className="lockedPlaceBlur" />
         <span className="lockedPlaceLock" aria-hidden="true"><Lock size={15} /></span>
         {badge && <span className="placeBadge">{badge}</span>}
       </div>
@@ -255,6 +263,7 @@ export async function FlagshipCityGuidePage({
           <div className="flagshipGrid diningGrid">
             {shownDining.map((place: FlagshipDining, i: number) => (
               <LockedPlaceCard
+                kind="dining"
                 key={place.nameEn}
                 category={ar ? place.cuisineAr : place.cuisineEn}
                 index={i}
@@ -291,6 +300,7 @@ export async function FlagshipCityGuidePage({
           <div className="flagshipGrid stayGrid">
             {shownStay.map((place: FlagshipStay, i: number) => (
               <LockedPlaceCard
+                kind="stay"
                 key={place.nameEn}
                 badge={place.tier ? (place.tier === "luxury" ? (ar ? "فاخر" : "Luxury") : (ar ? "اقتصادي" : "Budget-friendly")) : undefined}
                 index={i}
