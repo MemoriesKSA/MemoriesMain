@@ -35,7 +35,7 @@ export function CountryExplorer({ country, locale = "en" }: { country: CountryGu
           <span className="cityGalleryBody"><small><MapPin size={13} /> {ar ? country.nameAr : country.nameEn}</small><strong>{ar ? city.nameAr : city.nameEn}</strong><span>{ar ? city.introAr : city.introEn}</span><em>{ar ? "ادخل المدينة" : "Step inside"} <ArrowRight className="directionArrow" size={16} /></em></span>
         </Link>)}
         <Link className="cityGalleryCard cityAnywhereCard" href={`${prefix}/design-your-journey?country=${country.slug}`}>
-          <Compass aria-hidden="true" /><p className="kicker light">{ar ? "مكان آخر في بالك" : "Somewhere else in mind"}</p><strong>{ar ? "أخبرنا بالمكان الذي تحلم به." : "Tell us where you dream of going."}</strong><span>{ar ? "سنأخذ رغبتك كنقطة البداية ونبني الخطة من حولها." : "We’ll take your idea as the starting point and shape the plan around it."}</span><em>{ar ? "صمّم رحلتك" : "Design your journey"} <ArrowRight className="directionArrow" size={16} /></em>
+          <Compass aria-hidden="true" /><p className="kicker light">{ar ? "وش الوجهة الي ببالك" : "Somewhere else in mind"}</p><strong>{ar ? "قل لنا عن المكان الي ودك تروحله" : "Tell us where you dream of going."}</strong><span>{ar ? "وأبشر باللي يرضيك، نرتب لك الخطة على ذوقك وميزانيتك." : "We’ll take your idea as the starting point and shape the plan around it."}</span><em>{ar ? "صمّم رحلتك" : "Design your journey"} <ArrowRight className="directionArrow" size={16} /></em>
         </Link>
       </div>
     </section>
