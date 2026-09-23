@@ -760,8 +760,10 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 .lockedPlaceCard{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--paper);box-shadow:0 12px 30px rgba(7,38,32,.05);text-decoration:none;color:inherit;transition:.2s transform,.2s border-color,.2s box-shadow}
 .lockedPlaceCard:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 16px 34px rgba(200,149,63,.16)}
 .lockedPlaceCard:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.lockedPlaceMedia{position:relative;display:grid;place-items:center;aspect-ratio:4/3;border-radius:12px;background:linear-gradient(135deg,var(--ivory),#eee6d6)}
-.lockedPlaceBlur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) saturate(.8);transform:scale(1.25);opacity:.5}
+.lockedPlaceMedia{position:relative;display:grid;place-items:center;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:linear-gradient(140deg,#123029,#0b211d)}
+.lockedPlaceBlur,.moodBlur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(17px) saturate(1.05);transform:scale(1.3);opacity:.62}
+.moodSlot{position:relative;display:block;overflow:hidden;background:linear-gradient(140deg,#123029,#0b211d)}
+.lockedPlaceLock,.lockedPlaceMedia .placeBadge{position:relative;z-index:1}
 .lockedPlaceLock{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(231,185,79,.18);border:1px solid var(--gold);color:var(--gold)}
 /* The bar standing in for the name. Its width comes from a cycle in the
    component, never from the name, so it carries nothing about what it hides. */

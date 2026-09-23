@@ -28,7 +28,7 @@ import { KeepExploringCarousel } from "./keep-exploring-carousel";
  * picture yet"; a broken icon says "this site is broken", and only one of
  * those is true.
  */
-function ImageSlot({ label, src }: { label: string; src?: string }) {
+function ImageSlot({ label, src, index }: { label: string; src?: string; index: number }) {
   if (src && hasPublicImage(src)) {
     return (
       <div className="imageSlot hasImage">
@@ -36,9 +36,18 @@ function ImageSlot({ label, src }: { label: string; src?: string }) {
       </div>
     );
   }
+  // No photograph of this place, and every one of the 426 places on this site
+  // is in that position today. A camera glyph on a pale block was honest and
+  // looked like a page that had failed to load, repeated down a whole tab.
+  //
+  // The mood wash the locked cards use says the same thing more quietly. It
+  // is not this place and is not offered as it: blurred this far it is colour
+  // and nothing else, it carries no caption, and it is not announced to a
+  // screen reader, which is told only that there is no picture yet.
   return (
-    <div className="imageSlot" role="img" aria-label={label}>
-      <Camera aria-hidden="true" />
+    <div className="imageSlot moodSlot">
+      <Image src={moodImage(index)} alt="" fill sizes="(max-width: 780px) 100vw, 380px" className="moodBlur" />
+      <span className="srOnly">{ar_noPicture(label)}</span>
     </div>
   );
 }
@@ -70,6 +79,18 @@ const NAME_WIDTHS = [72, 54, 84, 63];
 // hotel, and a sharp photo of somewhere else would be a quiet lie about the
 // very thing the customer is paying to be told.
 const MOOD_IMAGES = { dining: 3, stay: 3 } as const;
+
+/**
+ * The same six images serve a place with no photograph of its own.
+ *
+ * Interleaved rather than listed in order, so two cards next to each other in
+ * a grid never land on the same wash. Which one a card gets is decided by its
+ * position, so it does not move between renders.
+ */
+const PLACE_MOODS = ["dining-1", "stay-2", "dining-3", "stay-1", "dining-2", "stay-3"] as const;
+const moodImage = (index: number) => `/images/locked/${PLACE_MOODS[index % PLACE_MOODS.length]}.webp`;
+/** Said to a screen reader only: the wash behind the card is not the place. */
+const ar_noPicture = (label: string) => `${label} — no photograph yet`;
 
 function LockedPlaceCard({ category, badge, index, ar, href, kind }: { category?: string; badge?: string; index: number; ar: boolean; href: string; kind: "dining" | "stay" }) {
   const mood = `/images/locked/${kind}-${(index % MOOD_IMAGES[kind]) + 1}.webp`;
@@ -238,10 +259,10 @@ export async function FlagshipCityGuidePage({
           </h2>
         </div>
         <div className="flagshipGrid placesGrid">
-          {shownAttractions.map((place: FlagshipPlace) => (
+          {shownAttractions.map((place: FlagshipPlace, index: number) => (
             <article key={place.nameEn} className="placeCard">
               <div className="placeCardMedia">
-                <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} />
+                <ImageSlot label={ar ? place.nameAr : place.nameEn} src={place.image} index={index} />
                 {(ar ? place.badgeAr : place.badgeEn) && (
                   <span className="placeBadge">{ar ? place.badgeAr : place.badgeEn}</span>
                 )}
