@@ -267,7 +267,7 @@ export async function FlagshipCityGuidePage({
             <Lock size={14} aria-hidden="true" />
             <span>
               {ar
-                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك أنت. احكِ لنا عن رحلتك وتواريخك، ونرسلها لك بالأسماء والأسعار وأوقات الحجز.`
+                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك. بس علّمنا برحلتك وتواريخها، وراح نرسلها لك بالأسماء والأسعار وأوقات الحجز.`
                 : `The places we would actually send you to in ${cityName} come with your own plan. Tell us your dates and who is travelling, and they arrive named, priced and with when to book each one.`}
             </span>
             <ArrowRight size={15} aria-hidden="true" className="directionArrow" />
@@ -303,7 +303,7 @@ export async function FlagshipCityGuidePage({
             <Lock size={14} aria-hidden="true" />
             <span>
               {ar
-                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك أنت. احكِ لنا عن رحلتك وتواريخك، ونرسلها لك بالأسماء والأسعار وأوقات الحجز.`
+                ? `أماكننا المختارة في ${cityName} تجيك مع خطتك. بس علّمنا برحلتك وتواريخها، وراح نرسلها لك بالأسماء والأسعار وأوقات الحجز.`
                 : `The places we would actually send you to in ${cityName} come with your own plan. Tell us your dates and who is travelling, and they arrive named, priced and with when to book each one.`}
             </span>
             <ArrowRight size={15} aria-hidden="true" className="directionArrow" />
