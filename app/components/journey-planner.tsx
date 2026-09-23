@@ -135,6 +135,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [specificField, setSpecificField] = useState("");
   const [hasSpecificUniversity, setHasSpecificUniversity] = useState<"" | "yes" | "no">("");
   const [specificUniversity, setSpecificUniversity] = useState("");
+  const [otherDestination, setOtherDestination] = useState("");
   const [stayRating, setStayRating] = useState("");
   // Both languages by default, because that is what every plan has been so
   // far and it is the more useful answer for a Saudi traveller sharing a
@@ -311,7 +312,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       return;
     }
     const missing = [
-      !country || !city || !purpose || extraStops.some((s) => !s.city || !s.purpose) || (isMakkah && !makkahEligible) || (path === "study" && !saudiCitizen) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
+      !country || !city || !purpose || extraStops.some((s) => !s.city || !s.purpose) || (isMakkah && !makkahEligible) || (unresearchedPick && !otherDestination.trim()) || (path === "study" && !saudiCitizen) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
       // Asking for flights without saying where from leaves the team unable
       // to look anything up, so it counts as an incomplete step 3.
       transport.includes("flights") && !departureCity.trim() ? 3 : 0,
@@ -377,9 +378,12 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         <ElasticSelect label={text(ar, path === "saudi" ? "Purpose of visit" : path === "study" ? "Study level" : "Journey style", path === "saudi" ? "هدف الزيارة" : path === "study" ? "المرحلة الدراسية" : "طابع الرحلة")} name="purpose" required placeholder={text(ar, "Choose what fits best", "اختر الأنسب لك")} options={localize(ar, path === "study" ? [{value:"language",en:"Language programme",ar:"برنامج لغة"},{value:"foundation",en:"Foundation",ar:"سنة تحضيرية"},{value:"bachelor",en:"Bachelor’s degree",ar:"بكالوريوس"},{value:"master",en:"Master’s degree",ar:"ماجستير"},{value:"doctorate",en:"Doctorate",ar:"دكتوراه"},{value:"short",en:"Short course",ar:"دورة قصيرة"}] : purposeOptions)} value={purpose} onChange={setPurpose} />
         {path === "study" ? <ElasticSelect label={text(ar, "Study support", "دعم الدراسة")} name="studySupport" placeholder={text(ar, "How can we help?", "كيف يمكننا مساعدتك؟")} options={localize(ar,[{value:"guidance",en:"Destination & university guidance",ar:"اختيار الوجهة والجامعة"},{value:"visa",en:"Visa-application assistance",ar:"المساعدة في طلب التأشيرة"},{value:"stay",en:"Accommodation",ar:"السكن"},{value:"arrival",en:"Flights & arrival",ar:"الطيران والاستقبال"},{value:"complete",en:"Complete study-abroad package",ar:"باقة دراسة متكاملة"}])} value={studySupport} onChange={setStudySupport} /> : null}
       </div>
-      {unresearchedPick ? <p className="destinationNote" role="status"><MapPin aria-hidden="true" />{text(ar,
+      {unresearchedPick ? <>
+        <label className="studyReveal"><span>{text(ar, "Which city or place should we plan?", "أي مدينة أو مكان تبي نخطط له؟")} *</span><input name="otherDestination" value={otherDestination} onChange={(event) => setOtherDestination(event.target.value)} placeholder={text(ar, "Write the city, town or area", "اكتب اسم المدينة أو المنطقة")} /></label>
+        <p className="destinationNote" role="status"><MapPin aria-hidden="true" />{text(ar,
         "We don't hold research for this one yet, so a person on our team takes it by hand instead of our system drafting it. Send the form as normal and we'll email you to confirm we can plan it well before anything else.",
-        "ما عندنا بحث جاهز لهالوجهة إلى الآن، فراح يتولاها واحد من الفريق بنفسه بدل ما يكتبها النظام. أرسل الطلب عادي، وبنرسل لك إيميل نتأكد فيه إننا نقدر نرتبها لك صح قبل أي شي.")}</p> : null}
+        "ما عندنا بحث جاهز لهالوجهة إلى الآن، فراح يتولاها واحد من الفريق بنفسه بدل ما يكتبها النظام. أرسل الطلب عادي، وبنرسل لك إيميل نتأكد فيه إننا نقدر نرتبها لك صح قبل أي شي.")}</p>
+      </> : null}
       {multiStopAvailable ? <div className="stopsBlock">
         {extraStops.map((stop, index) => (
           <div className="extraStop" key={index}>

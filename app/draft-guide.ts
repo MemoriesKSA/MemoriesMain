@@ -76,6 +76,7 @@ export type DraftGuideSubmission = {
   specificField?: string;
   hasSpecificUniversity?: string;
   specificUniversity?: string;
+  otherDestination?: string;
   saudiCitizen?: string;
   name: string;
   email: string;
@@ -2513,7 +2514,12 @@ async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknow
   if (!resendKey) return;
 
   const reference = submission.submissionId.slice(0, 8).toUpperCase();
-  const cityLabel = countryCities(submission.countrySlug).find((c) => c.value === submission.city)?.en ?? readable(submission.city);
+  // A request for an unlisted city carries the only real name of the place
+  // in what the customer typed. The list label on its own, "Another Turkish
+  // city", is a subject line nobody can act on.
+  const listLabel = countryCities(submission.countrySlug).find((c) => c.value === submission.city)?.en ?? readable(submission.city);
+  const namedCity = submission.otherDestination?.trim();
+  const cityLabel = namedCity ? `${namedCity} (${listLabel})` : listLabel;
   const status = (error as { status?: number })?.status;
   const message = String((error as Error)?.message ?? error);
   const noCityData = message === "NO_CITY_DATA";
@@ -2526,7 +2532,7 @@ async function notifyDraftFailed(submission: DraftGuideSubmission, error: unknow
   const outOfCredit = /credit balance is too low|billing|insufficient (credit|quota)/i.test(message);
   const badKey = status === 401 || /invalid x-api-key|authentication/i.test(message);
   const reason = noCityData
-    ? `We hold no researched city data for "${escapeHtml(readable(submission.city))}", so there was nothing to build a plan from. This is expected for the "Other" destination option and for cities we haven't researched yet. Nothing went wrong, it simply needs planning by hand.`
+    ? `We hold no researched city data for "${escapeHtml(listLabel)}"${namedCity ? `, and "${escapeHtml(namedCity)}" is what the customer asked for` : ""}, so there was nothing to build a plan from. This is expected for the "Other" destination option and for cities we haven't researched yet. Nothing went wrong, it simply needs planning by hand.`
     : outOfCredit
       ? "The Anthropic account has run out of credit. Nothing is wrong with this request or with the site: every draft will fail the same way until the balance is topped up, and re-submitting won't help before then."
       : badKey

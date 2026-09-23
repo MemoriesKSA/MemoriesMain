@@ -55,6 +55,7 @@ type JourneySubmission = {
   specificField?: unknown;
   hasSpecificUniversity?: unknown;
   specificUniversity?: unknown;
+  otherDestination?: unknown;
   travellers?: unknown;
   travellerCount?: unknown;
   fromDate?: unknown;
@@ -188,6 +189,7 @@ export async function POST(request: Request) {
     specificField: clean(raw.specificField, 200),
     hasSpecificUniversity: clean(raw.hasSpecificUniversity, 3),
     specificUniversity: clean(raw.specificUniversity, 200),
+    otherDestination: clean(raw.otherDestination, 120),
     travellers: clean(raw.travellers, 100),
     travellerCount: clean(raw.travellerCount, 20),
     fromDate: clean(raw.fromDate, 20),
@@ -234,7 +236,10 @@ export async function POST(request: Request) {
   const missingRequired = !submission.submissionId || !submission.journeyType || !submission.country || !submission.city || !submission.purpose || !submission.travellers || !submission.travellerCount || !submission.fromDate || !submission.toDate || !submission.transport.length || !submission.stays.length || (submission.budgetMode !== "open" && !submission.budget) || !submission.name || !submission.delivery.length || submission.privacyAccepted !== "yes" || missingStudyDetails || studyNotEligible || studyPaused;
   const invalidEmail = submission.delivery.includes("email") && !emailPattern.test(submission.email);
   const missingPhone = submission.delivery.includes("whatsapp") && !submission.phone;
-  if (missingRequired || invalidEmail || missingPhone || submission.toDate < submission.fromDate) {
+  // Picking "Another ..." without saying which place leaves the team a
+  // request with no destination in it, so the form asks and so does this.
+  const missingNamedCity = submission.city.startsWith("other-") && !submission.otherDestination;
+  if (missingRequired || missingNamedCity || invalidEmail || missingPhone || submission.toDate < submission.fromDate) {
     return Response.json({ error: "Please complete all required journey details." }, { status: 400 });
   }
 
@@ -248,7 +253,13 @@ export async function POST(request: Request) {
   const reference = submission.submissionId.slice(0, 8).toUpperCase();
   const journeyNames: Record<string, string> = { journey: "Dream journey", saudi: "Discover Saudi Arabia", study: "Study Abroad" };
   const journeyName = journeyNames[submission.journeyType] ?? readable(submission.journeyType);
-  const destination = `${readable(submission.city)}, ${readable(submission.country)}`;
+  // An "Another ..." pick is a slug, not a place. The customer names the
+  // city themselves on the form, and that name is what goes in every line a
+  // person reads: readable("other-turkey") is "Other Turkey", which was
+  // reaching the customer's own confirmation email.
+  const unlisted = submission.city.startsWith("other-");
+  const cityLabel = unlisted ? submission.otherDestination : readable(submission.city);
+  const destination = `${cityLabel}, ${readable(submission.country)}${unlisted ? " (not on our list)" : ""}`;
   const dates = `${formatDate(submission.fromDate)} → ${formatDate(submission.toDate)}`;
   const duration = tripLength(submission.fromDate, submission.toDate);
   const phoneDisplay = `${submission.phoneCode} ${submission.phone}`.trim();
@@ -296,7 +307,7 @@ export async function POST(request: Request) {
       customer_name: submission.name,
       customer_email: submission.email,
       customer_phone: submission.phone || null,
-      city: readable(submission.city),
+      city: cityLabel,
       from_date: submission.fromDate || null,
       to_date: submission.toDate || null,
       currency: submission.currency || "SAR",
@@ -314,7 +325,7 @@ export async function POST(request: Request) {
     from: fromEmail,
     to: [reviewEmail],
     replyTo: emailPattern.test(submission.email) ? submission.email : undefined,
-    subject: `[NEW] ${reference} | ${readable(submission.city)} | ${submission.name}`,
+    subject: `[NEW] ${reference} | ${cityLabel} | ${submission.name}`,
     html: internalHtml,
     text: internalText,
     tags: [{ name: "email_type", value: "journey_request" }, { name: "journey_type", value: submission.journeyType }, { name: "language", value: submission.locale }],
@@ -332,11 +343,11 @@ export async function POST(request: Request) {
       replyTo: reviewEmail,
       subject: submission.locale === "ar" ? `استلمنا رحلة أحلامك، ${reference}` : `We received your dream journey, ${reference}`,
       text: submission.locale === "ar"
-        ? `رحلة أحلامك وصلت إلينا.\n\nأهلًا ${submission.name}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${readable(submission.city)}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.\n\nرقم الطلب: ${reference}`
-        : `Your dream journey has reached us.\n\nHello ${submission.name}, thank you for sharing your journey to ${readable(submission.city)}. Our team will review the details and continue with you through your chosen contact method.\n\nRequest reference: ${reference}`,
+        ? `رحلة أحلامك وصلت إلينا.\n\nأهلًا ${submission.name}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${cityLabel}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.\n\nرقم الطلب: ${reference}`
+        : `Your dream journey has reached us.\n\nHello ${submission.name}, thank you for sharing your journey to ${cityLabel}. Our team will review the details and continue with you through your chosen contact method.\n\nRequest reference: ${reference}`,
       html: submission.locale === "ar"
-        ? `<div dir="rtl" style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:1px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">رحلة أحلامك وصلت إلينا.</h1><p>أهلًا ${escapeHtml(submission.name)}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${escapeHtml(readable(submission.city))}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.</p><p><strong>رقم الطلب:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, true)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">تابع تقدّم خطتك</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">تصلك الخطة ${deliveryPromise(wantsPriority, true)}.</p></div></div>`
-        : `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">Your dream journey has reached us.</h1><p>Hello ${escapeHtml(submission.name)}, thank you for sharing your journey to ${escapeHtml(readable(submission.city))}. Our team will review the details and continue with you through your chosen contact method.</p><p><strong>Request reference:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, false)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">Follow your plan</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">Your plan will reach you ${deliveryPromise(wantsPriority, false)}.</p></div></div>`,
+        ? `<div dir="rtl" style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:1px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">رحلة أحلامك وصلت إلينا.</h1><p>أهلًا ${escapeHtml(submission.name)}، شكرًا لمشاركتنا تفاصيل رحلتك إلى ${escapeHtml(cityLabel)}. سيقوم فريقنا بمراجعة طلبك والتواصل معك بالطريقة التي اخترتها.</p><p><strong>رقم الطلب:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, true)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">تابع تقدّم خطتك</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">تصلك الخطة ${deliveryPromise(wantsPriority, true)}.</p></div></div>`
+        : `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif">Your dream journey has reached us.</h1><p>Hello ${escapeHtml(submission.name)}, thank you for sharing your journey to ${escapeHtml(cityLabel)}. Our team will review the details and continue with you through your chosen contact method.</p><p><strong>Request reference:</strong> ${reference}</p><p style="margin:22px 0 0"><a href="${followUrl(siteUrl, followToken, false)}" style="display:inline-block;padding:12px 20px;border-radius:9px;background:#0b443b;color:#fff;text-decoration:none;font-size:14px;font-weight:700">Follow your plan</a></p><p style="margin:10px 0 0;color:#6a746f;font-size:13px">Your plan will reach you ${deliveryPromise(wantsPriority, false)}.</p></div></div>`,
     }, { idempotencyKey: `journey-confirmation/${submission.submissionId}` });
 
     if (confirmation.error) console.error("Journey confirmation email failed", confirmation.error.name);
@@ -411,6 +422,7 @@ export async function POST(request: Request) {
       specificField: submission.specificField,
       hasSpecificUniversity: submission.hasSpecificUniversity,
       specificUniversity: submission.specificUniversity,
+      otherDestination: submission.otherDestination,
       saudiCitizen: submission.saudiCitizen,
       name: submission.name,
       email: submission.email,
