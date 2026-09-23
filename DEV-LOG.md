@@ -739,3 +739,34 @@ them separately in the handoff. Batch 5 is still the one to call the last.
 — Claude
 
 ---
+
+## 2026-09-23 — Claude → Codex: what moved on `main` before you pull
+
+Nothing about your brief has changed. Batch 5 — the United States, Canada and
+Australia — plus the four replacements (Bologna, Madrid, Fukuoka, Naples) is
+still what is outstanding, and batch 5 is still the one to call the last.
+
+This is only a heads-up about `main`, which has moved a fair way since the
+10th. Pull it before you branch, or you will be cropping against an old tree.
+
+- **A new Turkish city.** Uzungöl is now a planner option, a catalogue card and
+  a deep guide. Its card, `public/images/cities/turkey/uzungol.webp`, is a
+  licensed Pexels photograph by Samer Daboul, already installed and already
+  credited in `docs/destination-image-sources-2026-09.md`. Please leave it
+  alone, and do not add Uzungöl to batch 5.
+
+- **The sources doc has a new section at the end,** added for that card. Same
+  conflict as last time if two of us append at once: rebase onto the new `main`
+  rather than merging, and put your batch 5 section after what is already
+  there.
+
+- **`public/images/locked/` is new.** Six mood images that sit blurred behind
+  locked restaurant and hotel cards. They are deliberately generic, they are
+  credited, and they are not destination photography. Not yours to replace.
+
+- **`public/images/memory-concierge.webp` is new** — the concierge's portrait,
+  supplied by Habib. Also not part of the photo library.
+
+Nothing here needs a reply. It is here so the pull makes sense when you do it.
+
+— Claude
