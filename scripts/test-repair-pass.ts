@@ -125,6 +125,43 @@ cases.push(
   ["a dropped qualifier is a drafting rule, not only a check", pipeline.includes("travels with that fact into the plan"), true],
 );
 
+// ---- The two halves of the pipeline, and the state machine between them ----
+//
+// Writing and translating a London plan measured 689 of the route's 800
+// seconds, so the check and its repairs ran on what was left, which was
+// nothing. Being cut off there is silent: the plan is stored, no verdict is
+// written, no email goes out. The halves are separate runs now, and these
+// assertions are about the seam between them, which is where a split like
+// this goes wrong.
+const cronRoute = readFileSync("app/api/cron/check-drafts/route.ts", "utf8");
+const contextStore = readFileSync("app/draft-context.ts", "utf8");
+const vercelJson = JSON.parse(readFileSync("vercel.json", "utf8")) as { crons: { path: string; schedule: string }[] };
+const checkCron = vercelJson.crons.find((c) => c.path === "/api/cron/check-drafts");
+const releaseCron = readFileSync("app/api/cron/release-plans/route.ts", "utf8");
+
+cases.push(
+  ["the checking half is its own exported run", pipeline.includes("export async function checkAndFinishDraft("), true],
+  ["the writing half hands over what it used", pipeline.includes("await saveDraftContext(supabase, proposalId, {"), true],
+  ["and the writing half no longer runs the check", pipeline.lastIndexOf("await runCheck(") < pipeline.indexOf("export async function generateDraftGuide"), true],
+  ["the checker is given the writer's own sources", contextStore.includes("groundedFactsEn") && contextStore.includes("operationalResearch"), true],
+  ["the context is thrown away once it is used", cronRoute.includes("dropDraftContext"), true],
+
+  ["the sweep is scheduled", !!checkCron, true],
+  ["often enough that a plan waits minutes, not hours", checkCron?.schedule, "*/5 * * * *"],
+  ["it has the same ceiling as the drafting route", cronRoute.includes("export const maxDuration = 800;"), true],
+  ["and the same authorisation as every other cron", cronRoute.includes("Bearer ${secret}"), true],
+
+  ["a plan is claimed before it is paid for", cronRoute.includes('.update({ review_state: "checking" })') && cronRoute.includes('.is("review_state", null)'), true],
+  ["one plan per sweep, so a bad day cannot spend without a bound", cronRoute.includes(".limit(1)"), true],
+  ["a claim left by a dead run is taken back", cronRoute.includes("STALE_CLAIM_MS"), true],
+  ["a failed check is released for the next sweep", cronRoute.includes('.update({ review_state: null })'), true],
+  ["a plan that cannot be checked stops asking", cronRoute.includes('"unchecked"'), true],
+  ["and its team is told rather than left waiting", cronRoute.includes("sendReviewerEmailForUnchecked"), true],
+
+  // The rule that keeps all of the above safe: none of these states release.
+  ["only a clean verdict ever reaches a customer", releaseCron.includes('.eq("review_state", "clean")'), true],
+);
+
 let pass = 0;
 for (const [name, got, want] of cases) {
   const ok = got === want;

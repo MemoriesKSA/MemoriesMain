@@ -19,6 +19,7 @@ function countryCities(countrySlug: string) {
   return travelCountries.find((c) => c.value === countrySlug)?.cities ?? [];
 }
 import { createSupabaseAdminClient } from "./supabase-admin";
+import { saveDraftContext, type DraftContext } from "./draft-context";
 import { splitDraftForStorage } from "./journey/parse-itinerary";
 import { parseStopMarkers, stripStopMarkers, stopsFromNights } from "./journey/plan-stops";
 
@@ -2050,10 +2051,332 @@ function internalNotesSoFar(
   ].filter(Boolean);
   return parts.length ? parts.join("\n\n") : null;
 }
+/**
+ * The one email the team gets about a draft.
+ *
+ * Pulled out of the drafting pass because three callers need it now: the
+ * checking run that has a verdict, the checking run that gave up without one,
+ * and the drafting run on the rare day it cannot hand over at all. A team
+ * that hears nothing assumes nothing happened, which was the failure this
+ * whole split exists to remove.
+ *
+ * selfCheck is nullable and the banner says so plainly when it is null. An
+ * empty space where a verdict should be reads as "clean" to anyone skimming.
+ */
+async function sendReviewerEmail({ reference, cityLabelEn, customerName, idempotencyKey, englishDraft, arabicDraft, selfCheck, proposalUrl }: {
+  reference: string;
+  cityLabelEn: string;
+  customerName: string;
+  idempotencyKey: string;
+  englishDraft: string;
+  arabicDraft: string;
+  selfCheck: string | null;
+  proposalUrl: string | null;
+}): Promise<void> {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) return console.error(`No RESEND_API_KEY, so nobody was told about ${reference}.`);
+  const resend = new Resend(resendKey);
+  const reviewEmail = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>";
+
+  const result = await resend.emails.send({
+    from: fromEmail,
+    to: [reviewEmail],
+    subject: `[AI DRAFT] ${reference} | ${cityLabelEn} itinerary sketch`,
+    html: wrapEmailHtml(reference, cityLabelEn, customerName, englishDraft, arabicDraft, selfCheck, proposalUrl),
+    text: [
+      proposalUrl ? `Open in reviewer tool: ${proposalUrl}` : "",
+      selfCheck
+        ? (readSelfCheckVerdict(selfCheck).clean
+            ? "AI SELF-CHECK: CLEAN, nothing to act on."
+            : `AI SELF-CHECK, NEEDS A LOOK:\n${readSelfCheckVerdict(selfCheck).body}`)
+        : "AI SELF-CHECK: did not run. Nothing in this draft has been checked against the research, and it cannot release on its own.",
+      englishDraft,
+      arabicDraft,
+    ].filter(Boolean).join("\n\n===\n\n"),
+    tags: [{ name: "email_type", value: "draft_guide" }],
+  }, { idempotencyKey: `draft-guide/${idempotencyKey}` });
+
+  if (result.error) console.error("Draft guide email failed", result.error.name);
+}
+
+/**
+ * The second half of the pipeline: check the draft, repair what the check
+ * found, store the result, tell the team.
+ *
+ * Its own request, with its own budget, and that is the whole point. Writing
+ * and translating a London plan took 689 of the route's 800 seconds, so
+ * everything below used to run on the 111 that were left, which is not enough
+ * for a check, let alone a repair and the re-check that has to follow it. The
+ * measured consequence was a run cut off after the Arabic and before the
+ * verdict: a plan that looked finished, had no verdict, and told nobody.
+ *
+ * Everything it needs was parked by the writing half rather than looked up
+ * again, so the checker reads exactly the sources the writer had.
+ */
+/**
+ * Tells the team a plan will not be checked, using only what the row holds.
+ *
+ * The parked context is exactly what is missing when this is called, so this
+ * cannot use it. A reviewer does not need the grounded facts to read a plan;
+ * they need to know it is there, that nothing verified it, and that it will
+ * not go anywhere on its own.
+ */
+export async function sendReviewerEmailForUnchecked(proposalId: string): Promise<void> {
+  const supabase = createSupabaseAdminClient();
+  const { data } = await supabase
+    .from("proposals")
+    .select("reference, city, customer_name, itinerary_en, itinerary_ar")
+    .eq("id", proposalId)
+    .maybeSingle();
+  if (!data) return console.error(`No proposal ${proposalId} to write to the team about.`);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  await sendReviewerEmail({
+    reference: (data.reference as string) ?? proposalId.slice(0, 8).toUpperCase(),
+    cityLabelEn: (data.city as string) ?? "",
+    customerName: (data.customer_name as string) ?? "",
+    // A different key from the drafting email, so this one is never swallowed
+    // as a duplicate of an email that was never sent.
+    idempotencyKey: `unchecked/${proposalId}`,
+    englishDraft: (data.itinerary_en as string) ?? "",
+    arabicDraft: (data.itinerary_ar as string) ?? "",
+    selfCheck: null,
+    proposalUrl: `${siteUrl}/internal/journeys/${proposalId}`,
+  });
+}
+
+export async function checkAndFinishDraft(proposalId: string, context: DraftContext): Promise<void> {
+  const startedAt = Date.now();
+  const msLeft = () => PIPELINE_BUDGET_MS - (Date.now() - startedAt);
+  const secondsUsed = () => Math.round((Date.now() - startedAt) / 1000);
+  const { submission, groundedFactsEn, groundedFactsAr, operationalResearch, cityLabelEn, stopLabelsEn } = context;
+  const isStudy = submission.journeyType === "study";
+  const reference = submission.submissionId.slice(0, 8).toUpperCase();
+  let englishDraft = context.englishDraft;
+  let arabicDraft = context.arabicDraft;
+  let englishSplit = splitDraftForStorage(englishDraft);
+  let arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+  let draftSpend = context.spentSoFar;
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicKey) {
+    console.error(`No ANTHROPIC_API_KEY, so ${reference} cannot be checked.`);
+    throw new Error("NO_ANTHROPIC_KEY");
+  }
+  const anthropic = new Anthropic({ apiKey: anthropicKey, maxRetries: 6 });
+  const supabase = createSupabaseAdminClient();
+
+  try {
+    // Built once: the check and the re-check after a repair both need them.
+    //
+    // A study plan has no day list, so a day-by-day calendar for it is
+    // meaningless and, over an academic year, enormous: the London draft
+    // shipped thirty "Day 1 = Monday September 20" lines into a check that
+    // had no days to verify them against.
+    const checkCalendar = isStudy ? "" : dayByDayCalendar(submission.fromDate, submission.toDate);
+    const checkRequest = customerRequestForCheck(submission, cityLabelEn, stopLabelsEn);
+    const runCheck = (en: string, ar: string) => selfCheckDraft(
+      anthropic, en, ar, groundedFactsEn, groundedFactsAr, operationalResearch,
+      checkCalendar, checkRequest, (d) => { draftSpend += d; });
+
+    // Skipped rather than started when it cannot finish. A check cut off
+    // halfway costs the same as one that completes and leaves nothing behind.
+    const timeForCheck = msLeft() > SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS;
+    if (!timeForCheck) console.warn(`Self-check skipped for ${reference}: ${secondsUsed()}s already used, not enough left to finish one.`);
+    let selfCheck = timeForCheck ? await runCheck(englishDraft, arabicDraft) : null;
+
+    // If the review found something, fix it rather than forwarding it.
+    //
+    // A yellow banner meant "somebody should read this before it goes out",
+    // which works while somebody reads every draft by hand and stops working
+    // the day after that. The check already names each defect exactly, so the
+    // draft goes back with the findings and is corrected surgically, then
+    // checked again on the corrected text.
+    //
+    // One round only. A finding the model cannot fix, a genuine gap in the
+    // research, would otherwise loop until a cap stopped it and be paid for
+    // each time. One round removes what is removable; whatever survives is a
+    // real note for the reviewer rather than noise.
+    // Repair rounds, while they are still helping.
+    //
+    // A single round took one Bali draft from four findings to one: the
+    // unsourced claims went, and what surfaced underneath was a real
+    // scheduling conflict against the draft's own sourced hours. That second
+    // problem only became visible once the first was cleared, so a second
+    // round is worth having.
+    //
+    // The guard is convergence, not a fixed count. A round only earns another
+    // if it reduced the number of findings. A draft stuck at three findings
+    // has hit something the model cannot fix - usually a genuine gap in the
+    // research - and looping on that just bills for the same answer twice.
+    const countFindings = (check: string) => {
+      const verdict = readSelfCheckVerdict(check);
+      if (verdict.clean) return 0;
+      return verdict.body.split(/\r?\n/).filter((line) => line.trim().length > 12).length;
+    };
+
+    // A spliced Arabic word counts as a finding even when the check passed the
+    // draft, because the check reads for factual fidelity and a word changing
+    // alphabet halfway is a different kind of wrong.
+    const findingsFor = (check: string, arabic: string) => {
+      const verdict = readSelfCheckVerdict(check);
+      const fromCheck = verdict.clean ? "" : verdict.body;
+      return [fromCheck, spliceFindings(arabic)].filter(Boolean).join("\n");
+    };
+
+    const MAX_REPAIR_ROUNDS = 2;
+    let repaired_any = false;
+    let previousCount = selfCheck ? countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length : 0;
+    for (let round = 1; round <= MAX_REPAIR_ROUNDS && previousCount > 0 && englishDraft; round++) {
+      // A round is a repair and the re-check that describes its result. Both
+      // or neither: a repair whose re-check never runs would be stored under
+      // a verdict written about the text before it.
+      if (msLeft() < REPAIR_ROUND_ESTIMATE_MS + SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS) {
+        console.warn(`Repair round ${round} skipped for ${reference}: ${secondsUsed()}s used, ${Math.round(msLeft() / 1000)}s left. The findings go to the reviewer unrepaired.`);
+        break;
+      }
+      const findings = findingsFor(selfCheck ?? "", arabicDraft);
+      if (!findings) break;
+
+      const repaired = await repairDraft(
+        anthropic, englishDraft, arabicDraft, findings,
+        groundedFactsEn, operationalResearch, (d) => { draftSpend += d; });
+      if (!repaired) break;
+
+      englishDraft = repaired.englishDraft;
+      arabicDraft = repaired.arabicDraft;
+      repaired_any = true;
+      // The re-check describes the draft actually being stored. A reviewer
+      // needs that, not a list of things already put right.
+      selfCheck = await runCheck(englishDraft, arabicDraft);
+
+      const nowCount = countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length;
+      console.log(`Repair round ${round}: ${repaired.applied} edits applied, findings ${previousCount} to ${nowCount}.`);
+      if (nowCount === 0) break;
+      if (nowCount >= previousCount) {
+        console.log(`Repair stopping: round ${round} did not reduce the findings, so another would not either.`);
+        break;
+      }
+      previousCount = nowCount;
+    }
+
+    // Store the repaired text. Until this existed, nothing did.
+    //
+    // itinerary_en and itinerary_ar were written once, before the check, and
+    // never again. The repair rounds then rewrote the draft in memory, the
+    // re-check described the rewrite, review_state and the reviewer's email
+    // reported on the rewrite, and the rewrite was dropped when the function
+    // returned. The customer's page kept the text the check had objected to.
+    //
+    // The bad case is not the wasted spend. It is a plan whose every finding
+    // was repaired: it is marked clean, the release cron sends it without a
+    // person reading it, and what it sends still contains all of them.
+    if (repaired_any) {
+      englishSplit = splitDraftForStorage(englishDraft);
+      arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+      if (supabase && proposalId) {
+        const { error } = await supabase
+          .from("proposals")
+          .update({
+            itinerary_en: englishSplit.customerFacing || englishDraft,
+            ...(arabicSplit?.customerFacing ? { itinerary_ar: arabicSplit.customerFacing } : {}),
+          })
+          .eq("id", proposalId);
+        if (error) console.error("Storing the repaired draft failed", error.message);
+        else console.log(`Repaired draft stored for ${reference}.`);
+      }
+    }
+
+    console.log(`Draft pipeline for ${reference}: ${secondsUsed()}s used of ${PIPELINE_BUDGET_MS / 1000}s budgeted.`);
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    let proposalUrl: string | null = null;
+
+    // Best-effort: a failure here should never stop the email from going
+    // out, the reviewer can still work from the email content alone if
+    // this doesn't succeed for some reason.
+    try {
+      if (supabase && proposalId) {
+        // The full drafts (still used for the reviewer email above) mix
+        // customer-facing plan with internal-only "Needs a decision" / "For
+        // the planner" sections. Split those apart here: only the
+        // customer-facing half goes into itinerary_en/itinerary_ar, which
+        // the customer's own page renders verbatim once published, the
+        // internal half goes into notes instead, alongside the self-check.
+
+        // Read the machine stop line before anything strips it, so the customer's
+        // page knows which day each stop begins on and can show the first day
+        // of every stop for free.
+        // Prefer the mapping computed from the customer's own night counts.
+        // The model's STOPS line is only the fallback now, for older shapes
+        // and single-stop trips: it used to be the sole source, and when it
+        // came back missing the fallback below recorded firstDay 0 for every
+        // stop, which meant a paying multi-stop customer saw no free day at
+        // all. Anything the form already knows should not depend on
+        // generated text surviving intact.
+
+        const internalNotesParts = [
+          // Same reading as the email banner, so the reviewer tool and the
+          // email can never disagree about whether a draft came back clean.
+          selfCheck
+            ? (readSelfCheckVerdict(selfCheck).clean
+                ? "AI self-check: CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes."
+                : `AI self-check, needs a look before publishing:\n${readSelfCheckVerdict(selfCheck).body}`)
+            : "",
+          // The same text the early write already stored, so a timeout
+          // between the two leaves the reviewer a note that is merely
+          // missing its verdict rather than one that disagrees with it.
+          internalNotesSoFar(englishSplit, arabicSplit) ?? "",
+        ].filter(Boolean);
+        const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
+
+        // The verdict as a column, not only as a sentence inside notes.
+        // Whether a plan may go out without a person reading it is the most
+        // consequential fact about it, and it should not live only in prose
+        // that three different regular expressions have to agree about.
+        const reviewState = selfCheck
+          ? (readSelfCheckVerdict(selfCheck).clean ? "clean" : "flagged")
+          : null;
+
+        const { error } = await supabase
+          .from("proposals")
+          .update({ notes, review_state: reviewState })
+          .eq("id", proposalId);
+
+        if (error) console.error("Storing the internal notes failed", error.message);
+        {
+          proposalUrl = `${siteUrl}/internal/journeys/${proposalId}`;
+          // Written separately, and allowed to fail, rather than included in
+          // the insert above. Migrations in this project are applied by hand
+          // (see supabase/migrations), so a deploy can reach production
+          // before the column exists. In the insert that would fail the whole
+          // row and take every draft down; here the worst case is a plan that
+          // arrives without a cost recorded, which is what happened before
+          // this column existed anyway.
+          const { error: costError } = await supabase
+            .from("proposals")
+            .update({ draft_cost_usd: Number(draftSpend.toFixed(4)) })
+            .eq("id", proposalId);
+          if (costError) console.warn("Draft cost not recorded, has 20260822_add_draft_cost.sql been run?", costError.message);
+          else console.log(`Draft ${reference} cost roughly $${draftSpend.toFixed(2)} to produce.`);
+        }
+      }
+    } catch (error) {
+      console.error("Auto-create proposal failed", error);
+    }
+
+    await sendReviewerEmail({ reference, cityLabelEn, customerName: submission.name, idempotencyKey: submission.submissionId, englishDraft, arabicDraft, selfCheck, proposalUrl });
+  } catch (error) {
+    console.error(`Checking ${reference} failed`, error);
+    throw error;
+  }
+}
+
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
+  // Writing and translating only, now that the check has its own run. The
+  // clock is kept for the log line, not as a guard: this half measured 426
+  // seconds on a London plan and has room.
   const pipelineStartedAt = Date.now();
-  /** What is left of PIPELINE_BUDGET_MS. Negative means we are already over. */
-  const msLeft = () => PIPELINE_BUDGET_MS - (Date.now() - pipelineStartedAt);
   const secondsUsed = () => Math.round((Date.now() - pipelineStartedAt) / 1000);
   try {
     // These early returns used to be completely silent, which made a missing
@@ -2345,227 +2668,27 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       if (error) console.error("Storing the Arabic draft failed", error.message);
     }
 
-    // Built once: the check and the re-check after a repair both need them.
+    // Writing is done. Checking is a separate request with its own budget,
+    // because the two together did not fit in one: see checkAndFinishDraft.
     //
-    // A study plan has no day list, so a day-by-day calendar for it is
-    // meaningless and, over an academic year, enormous: the London draft
-    // shipped thirty "Day 1 = Monday September 20" lines into a check that
-    // had no days to verify them against.
-    const checkCalendar = isStudy ? "" : dayByDayCalendar(submission.fromDate, submission.toDate);
-    const checkRequest = customerRequestForCheck(submission, cityLabelEn, stopLabelsEn);
-    const runCheck = (en: string, ar: string) => selfCheckDraft(
-      anthropic, en, ar, groundedFactsEn, groundedFactsAr, operationalResearch,
-      checkCalendar, checkRequest, (d) => { draftSpend += d; });
-
-    // Skipped rather than started when it cannot finish. A check cut off
-    // halfway costs the same as one that completes and leaves nothing behind.
-    const timeForCheck = msLeft() > SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS;
-    if (!timeForCheck) console.warn(`Self-check skipped for ${reference}: ${secondsUsed()}s already used, not enough left to finish one.`);
-    let selfCheck = timeForCheck ? await runCheck(englishDraft, arabicDraft) : null;
-
-    // If the review found something, fix it rather than forwarding it.
-    //
-    // A yellow banner meant "somebody should read this before it goes out",
-    // which works while somebody reads every draft by hand and stops working
-    // the day after that. The check already names each defect exactly, so the
-    // draft goes back with the findings and is corrected surgically, then
-    // checked again on the corrected text.
-    //
-    // One round only. A finding the model cannot fix, a genuine gap in the
-    // research, would otherwise loop until a cap stopped it and be paid for
-    // each time. One round removes what is removable; whatever survives is a
-    // real note for the reviewer rather than noise.
-    // Repair rounds, while they are still helping.
-    //
-    // A single round took one Bali draft from four findings to one: the
-    // unsourced claims went, and what surfaced underneath was a real
-    // scheduling conflict against the draft's own sourced hours. That second
-    // problem only became visible once the first was cleared, so a second
-    // round is worth having.
-    //
-    // The guard is convergence, not a fixed count. A round only earns another
-    // if it reduced the number of findings. A draft stuck at three findings
-    // has hit something the model cannot fix - usually a genuine gap in the
-    // research - and looping on that just bills for the same answer twice.
-    const countFindings = (check: string) => {
-      const verdict = readSelfCheckVerdict(check);
-      if (verdict.clean) return 0;
-      return verdict.body.split(/\r?\n/).filter((line) => line.trim().length > 12).length;
-    };
-
-    // A spliced Arabic word counts as a finding even when the check passed the
-    // draft, because the check reads for factual fidelity and a word changing
-    // alphabet halfway is a different kind of wrong.
-    const findingsFor = (check: string, arabic: string) => {
-      const verdict = readSelfCheckVerdict(check);
-      const fromCheck = verdict.clean ? "" : verdict.body;
-      return [fromCheck, spliceFindings(arabic)].filter(Boolean).join("\n");
-    };
-
-    const MAX_REPAIR_ROUNDS = 2;
-    let repaired_any = false;
-    let previousCount = selfCheck ? countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length : 0;
-    for (let round = 1; round <= MAX_REPAIR_ROUNDS && previousCount > 0 && englishDraft; round++) {
-      // A round is a repair and the re-check that describes its result. Both
-      // or neither: a repair whose re-check never runs would be stored under
-      // a verdict written about the text before it.
-      if (msLeft() < REPAIR_ROUND_ESTIMATE_MS + SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS) {
-        console.warn(`Repair round ${round} skipped for ${reference}: ${secondsUsed()}s used, ${Math.round(msLeft() / 1000)}s left. The findings go to the reviewer unrepaired.`);
-        break;
-      }
-      const findings = findingsFor(selfCheck ?? "", arabicDraft);
-      if (!findings) break;
-
-      const repaired = await repairDraft(
-        anthropic, englishDraft, arabicDraft, findings,
-        groundedFactsEn, operationalResearch, (d) => { draftSpend += d; });
-      if (!repaired) break;
-
-      englishDraft = repaired.englishDraft;
-      arabicDraft = repaired.arabicDraft;
-      repaired_any = true;
-      // The re-check describes the draft actually being stored. A reviewer
-      // needs that, not a list of things already put right.
-      selfCheck = await runCheck(englishDraft, arabicDraft);
-
-      const nowCount = countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length;
-      console.log(`Repair round ${round}: ${repaired.applied} edits applied, findings ${previousCount} to ${nowCount}.`);
-      if (nowCount === 0) break;
-      if (nowCount >= previousCount) {
-        console.log(`Repair stopping: round ${round} did not reduce the findings, so another would not either.`);
-        break;
-      }
-      previousCount = nowCount;
-    }
-
-    // Store the repaired text. Until this existed, nothing did.
-    //
-    // itinerary_en and itinerary_ar were written once, before the check, and
-    // never again. The repair rounds then rewrote the draft in memory, the
-    // re-check described the rewrite, review_state and the reviewer's email
-    // reported on the rewrite, and the rewrite was dropped when the function
-    // returned. The customer's page kept the text the check had objected to.
-    //
-    // The bad case is not the wasted spend. It is a plan whose every finding
-    // was repaired: it is marked clean, the release cron sends it without a
-    // person reading it, and what it sends still contains all of them.
-    if (repaired_any) {
-      englishSplit = splitDraftForStorage(englishDraft);
-      arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
-      if (supabase && proposalId) {
-        const { error } = await supabase
-          .from("proposals")
-          .update({
-            itinerary_en: englishSplit.customerFacing || englishDraft,
-            ...(arabicSplit?.customerFacing ? { itinerary_ar: arabicSplit.customerFacing } : {}),
-          })
-          .eq("id", proposalId);
-        if (error) console.error("Storing the repaired draft failed", error.message);
-        else console.log(`Repaired draft stored for ${reference}.`);
+    // Everything that half needs is parked here rather than looked up again,
+    // so the checker reads the same sources the writer did.
+    if (supabase && proposalId) {
+      const parked = await saveDraftContext(supabase, proposalId, {
+        submission, englishDraft, arabicDraft, groundedFactsEn, groundedFactsAr,
+        operationalResearch, cityLabelEn, stopLabelsEn, spentSoFar: draftSpend,
+      });
+      // Nothing to hand over means nothing will ever check this plan, so the
+      // team is told now rather than waiting for an email that cannot come.
+      if (!parked) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+        await sendReviewerEmail({
+          reference, cityLabelEn, customerName: submission.name, idempotencyKey: submission.submissionId,
+          englishDraft, arabicDraft, selfCheck: null, proposalUrl: `${siteUrl}/internal/journeys/${proposalId}`,
+        });
       }
     }
-
-    console.log(`Draft pipeline for ${reference}: ${secondsUsed()}s used of ${PIPELINE_BUDGET_MS / 1000}s budgeted.`);
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    let proposalUrl: string | null = null;
-
-    // Best-effort: a failure here should never stop the email from going
-    // out, the reviewer can still work from the email content alone if
-    // this doesn't succeed for some reason.
-    try {
-      if (supabase && proposalId) {
-        // The full drafts (still used for the reviewer email above) mix
-        // customer-facing plan with internal-only "Needs a decision" / "For
-        // the planner" sections. Split those apart here: only the
-        // customer-facing half goes into itinerary_en/itinerary_ar, which
-        // the customer's own page renders verbatim once published, the
-        // internal half goes into notes instead, alongside the self-check.
-
-        // Read the machine stop line before anything strips it, so the customer's
-        // page knows which day each stop begins on and can show the first day
-        // of every stop for free.
-        // Prefer the mapping computed from the customer's own night counts.
-        // The model's STOPS line is only the fallback now, for older shapes
-        // and single-stop trips: it used to be the sole source, and when it
-        // came back missing the fallback below recorded firstDay 0 for every
-        // stop, which meant a paying multi-stop customer saw no free day at
-        // all. Anything the form already knows should not depend on
-        // generated text surviving intact.
-
-        const internalNotesParts = [
-          // Same reading as the email banner, so the reviewer tool and the
-          // email can never disagree about whether a draft came back clean.
-          selfCheck
-            ? (readSelfCheckVerdict(selfCheck).clean
-                ? "AI self-check: CLEAN. No issues found, the translation is faithful and both are consistent with the grounded facts and research notes."
-                : `AI self-check, needs a look before publishing:\n${readSelfCheckVerdict(selfCheck).body}`)
-            : "",
-          // The same text the early write already stored, so a timeout
-          // between the two leaves the reviewer a note that is merely
-          // missing its verdict rather than one that disagrees with it.
-          internalNotesSoFar(englishSplit, arabicSplit) ?? "",
-        ].filter(Boolean);
-        const notes = internalNotesParts.length ? internalNotesParts.join("\n\n") : null;
-
-        // The verdict as a column, not only as a sentence inside notes.
-        // Whether a plan may go out without a person reading it is the most
-        // consequential fact about it, and it should not live only in prose
-        // that three different regular expressions have to agree about.
-        const reviewState = selfCheck
-          ? (readSelfCheckVerdict(selfCheck).clean ? "clean" : "flagged")
-          : null;
-
-        const { error } = await supabase
-          .from("proposals")
-          .update({ notes, review_state: reviewState })
-          .eq("id", proposalId);
-
-        if (error) console.error("Storing the internal notes failed", error.message);
-        {
-          proposalUrl = `${siteUrl}/internal/journeys/${proposalId}`;
-          // Written separately, and allowed to fail, rather than included in
-          // the insert above. Migrations in this project are applied by hand
-          // (see supabase/migrations), so a deploy can reach production
-          // before the column exists. In the insert that would fail the whole
-          // row and take every draft down; here the worst case is a plan that
-          // arrives without a cost recorded, which is what happened before
-          // this column existed anyway.
-          const { error: costError } = await supabase
-            .from("proposals")
-            .update({ draft_cost_usd: Number(draftSpend.toFixed(4)) })
-            .eq("id", proposalId);
-          if (costError) console.warn("Draft cost not recorded, has 20260822_add_draft_cost.sql been run?", costError.message);
-          else console.log(`Draft ${reference} cost roughly $${draftSpend.toFixed(2)} to produce.`);
-        }
-      }
-    } catch (error) {
-      console.error("Auto-create proposal failed", error);
-    }
-
-    const resend = new Resend(resendKey);
-    const reviewEmail = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
-    const fromEmail = process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>";
-
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: [reviewEmail],
-      subject: `[AI DRAFT] ${reference} | ${cityLabelEn} itinerary sketch`,
-      html: wrapEmailHtml(reference, cityLabelEn, submission.name, englishDraft, arabicDraft, selfCheck, proposalUrl),
-      text: [
-        proposalUrl ? `Open in reviewer tool: ${proposalUrl}` : "",
-        selfCheck
-          ? (readSelfCheckVerdict(selfCheck).clean
-              ? "AI SELF-CHECK: CLEAN, nothing to act on."
-              : `AI SELF-CHECK, NEEDS A LOOK:\n${readSelfCheckVerdict(selfCheck).body}`)
-          : "",
-        englishDraft,
-        arabicDraft,
-      ].filter(Boolean).join("\n\n===\n\n"),
-      tags: [{ name: "email_type", value: "draft_guide" }],
-    }, { idempotencyKey: `draft-guide/${submission.submissionId}` });
-
-    if (result.error) console.error("Draft guide email failed", result.error.name);
+    console.log(`Draft written for ${reference}: ${secondsUsed()}s, handed to the checking run.`);
   } catch (error) {
     console.error("Draft guide generation failed", error);
     // Tell the team the draft isn't coming. Silently swallowing this meant a
