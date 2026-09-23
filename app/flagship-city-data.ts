@@ -4901,6 +4901,124 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
       }
     ]
   },
+  "turkey/uzungol": {
+    "attractions": [
+      {
+        "nameEn": "Uzungöl lake and shore path",
+        "nameAr": "بحيرة أوزنجول وممشاها",
+        "categoryEn": "Lake",
+        "categoryAr": "بحيرة",
+        "descriptionEn": "A lake made when a landslide dammed the Haldizen stream, with a walking path along the water and the village strung out on one side.",
+        "descriptionAr": "بحيرة تكوّنت حين سدّ انهيار صخري مجرى نهر هالديزن، وحولها ممشى على الماء والقرية ممتدة على أحد جانبيها."
+      },
+      {
+        "nameEn": "Uzungöl Mosque",
+        "nameAr": "جامع أوزنجول",
+        "categoryEn": "Landmark",
+        "categoryAr": "معلم",
+        "descriptionEn": "The white mosque with two minarets at the water's edge, the building in almost every photograph of the valley.",
+        "descriptionAr": "الجامع الأبيض بمئذنتيه على حافة الماء، وهو المبنى الذي يظهر في أغلب صور الوادي."
+      },
+      {
+        "nameEn": "Demirkapı plateau",
+        "nameAr": "هضبة ديمير كابي",
+        "categoryEn": "Plateau",
+        "categoryAr": "هضبة",
+        "descriptionEn": "High pasture above the village, reached on a rough mountain road. A summer trip: snow closes it for much of the year.",
+        "descriptionAr": "مراعٍ مرتفعة فوق القرية، يوصل إليها طريق جبلي وعر. رحلة صيفية، فالثلج يغلقها معظم السنة."
+      },
+      {
+        "nameEn": "Haldizen valley waterfalls",
+        "nameAr": "شلالات وادي هالديزن",
+        "categoryEn": "Nature",
+        "categoryAr": "طبيعة",
+        "descriptionEn": "Waterfalls on the stream that feeds the lake, a short drive up the valley from the village.",
+        "descriptionAr": "شلالات على النهر الذي يغذي البحيرة، على مسافة قصيرة بالسيارة أعلى الوادي من القرية."
+      },
+      {
+        "nameEn": "Şekersu and Yaylaönü plateaus",
+        "nameAr": "هضبتا شكرسو ويايلا أونو",
+        "categoryEn": "Walking",
+        "categoryAr": "مشي",
+        "descriptionEn": "Walking country above the valley, where the view opens out over the mountains rather than the lake.",
+        "descriptionAr": "أرض للمشي فوق الوادي، حيث ينفتح المنظر على الجبال بدل البحيرة."
+      }
+    ],
+    "dining": [
+      {
+        "nameEn": "İnan Kardeşler Restaurant",
+        "nameAr": "مطعم إينان كارديشلر",
+        "cuisineEn": "Black Sea",
+        "cuisineAr": "مطبخ البحر الأسود",
+        "descriptionEn": "The hotel's own dining room by the lake, cooking the local plates: trout, muhlama and rice pudding.",
+        "descriptionAr": "مطعم الفندق على البحيرة، يقدم أطباق المنطقة: سمك السلمون المرقط والمحلمة والرز بالحليب."
+      },
+      {
+        "nameEn": "Şeflerin Yeri",
+        "nameAr": "شفلرين يري",
+        "cuisineEn": "Turkish grill and fish",
+        "cuisineAr": "مشاوي تركية وأسماك",
+        "descriptionEn": "Regional dishes, fish and kebabs, with the lake in view.",
+        "descriptionAr": "أطباق محلية وأسماك ومشاوي، والبحيرة أمامك."
+      }
+    ],
+    "stay": [
+      {
+        "nameEn": "İnan Kardeşler Hotel",
+        "nameAr": "فندق إينان كارديشلر",
+        "descriptionEn": "42 rooms with balconies, a few minutes' walk from the water, and the most consistently reviewed address in the village: 8.5 out of 10 from 342 reviews on one booking aggregator.",
+        "descriptionAr": "42 غرفة بشرفات، على بعد دقائق مشي من الماء، وأكثر عناوين القرية ثباتًا في التقييم: 8.5 من 10 من 342 تقييمًا على أحد مواقع الحجز."
+      }
+    ],
+    "extendedStay": [
+      {
+        "nameEn": "İnan Kardeşler Bungalow Motel",
+        "nameAr": "أكواخ إينان كارديشلر",
+        "descriptionEn": "Wooden bungalows from the same family, for anyone who would rather have a cabin in the trees than a hotel room.",
+        "descriptionAr": "أكواخ خشبية لنفس العائلة، لمن يفضل كوخًا بين الأشجار على غرفة فندقية."
+      }
+    ],
+    "sampleDay": [
+      {
+        "timeEn": "Morning",
+        "timeAr": "الصباح",
+        "placeEn": "The shore path",
+        "placeAr": "ممشى البحيرة",
+        "descriptionEn": "Walk the lake before the coaches arrive; the water is still and the village is quiet.",
+        "descriptionAr": "امشِ حول البحيرة قبل وصول الباصات؛ الماء ساكن والقرية هادئة."
+      },
+      {
+        "timeEn": "Afternoon",
+        "timeAr": "بعد الظهر",
+        "placeEn": "Demirkapı road",
+        "placeAr": "طريق ديمير كابي",
+        "descriptionEn": "Up to the plateau for the view back down the valley, weather permitting.",
+        "descriptionAr": "اصعد إلى الهضبة لترى الوادي من فوق، إذا سمح الجو."
+      },
+      {
+        "timeEn": "Evening",
+        "timeAr": "المساء",
+        "placeEn": "By the mosque",
+        "placeAr": "عند الجامع",
+        "descriptionEn": "Trout for dinner, then the lit mosque reflected in the lake.",
+        "descriptionAr": "عشاء سمك، ثم الجامع المضاء وانعكاسه في البحيرة."
+      }
+    ],
+    "travelTips": [
+      {
+        "en": "Uzungöl is about 95km from Trabzon on a winding road, an hour and a half to two hours. It is somewhere to stay a night or two, not a stop on the way to anywhere else.",
+        "ar": "أوزنجول تبعد نحو 95 كيلومترًا عن طرابزون على طريق ملتوٍ، ساعة ونصف إلى ساعتين. هي مكان تبيت فيه ليلة أو ليلتين، لا محطة في طريقك إلى مكان آخر."
+      },
+      {
+        "en": "Cloud closes the valley in quickly, even in July. Do the viewpoint early in the day rather than saving it for later.",
+        "ar": "الغيم يغطي الوادي بسرعة حتى في يوليو. خُذ المطل أول النهار ولا تؤجله."
+      },
+      {
+        "en": "July and August are the busy months, when the village fills with Gulf visitors and prices rise. Late spring and early autumn are greener and quieter.",
+        "ar": "يوليو وأغسطس هما موسم الزحمة، تمتلئ فيهما القرية بزوار الخليج وترتفع الأسعار. أواخر الربيع وأوائل الخريف أهدأ وأكثر خضرة."
+      }
+    ]
+  },
   "thailand/bangkok": {
     "attractions": [
       {

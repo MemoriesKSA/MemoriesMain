@@ -268,3 +268,13 @@ All 69 credited sources were downloaded and matched against the installed cards,
 
 - The Thessaloniki credit was corrected from Ioanna Mengenidou to NIKOLAOS IOANNIDIS, the photographer the Pexels page names.
 - Four cards are merged as delivered but flagged for replacement. Bologna is a black-and-white photograph in a colour set. Madrid shows the Royal Palace too small to read at card size. Fukuoka is a hazy skyline with no recognisable landmark. Naples could not be confirmed as Naples and Vesuvius is not clearly visible, so its "Identified as" entry repeats the source page's claim rather than a verified one.
+
+## Uzungöl added, 23 September 2026
+
+A new Turkish city card, so the catalogue, the planner and the drafting data all gained an entry.
+
+| File | Photographer | Source | Identified as |
+| --- | --- | --- | --- |
+| public/images/cities/turkey/uzungol.webp | Samer Daboul | [Pexels 8131397](https://www.pexels.com/photo/8131397/) | Uzungöl, Çaykara: the lake, the twin-minaret mosque and the village on the slope |
+
+Chosen from about 30 Pexels results, nearly all of which were genuinely Uzungöl: the lake, that mosque and the valley are unmistakable. 165 KB.
