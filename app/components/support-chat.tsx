@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, MessageCircle, Send, X } from "lucide-react";
+import { ArrowRight, Send, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -179,14 +179,14 @@ export function SupportChat() {
   return <aside className={`supportChat ${open ? "open" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <div className="supportPanel" id="memories-support-panel" aria-hidden={!open}>
       <header className="supportHeader">
-        <span className="supportAvatar"><Image src="/images/memories-logo-full.webp" alt="" width={26} height={26} /></span>
+        <span className="supportAvatar supportPortrait"><Image src="/images/memory-concierge.webp" alt="" width={40} height={40} /></span>
         <span><strong>{copy(ar, "Memory", "ذكرى")}</strong><small><i /> {copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
         <button type="button" onClick={() => setOpen(false)} aria-label={copy(ar, "Close support chat", "إغلاق محادثة الدعم")}><X /></button>
       </header>
       <div className="supportConversation" ref={conversationRef}>
         {messages.length === 0 ? (
           <>
-            <span className="supportSpark"><Image src="/images/memories-logo-full.webp" alt="" width={22} height={22} /></span>
+            <span className="supportSpark supportPortrait"><Image src="/images/memory-concierge.webp" alt="" width={36} height={36} /></span>
             <p className="supportGreeting">{copy(ar, "Hi, I'm Memory. What would you like to ask?", "كيف نقدر نساعدك؟")}</p>
             <p>{copy(ar, "Ask about a destination, your dream journey or studying abroad.", "اسأل عن وجهة أو رحلة أحلامك أو الدراسة في الخارج.")}</p>
             <div className="supportSuggestions" aria-label={copy(ar, "Suggested questions", "أسئلة مقترحة")}>
@@ -202,7 +202,7 @@ export function SupportChat() {
             {messages.map((message, index) => (
               <div className={`supportMessage ${message.role}`} key={index}>
                 {message.role === "assistant" && (
-                  <span className="supportMessageAvatar"><Image src="/images/memories-logo-full.webp" alt="" width={16} height={16} /></span>
+                  <span className="supportMessageAvatar supportPortrait"><Image src="/images/memory-concierge.webp" alt="" width={22} height={22} /></span>
                 )}
                 <div className="supportMessageContent">
                   {message.role === "assistant" && <span className="supportMessageName">{copy(ar, "Memory", "ذكرى")}</span>}
@@ -232,7 +232,9 @@ export function SupportChat() {
       </form>
     </div>
     <button className="supportLauncher" type="button" aria-expanded={open} aria-controls="memories-support-panel" onClick={() => setOpen((value) => !value)}>
-      <span className="supportLauncherIcon">{open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}</span>
+      <span className={open ? "supportLauncherIcon" : "supportLauncherIcon supportPortrait"}>
+        {open ? <X aria-hidden="true" /> : <Image src="/images/memory-concierge.webp" alt="" width={43} height={43} />}
+      </span>
       <span className="supportLauncherCopy"><strong>{copy(ar, "Ask Memory", "اسأل ذكرى")}</strong><small>{copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
     </button>
   </aside>;
