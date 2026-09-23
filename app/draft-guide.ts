@@ -306,6 +306,7 @@ Rules, factual accuracy and safety about the real companies named here matter mo
 - Never invent a flight number, a departure time, a duration or a fare, in any circumstance, even if it would make the plan feel more complete. Flights are the one part of this plan where we hand them the search and let them book it.
 - Don't commit us to work nobody has scheduled. You are writing a plan, not assigning tasks, and no one reads this document afterwards and does what it said we would. So no "we'll call ahead and confirm", no "we're checking that and will send it over", no "your final list follows before you travel". Where something genuinely isn't covered, say so plainly to the customer with no undertaking attached, and put the chase-up in "Team to confirm before booking" as an instruction to a colleague. Saying "we'll happily reprice it if you'd rather have the other hotel" is fine, because that is us responding to a choice they make; inventing a piece of research we will deliver by a date is not.
 - If they stated a preferred flight timing (daytime or night), acknowledge it in that block as something to filter for when they search, e.g. "you said you'd rather fly at night, so filter for late departures". Never claim a specific night flight exists on their route unless the notes say so.
+- A condition attached to a fact in the grounded facts or the research notes travels with that fact into the plan. "Kew Palace is covered by entry (closed in winter)" is not "Kew Palace is covered by entry": the parenthesis is the half that matters to whoever is standing there in October. Seasonal closing, a closed weekday, an age limit, a minimum group size, "residents only", a summer-only timetable: if the source qualified it, you qualify it, and when the customer's own dates sit near that boundary, say so on the day it affects rather than dropping it.
 - A hedge word you use anywhere in this draft (e.g. "typically", "positioned as", "worth confirming") must stay attached to that same claim EVERY time you reference it again, including in the closing "For the planner" section. Don't state something with a hedge once and then restate it as settled fact later in the same draft, that's as much a mistake as never hedging it at all.
 - Assume the customer's stated total budget covers the entire trip end to end, flights, hotel, transport and activities, everything, unless the customer's own notes below explicitly say it excludes something. Build the hotel tier and everything else on that assumption and state it plainly once. Don't hedge this as "needs the customer's confirmation" unless their own notes actually created real ambiguity, that's now the default assumption, not an open question.
 - The budget line in the request summary is one of three different questions, and answering the wrong one is a bad plan even when every fact in it is right. Read which it is and write accordingly:
@@ -1235,6 +1236,30 @@ const RESEARCH_REQUEST_OPTIONS = { timeout: 20 * 60 * 1000, maxRetries: 0 };
 // 300-second cap actually produced.
 export const RESEARCH_DEADLINE_MS = 180 * 1000;
 
+/**
+ * How long the whole pipeline may take, against the route's maxDuration of
+ * 800 seconds.
+ *
+ * A real London plan measured 689 seconds end to end: draft, translation,
+ * self-check and its repair rounds. That is 86% of the cap for a
+ * single-city trip, and a second stop would not have fitted.
+ *
+ * Being cut off is the worst outcome available here, because of how quiet it
+ * is. The English half is already stored, the Arabic never arrives, no
+ * verdict is written, no email goes out, and the row simply sits there
+ * looking drafted. Nobody is told.
+ *
+ * So the optional work checks the clock before it starts. A plan that runs
+ * long loses a repair round, which a reviewer can see and act on, instead of
+ * losing its Arabic half and its verdict, which nobody can see at all.
+ */
+const PIPELINE_BUDGET_MS = 700 * 1000;
+/** Measured on the London run: the check about 75s, a repair round about 115s. */
+const SELF_CHECK_ESTIMATE_MS = 100 * 1000;
+const REPAIR_ROUND_ESTIMATE_MS = 150 * 1000;
+/** Storing the repaired drafts, the verdict, the cost and the reviewer's email. */
+const FINALISE_RESERVE_MS = 45 * 1000;
+
 // List prices for what this pass uses, in dollars: Opus 5 input and output
 // per million tokens, and the web search tool per thousand searches. Kept
 // here only so the log line is readable at a glance; they are Anthropic's
@@ -1704,7 +1729,7 @@ export function readSelfCheckVerdict(selfCheck: string): { clean: boolean; body:
   return { clean: false, body: text };
 }
 
-export function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string, proposalUrl: string | null) {
+export function wrapEmailHtml(reference: string, cityLabel: string, customerName: string, englishDraft: string, arabicDraft: string, selfCheck: string | null, proposalUrl: string | null) {
   const englishHtml = escapeHtml(englishDraft).replace(/\n/g, "<br />");
   // An absent Arabic half has to announce itself. Silence here reads as "no
   // Arabic was needed" rather than "the translation was thrown away for
@@ -1713,7 +1738,7 @@ export function wrapEmailHtml(reference: string, cityLabel: string, customerName
   const arabicSection = arabicDraft
     ? `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px" dir="rtl"><p style="margin:0 0 14px;color:#ba8427;font-size:11px;font-weight:800;letter-spacing:1.5px">النسخة العربية</p><div style="font-size:14px;line-height:1.9">${escapeHtml(arabicDraft).replace(/\n/g, "<br />")}</div></div>`
     : `<div style="border-top:2px solid #e2e6e1;margin-top:22px;padding-top:22px"><p style="margin:0 0 8px;color:#a8523f;font-size:11px;font-weight:800;letter-spacing:1.5px">ARABIC TRANSLATION MISSING</p><p style="margin:0;font-size:13.5px;line-height:1.7">No Arabic version was produced for this draft, so the proposal has been saved with the English half only. Do not publish until Arabic is added: the customer's page offers both languages and the Arabic side would be empty. Re-run the draft or translate it by hand in the reviewer tool.</p></div>`;
-  const { clean: isClean, body: selfCheckBody } = readSelfCheckVerdict(selfCheck);
+  const { clean: isClean, body: selfCheckBody } = readSelfCheckVerdict(selfCheck ?? "");
   // A clean result gets one sentence rather than the model's own wording, so
   // green always looks the same and is read in a glance.
   const selfCheckText = isClean
@@ -1723,7 +1748,7 @@ export function wrapEmailHtml(reference: string, cityLabel: string, customerName
     : (selfCheckBody || "The check flagged this draft but gave no detail. Read it through yourself before publishing.");
   const selfCheckSection = selfCheck
     ? `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid ${isClean ? "#cfe3da" : "#f0c987"};background:${isClean ? "#f2f8f5" : "#fdf6e8"}"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:${isClean ? "#2f7a5c" : "#a9750f"}">AI SELF-CHECK, SECOND PASS${isClean ? " · CLEAN" : " · NEEDS A LOOK"}</p><div style="font-size:13px;line-height:1.7;color:#123c35;white-space:pre-wrap">${escapeHtml(selfCheckText)}</div></div>`
-    : "";
+    : `<div style="margin:0 30px 24px;padding:16px 18px;border-radius:12px;border:1px solid #f0c987;background:#fdf6e8"><p style="margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:1px;color:#a9750f">AI SELF-CHECK &middot; DID NOT RUN</p><div style="font-size:13px;line-height:1.7;color:#123c35">Nothing in this draft has been checked against the research by the second pass. A plan with no verdict never releases on its own, so read it through before it goes anywhere.</div></div>`;
   const proposalSection = proposalUrl
     ? `<div style="margin:0 30px 24px"><a href="${proposalUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700;font-size:13px">Open this draft in the reviewer tool →</a><p style="margin:8px 0 0;font-size:12px;color:#6a746f">Already saved as a draft proposal, pre-filled from this sketch. Nothing is sent to the customer until you edit and publish it there.</p></div>`
     : "";
@@ -2026,6 +2051,10 @@ function internalNotesSoFar(
   return parts.length ? parts.join("\n\n") : null;
 }
 export async function generateDraftGuide(submission: DraftGuideSubmission): Promise<void> {
+  const pipelineStartedAt = Date.now();
+  /** What is left of PIPELINE_BUDGET_MS. Negative means we are already over. */
+  const msLeft = () => PIPELINE_BUDGET_MS - (Date.now() - pipelineStartedAt);
+  const secondsUsed = () => Math.round((Date.now() - pipelineStartedAt) / 1000);
   try {
     // These early returns used to be completely silent, which made a missing
     // key look identical to "the AI draft feature is broken", with nothing in
@@ -2206,7 +2235,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     // rather than betting the whole run on the last step.
     let proposalId: string | null = null;
     const publicToken = randomBytes(24).toString("hex");
-    const englishSplit = splitDraftForStorage(englishDraft);
+    let englishSplit = splitDraftForStorage(englishDraft);
     const planStops = stopsFromNights(stopLabelsEn, submission.stopNights ?? [])
       ?? parseStopMarkers(englishSplit.internalOnly);
 
@@ -2285,7 +2314,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       ? ""
       : await translateDraftToArabic(anthropic, englishDraft, groundedFactsAr, (d) => { draftSpend += d; });
     if (englishOnly) console.log("English only was requested, so the Arabic pass was skipped.");
-    const arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+    let arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
     // The split decides what the customer sees, and it fails silently: a
     // false internal heading sends the rest of the document to the planner's
     // notes and the page still renders, just nearly empty. A Tokyo study
@@ -2328,7 +2357,11 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       anthropic, en, ar, groundedFactsEn, groundedFactsAr, operationalResearch,
       checkCalendar, checkRequest, (d) => { draftSpend += d; });
 
-    let selfCheck = await runCheck(englishDraft, arabicDraft);
+    // Skipped rather than started when it cannot finish. A check cut off
+    // halfway costs the same as one that completes and leaves nothing behind.
+    const timeForCheck = msLeft() > SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS;
+    if (!timeForCheck) console.warn(`Self-check skipped for ${reference}: ${secondsUsed()}s already used, not enough left to finish one.`);
+    let selfCheck = timeForCheck ? await runCheck(englishDraft, arabicDraft) : null;
 
     // If the review found something, fix it rather than forwarding it.
     //
@@ -2370,9 +2403,17 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
     };
 
     const MAX_REPAIR_ROUNDS = 2;
-    let previousCount = countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length;
+    let repaired_any = false;
+    let previousCount = selfCheck ? countFindings(selfCheck) + mixedScriptFragments(arabicDraft).length : 0;
     for (let round = 1; round <= MAX_REPAIR_ROUNDS && previousCount > 0 && englishDraft; round++) {
-      const findings = findingsFor(selfCheck, arabicDraft);
+      // A round is a repair and the re-check that describes its result. Both
+      // or neither: a repair whose re-check never runs would be stored under
+      // a verdict written about the text before it.
+      if (msLeft() < REPAIR_ROUND_ESTIMATE_MS + SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS) {
+        console.warn(`Repair round ${round} skipped for ${reference}: ${secondsUsed()}s used, ${Math.round(msLeft() / 1000)}s left. The findings go to the reviewer unrepaired.`);
+        break;
+      }
+      const findings = findingsFor(selfCheck ?? "", arabicDraft);
       if (!findings) break;
 
       const repaired = await repairDraft(
@@ -2382,6 +2423,7 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
 
       englishDraft = repaired.englishDraft;
       arabicDraft = repaired.arabicDraft;
+      repaired_any = true;
       // The re-check describes the draft actually being stored. A reviewer
       // needs that, not a list of things already put right.
       selfCheck = await runCheck(englishDraft, arabicDraft);
@@ -2395,6 +2437,35 @@ export async function generateDraftGuide(submission: DraftGuideSubmission): Prom
       }
       previousCount = nowCount;
     }
+
+    // Store the repaired text. Until this existed, nothing did.
+    //
+    // itinerary_en and itinerary_ar were written once, before the check, and
+    // never again. The repair rounds then rewrote the draft in memory, the
+    // re-check described the rewrite, review_state and the reviewer's email
+    // reported on the rewrite, and the rewrite was dropped when the function
+    // returned. The customer's page kept the text the check had objected to.
+    //
+    // The bad case is not the wasted spend. It is a plan whose every finding
+    // was repaired: it is marked clean, the release cron sends it without a
+    // person reading it, and what it sends still contains all of them.
+    if (repaired_any) {
+      englishSplit = splitDraftForStorage(englishDraft);
+      arabicSplit = arabicDraft ? splitDraftForStorage(arabicDraft) : null;
+      if (supabase && proposalId) {
+        const { error } = await supabase
+          .from("proposals")
+          .update({
+            itinerary_en: englishSplit.customerFacing || englishDraft,
+            ...(arabicSplit?.customerFacing ? { itinerary_ar: arabicSplit.customerFacing } : {}),
+          })
+          .eq("id", proposalId);
+        if (error) console.error("Storing the repaired draft failed", error.message);
+        else console.log(`Repaired draft stored for ${reference}.`);
+      }
+    }
+
+    console.log(`Draft pipeline for ${reference}: ${secondsUsed()}s used of ${PIPELINE_BUDGET_MS / 1000}s budgeted.`);
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     let proposalUrl: string | null = null;

@@ -14,6 +14,7 @@
 // languages is ~35,000 output tokens and lets the model change anything it
 // passes; a list of exact replacements cannot touch a line it was not asked to.
 
+import { readFileSync } from "node:fs";
 import { parseDraftEdits, applyDraftEdits, spliceFindings } from "../app/draft-guide";
 
 const draft = [
@@ -94,6 +95,35 @@ const spliceCases: [string, unknown, unknown][] = [
   ["neither is an empty draft", spliceFindings(""), ""],
 ];
 cases.push(...spliceCases);
+
+// ---- The repair has to reach the customer, and has to fit in the run ----
+//
+// Both of these were real. The repair rounds rewrote the draft in memory and
+// nothing ever stored the rewrite, so itinerary_en kept the text the check had
+// objected to while review_state described the corrected text: a plan whose
+// findings were all repaired released as clean carrying every one of them. And
+// a measured London plan used 86% of the route's 800 seconds, so on a longer
+// trip the run was cut off mid-pipeline, leaving no Arabic, no verdict and no
+// email, with nothing anywhere saying so.
+//
+// Wiring, not behaviour, so it is asserted against the source. A unit test
+// cannot see whether the update is there; this can.
+const pipeline = readFileSync("app/draft-guide.ts", "utf8");
+const journeysRoute = readFileSync("app/api/journeys/route.ts", "utf8");
+const budgetMs = Number(/const PIPELINE_BUDGET_MS = (\d+) \* 1000;/.exec(pipeline)?.[1] ?? 0) * 1000;
+const routeMaxMs = Number(/export const maxDuration = (\d+);/.exec(journeysRoute)?.[1] ?? 0) * 1000;
+
+cases.push(
+  ["the repaired draft is re-split", pipeline.includes("englishSplit = splitDraftForStorage(englishDraft);"), true],
+  ["and written back to the customer's column", /itinerary_en: englishSplit\.customerFacing \|\| englishDraft,[\s\S]{0,200}arabicSplit\?\.customerFacing/.test(pipeline), true],
+  ["only when a round actually applied one", pipeline.includes("if (repaired_any) {"), true],
+  ["the pipeline has a budget", budgetMs > 0, true],
+  ["which leaves the route room to return", budgetMs < routeMaxMs, true],
+  ["the check is skipped rather than started too late", pipeline.includes("const timeForCheck = msLeft() > SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS;"), true],
+  ["a repair round must afford its own re-check", pipeline.includes("if (msLeft() < REPAIR_ROUND_ESTIMATE_MS + SELF_CHECK_ESTIMATE_MS + FINALISE_RESERVE_MS) {"), true],
+  ["a missing verdict says so in the email", pipeline.includes("AI SELF-CHECK &middot; DID NOT RUN"), true],
+  ["a dropped qualifier is a drafting rule, not only a check", pipeline.includes("travels with that fact into the plan"), true],
+);
 
 let pass = 0;
 for (const [name, got, want] of cases) {
