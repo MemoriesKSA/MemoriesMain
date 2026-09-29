@@ -633,16 +633,20 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         placeholder={text(ar, "Choose a delivery speed", "اختر سرعة التسليم")}
         options={localize(ar, [
           { value: "no", en: "Standard \u2014 within 4\u20135 hours", ar: "عادي \u2014 خلال 4\u20135 ساعات" },
-          { value: "yes", en: `Priority \u2014 within 1 hour (SAR ${PRIORITY_PRICE_SAR})`, ar: `أولوية \u2014 خلال ساعة (${PRIORITY_PRICE_SAR} ريال)` },
+          { value: "yes", en: PLANS_FREE ? "Priority \u2014 within 1 hour (free for now)" : `Priority \u2014 within 1 hour (SAR ${PRIORITY_PRICE_SAR})`, ar: PLANS_FREE ? "أولوية \u2014 خلال ساعة (مجانية حاليًا)" : `أولوية \u2014 خلال ساعة (${PRIORITY_PRICE_SAR} ريال)` },
         ])}
         value={priority}
         onChange={setPriority}
       />
       {priority === "yes" ? (
         <p className="privacyHint full">
-          {text(ar,
-            "Nothing is charged here. We will confirm the priority fee with you before your plan is prepared.",
-            "لا يُخصم شيء الآن. سنؤكد لك رسوم الأولوية قبل إعداد خطتك.")}
+          {PLANS_FREE
+            ? text(ar,
+              `Free for now, like the plan itself. Priority is normally SAR ${PRIORITY_PRICE_SAR}.`,
+              `مجانية حاليًا مثل الخطة نفسها. الأولوية عادةً ${digits(PRIORITY_PRICE_SAR, true)} ريال.`)
+            : text(ar,
+              "Nothing is charged here. We will confirm the priority fee with you before your plan is prepared.",
+              "لا يُخصم شيء الآن. سنؤكد لك رسوم الأولوية قبل إعداد خطتك.")}
         </p>
       ) : null}
       <label className="consentCheck full"><input type="checkbox" name="privacyAccepted" value="yes" required /><span>{ar ? <>أوافق على استخدام بياناتي للرد على طلب الرحلة وفق <a href="/ar/privacy" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a>، وأقر بأن هذا الطلب ليس حجزًا مؤكدًا وفق <a href="/ar/terms" target="_blank" rel="noopener noreferrer">شروط الاستخدام</a>.</> : <>I agree that MEMORIES may use my information to respond to this journey request under the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and understand that this is not a confirmed booking under the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a>.</>}</span></label>

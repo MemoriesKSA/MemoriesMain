@@ -223,3 +223,31 @@ const ALL_PATH_OPTIONS: Array<LocalizedOption & { path: PlannerPath; description
 
 /** The study path is hidden while it is paused; the other two are unchanged. */
 export const pathOptions = ALL_PATH_OPTIONS.filter((option) => !(STUDY_ABROAD_PAUSED && option.path === "study"));
+
+// Every known city, keyed by its English label and by its slug read as words,
+// which are the two shapes a plan's stored city comes in ("AlUla" from the
+// label, "Red Sea" from readable("red-sea")).
+const ARABIC_CITY = new Map<string, string>();
+for (const country of travelCountries) {
+  for (const city of country.cities) {
+    if (city.value.startsWith("other-")) continue;
+    ARABIC_CITY.set(city.en.toLowerCase(), city.ar);
+    ARABIC_CITY.set(city.value.replace(/-/g, " ").toLowerCase(), city.ar);
+  }
+}
+
+/**
+ * A plan's city, in Arabic, for Arabic pages and emails.
+ *
+ * Plans store the English label ("Jeddah", or "Riyadh → Jeddah" for several
+ * stops), and Arabic copy was printing it as-is: "رحلة سارة إلى Jeddah".
+ * Stops join with "←", which points forward in a right-to-left line. A name we
+ * do not know, such as a place the customer typed in themselves, comes back
+ * exactly as they wrote it.
+ */
+export function arabicCityLabel(label: string): string {
+  return label
+    .split(/\s*→\s*/)
+    .map((part) => ARABIC_CITY.get(part.trim().toLowerCase()) ?? part.trim())
+    .join(" ← ");
+}

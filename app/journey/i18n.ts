@@ -1,3 +1,5 @@
+import { arabicCityLabel } from "../components/planner-data";
+
 // Chrome-text localization for the customer journey page only. The
 // customer's name and reference code are never run through this, they're
 // interpolated as-is regardless of locale, only the surrounding labels and
@@ -23,7 +25,7 @@ export const journeyStrings = {
   },
   ar: {
     kicker: "MEMORIES · رحلتك",
-    heroTitle: (name: string, city: string) => `رحلة ${name} إلى ${city}`,
+    heroTitle: (name: string, city: string) => `رحلة ${name} إلى ${arabicCityLabel(city)}`,
     referenceLabel: (ref: string) => `المرجع ${ref}`,
     total: "الإجمالي",
     otherVersionLabel: "النسخة الإنجليزية",

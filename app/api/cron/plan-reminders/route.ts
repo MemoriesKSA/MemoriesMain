@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { createSupabaseAdminClient } from "../../../supabase-admin";
+import { arabicCityLabel } from "../../../components/planner-data";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -86,16 +87,17 @@ export async function GET(request: Request) {
     const link = `${siteUrl}/journey/${plan.public_token}`;
     const name = escapeHtml(plan.customer_name ?? "");
     const city = escapeHtml(plan.city ?? "");
+    const cityAr = escapeHtml(arabicCityLabel(plan.city ?? ""));
     const reference = escapeHtml(plan.reference ?? "");
 
     const result = await resend.emails.send({
       from: fromEmail,
       to: [plan.customer_email],
       subject: `Your ${plan.city} plan is still waiting · خطتك ما زالت بانتظارك`,
-      html: `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif;font-size:22px">Hello ${name}, your plan is still here.</h1><p style="font-size:15px;line-height:1.8">You've seen the overview and a full day of your ${city} trip. The rest is ready in the same detail whenever you'd like it.</p><p style="margin:22px 0"><a href="${link}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700">Open your plan · افتح خطتك</a></p><div dir="rtl" style="border-top:1px solid #e2e6e1;padding-top:18px"><p style="font-size:15px;line-height:1.9;margin:0">أهلًا ${name}، خطة ${city} الخاصة بك ما زالت هنا. قرأت نظرة عامة عليها ويومًا كاملًا منها، وبقية الأيام جاهزة بالتفصيل نفسه متى ما أردت.</p></div><p style="color:#6a746f;font-size:13px;margin-top:20px">Reference · رقم الطلب: ${reference}</p></div></div>`,
+      html: `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif;font-size:22px">Hello ${name}, your plan is still here.</h1><p style="font-size:15px;line-height:1.8">You've seen the overview and a full day of your ${city} trip. The rest is ready in the same detail whenever you'd like it.</p><p style="margin:22px 0"><a href="${link}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700">Open your plan · افتح خطتك</a></p><div dir="rtl" style="border-top:1px solid #e2e6e1;padding-top:18px"><p style="font-size:15px;line-height:1.9;margin:0">أهلًا ${name}، خطة ${cityAr} الخاصة بك ما زالت هنا. قرأت نظرة عامة عليها ويومًا كاملًا منها، وبقية الأيام جاهزة بالتفصيل نفسه متى ما أردت.</p></div><p style="color:#6a746f;font-size:13px;margin-top:20px">Reference · رقم الطلب: ${reference}</p></div></div>`,
       text: `Hello ${plan.customer_name}, your ${plan.city} plan is still waiting: ${link}
 
-أهلًا ${plan.customer_name}، خطة ${plan.city} الخاصة بك ما زالت بانتظارك: ${link}`,
+أهلًا ${plan.customer_name}، خطة ${arabicCityLabel(plan.city ?? "")} الخاصة بك ما زالت بانتظارك: ${link}`,
       tags: [{ name: "email_type", value: "plan_reminder" }],
     }, { idempotencyKey: `plan-reminder/${plan.id}` });
 
