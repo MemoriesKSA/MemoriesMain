@@ -9,5 +9,5 @@ export default async function DesignJourneyPage({ searchParams }: { searchParams
   const country = Array.isArray(query.country) ? query.country[0] : query.country;
   const city = Array.isArray(query.city) ? query.city[0] : query.city;
   const source = Array.isArray(query.source) ? query.source[0] : query.source;
-  return <main className="innerPage"><section className="formHero editorialPlannerHero"><div className="container formHeroGrid"><PlannerPageStory variant="dream" /><JourneyPlanner initialPath={country === "saudi-arabia" ? "saudi" : "journey"} initialCountry={country} initialCity={city} fromCityGuide={source === "city-guide"} /></div></section></main>;
+  return <main className="innerPage"><section className="formHero editorialPlannerHero"><div className="container formHeroGrid"><PlannerPageStory variant="dream" /><JourneyPlanner initialPath={country === "saudi-arabia" ? "saudi" : "journey"} initialCountry={country} initialCity={city} fromCityGuide={source === "city-guide"} source={source ?? ""} /></div></section></main>;
 }

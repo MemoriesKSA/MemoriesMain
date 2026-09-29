@@ -123,7 +123,7 @@ function localizedOptions(ar: boolean, options: LocalizedOption[]): SelectChoice
   return options.map((option) => ({ value: option.value, label: ar ? option.ar : option.en, aliases: `${ar ? option.en : option.ar} ${option.aliases ?? ""}` }));
 }
 
-export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey", initialCountry = "", initialCity = "", fromCityGuide = false }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath; initialCountry?: string; initialCity?: string; fromCityGuide?: boolean }) {
+export function JourneyPlanner({ compact = false, locale = "en", initialPath = "journey", initialCountry = "", initialCity = "", fromCityGuide = false, source = "" }: { compact?: boolean; locale?: "en" | "ar"; initialPath?: PlannerPath; initialCountry?: string; initialCity?: string; fromCityGuide?: boolean; source?: string }) {
   const ar = locale === "ar";
   const [status, setStatus] = useState<"idle" | "reviewing" | "sent">("idle");
   const [path, setPath] = useState<PlannerPath>(initialPath);
@@ -589,6 +589,8 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
 
     <section className={sectionClass(4)} data-step="4"><div className="plannerStep"><span>04</span><div><strong>{text(ar, "Set the complete budget", "حدد الميزانية الكاملة")}</strong><small>{text(ar, "One total for flights, stays, transport and experiences.", "مبلغ واحد يشمل الطيران والإقامة والنقل والتجارب.")}</small>{requiredWarning(4)}</div></div><fieldset className="budgetModes"><legend>{text(ar, "Budget options", "خيارات الميزانية")}</legend>
       <input type="hidden" name="budgetMode" value={budgetMode} />
+      {/* Which link brought them here (?source=ad-a), so each ad can be judged by the plans it brings in. */}
+      <input type="hidden" name="source" value={source} />
       {[
         { value: "fixed",  en: "I have a set budget",                      ar: "لدي ميزانية محددة",                       hintEn: "Enter the maximum available for the trip",  hintAr: "أدخل الحد الأقصى للميزانية المتاحة للرحلة" },
         { value: "unsure", en: "I have a budget but I'm not sure it's enough", ar: "لدي ميزانية ولكن غير متأكد إذا كانت كافية", hintEn: "We'll help you land on the right budget",     hintAr: "سنساعدك في تحديد الميزانية المناسبة" },
