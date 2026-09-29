@@ -6,6 +6,23 @@
 // table, which is fine right up until one of them is edited alone and the
 // site quotes two different numbers for the same trip.
 
+/**
+ * Free while payments are closed.
+ *
+ * Nothing can be charged today: the gateway is not live, so a plan quoting a
+ * fee is a plan nobody can buy, and the site would be asking for money it has
+ * no way to take. Free is the honest version of the same state, and it puts
+ * real trips in front of real people while the merchant account is sorted.
+ *
+ * The rate below is kept, not deleted. It is what a plan is worth, every
+ * surface still quotes it as the normal price, and this is the switch back.
+ *
+ * Turning it off does NOT re-lock what was given away. Mark every existing
+ * unpaid plan paid first, or a customer who was handed a finished plan opens
+ * their link one day and finds two thirds of it hidden.
+ */
+export const PLANS_FREE = true;
+
 /** Per night of the trip. Was 20 until 2026-08-22. */
 export const NIGHT_RATE = 15;
 
@@ -33,10 +50,21 @@ export function nightsBetween(from: string | null | undefined, to: string | null
  * of work and is priced as one, and the paywall keeps it worth buying by
  * withholding the day itself rather than leaning on a price floor.
  */
-export function planFee(nights: number, stopCount: number): number {
+export function listPlanFee(nights: number, stopCount: number): number {
   const safeNights = Number.isFinite(nights) && nights > 0 ? Math.floor(nights) : 0;
   const extraStops = Number.isFinite(stopCount) && stopCount > 1 ? Math.floor(stopCount) - 1 : 0;
   return safeNights * NIGHT_RATE + extraStops * EXTRA_STOP_FEE;
+}
+
+/**
+ * What we are charging for it today, which is nothing while PLANS_FREE.
+ *
+ * Separate from listPlanFee because "what is this worth" and "what are we
+ * billing" are different questions with different answers right now, and a
+ * single function answering both told the plan page a plan was worth SAR 0.
+ */
+export function planFee(nights: number, stopCount: number): number {
+  return PLANS_FREE ? 0 : listPlanFee(nights, stopCount);
 }
 
 /**
@@ -64,8 +92,13 @@ export function toHalalas(riyals: number): number {
  * different number than the button showed is either a customer charged the
  * wrong amount or a paid plan that never unlocks.
  */
-export function planFeeForProposal(proposal: { from_date?: string | null; to_date?: string | null; stops?: unknown }): number {
+export function listPlanFeeForProposal(proposal: { from_date?: string | null; to_date?: string | null; stops?: unknown }): number {
   const stops = Array.isArray(proposal.stops) ? proposal.stops.length : 0;
   const stopCount = Math.min(Math.max(stops || 1, 1), 3);
-  return planFee(nightsBetween(proposal.from_date, proposal.to_date), stopCount);
+  return listPlanFee(nightsBetween(proposal.from_date, proposal.to_date), stopCount);
+}
+
+/** What this stored plan is billed, which is nothing while PLANS_FREE. */
+export function planFeeForProposal(proposal: { from_date?: string | null; to_date?: string | null; stops?: unknown }): number {
+  return PLANS_FREE ? 0 : listPlanFeeForProposal(proposal);
 }

@@ -19,6 +19,7 @@ import { placeMatchPattern } from "./place-links";
 
 import { dayNumberFromLine } from "./parse-itinerary";
 import { freeDayNumbers, type PlanStop } from "./plan-stops";
+import { PLANS_FREE } from "./pricing";
 
 /**
  * A withheld day, described only by its measurements.
@@ -271,5 +272,9 @@ const CARRIES_A_FIGURE = /SAR|USD|ريال|دولار|\d[\d,.]*\s*(a night|per n
  * the email and any future surface cannot drift apart on the question.
  */
 export function shouldPaywall(proposal: { paid?: boolean | null }): boolean {
+  // While plans are free there is nothing to buy, so there is nothing to
+  // withhold. Held here rather than at each call site for the reason in the
+  // comment above: the page, the email and the reviewer must agree.
+  if (PLANS_FREE) return false;
   return proposal.paid !== true;
 }

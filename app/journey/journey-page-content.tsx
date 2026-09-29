@@ -6,7 +6,7 @@ import { placeNamesForCity, officialUrlMapForCity, placeCityMapForCity, cityName
 import { shortFormsToHide } from "./redaction-variants";
 import { applyPaywall, shouldPaywall, redactPlaceNames, generaliseSearchKeys } from "./paywall";
 import { primaryPlanLanguage } from "./plan-language";
-import { planFeeForProposal, nightsBetween, daysFromNights, toHalalas } from "./pricing";
+import { planFeeForProposal, listPlanFeeForProposal, nightsBetween, daysFromNights, toHalalas, PLANS_FREE } from "./pricing";
 import { checkoutConfig, previewCheckout, paymentNoticeFor, type PaymentNotice } from "./payments";
 import { PlanCheckout } from "./plan-checkout";
 import { parseAllNamedPlaces, parseSiteLinks, type PlanStop, parseNameAliases, parseNameKinds, parseNamedThings } from "./plan-stops";
@@ -230,6 +230,19 @@ export async function JourneyPageContent({ token, locale, paymentNotice }: { tok
                 : undefined
             }
           />
+        )}
+
+        {/* The whole plan is open because plans are free at the moment, not
+            because this one was bought. Saying so is the difference between a
+            gift and a customer assuming this is simply what the product costs,
+            and it is the only place the reader of a finished plan would ever
+            learn it. */}
+        {PLANS_FREE && (
+          <p style={{ margin: "28px 0 0", padding: "14px 16px", borderRadius: 12, border: "1px solid rgba(200,149,63,.38)", background: "rgba(230,185,93,.10)", color: "var(--ink)", fontSize: 13.5, lineHeight: 1.7 }}>
+            {locale === "ar"
+              ? `هذي الخطة كاملة وعلينا. عادةً تكلف ${listPlanFeeForProposal(proposal)} ريال، بس ما ناخذ عليها شي حاليًا لين نخلّص إعداد حساب الدفع.`
+              : `This plan is open in full, on us. It would normally cost SAR ${listPlanFeeForProposal(proposal)}; we are not charging for plans while our payment account is being set up.`}
+          </p>
         )}
 
         {!locked && proposal.revision_used !== true && (

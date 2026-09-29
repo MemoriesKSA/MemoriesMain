@@ -6,7 +6,7 @@ import { ElasticSelect, MultiChoice } from "./form-controls";
 import type { SelectChoice } from "./form-controls";
 import { multiStopAvailableFor, pathOptions, plannableCountries, saudiArabia, studyCountries } from "./planner-data";
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
-import { planFee, NIGHT_RATE, EXTRA_STOP_FEE } from "../journey/pricing";
+import { planFee, NIGHT_RATE, EXTRA_STOP_FEE, PLANS_FREE } from "../journey/pricing";
 import { PRIORITY_PRICE_SAR } from "../follow/release";
 
 const pathIcons = { journey: Sparkles, saudi: Map, study: GraduationCap } as const;
@@ -422,23 +422,29 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
             + {text(ar, "Add another destination", "أضف وجهة أخرى")}
           </button> : null}
           {stops.length ? <p className="planFee">
-            {tripNights > 0
-              ? text(ar,
-                  `Plan fee SAR ${fee}`,
-                  `رسوم الخطة ${digits(fee, true)} ريال`)
-              : text(ar,
-                  `SAR ${NIGHT_RATE} per night`,
-                  `${digits(NIGHT_RATE, true)} ريال لكل ليلة`)}
+            {/* Free for now, and the normal price stays on screen. A plan
+                whose price is simply absent reads as a plan with no value;
+                the number is what makes "free" mean anything, and what makes
+                "for now" believable. */}
+            {PLANS_FREE
+              ? text(ar, "Free while we get started", "مجانية حاليًا")
+              : tripNights > 0
+                ? text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)
+                : text(ar, `SAR ${NIGHT_RATE} per night`, `${digits(NIGHT_RATE, true)} ريال لكل ليلة`)}
             <small>
-              {tripNights > 0
+              {PLANS_FREE
                 ? text(ar,
-                    // Spelled out rather than just totalled, so the number
-                    // never looks arbitrary at the moment they read it.
-                    `${nightsLabel(tripNights, false)} × SAR ${NIGHT_RATE}${stops.length > 1 ? ` + ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"} × SAR ${EXTRA_STOP_FEE}` : ""}. Separate from your travel budget below.`,
-                    `${nightsLabel(tripNights, true)} × ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? ` + ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"} × ${digits(EXTRA_STOP_FEE, true)} ريال` : ""}. منفصلة عن ميزانية سفرك أدناه.`)
-                : text(ar,
-                    `Add your dates below and we'll total it${stops.length > 1 ? `, plus SAR ${EXTRA_STOP_FEE} for each destination after the first` : ""}. Separate from your travel budget.`,
-                    `أضف تواريخك بالأسفل ونحسب لك الإجمالي${stops.length > 1 ? `، بالإضافة إلى ${digits(EXTRA_STOP_FEE, true)} ريال لكل وجهة بعد الأولى` : ""}. وهي منفصلة عن ميزانية سفرك.`)}
+                    `A plan is normally SAR ${NIGHT_RATE} a night, plus SAR ${EXTRA_STOP_FEE} for each destination after the first. We are not charging for them while our payment account is being set up, so this one is on us.`,
+                    `عادةً الخطة ${digits(NIGHT_RATE, true)} ريال عن كل ليلة، و${digits(EXTRA_STOP_FEE, true)} ريال لكل وجهة بعد الأولى. حاليًا ما ناخذ عليها شي لين نخلص إعداد حساب الدفع، فهذي علينا.`)
+                : tripNights > 0
+                  ? text(ar,
+                      // Spelled out rather than just totalled, so the number
+                      // never looks arbitrary at the moment they read it.
+                      `${nightsLabel(tripNights, false)} × SAR ${NIGHT_RATE}${stops.length > 1 ? ` + ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"} × SAR ${EXTRA_STOP_FEE}` : ""}. Separate from your travel budget.`,
+                      `${nightsLabel(tripNights, true)} × ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? ` + ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"} × ${digits(EXTRA_STOP_FEE, true)} ريال` : ""}. منفصلة عن ميزانية سفرك.`)
+                  : text(ar,
+                      `Add your dates below and we'll total it${stops.length > 1 ? `, plus SAR ${EXTRA_STOP_FEE} for each destination after the first` : ""}. Separate from your travel budget.`,
+                      `أضف تواريخك بالأسفل ونحسب لك الإجمالي${stops.length > 1 ? `، بالإضافة إلى ${digits(EXTRA_STOP_FEE, true)} ريال لكل وجهة بعد الأولى` : ""}. منفصلة عن ميزانية سفرك.`)}
             </small>
           </p> : null}
         </div>
@@ -550,10 +556,14 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         customer would never watch the price resolve. Both read the same
         `fee`, so the two lines cannot disagree. */}
     {multiStopAvailable && stops.length && tripNights > 0 ? <p className="datesFee">
-      {text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)}
-      <span>{text(ar,
-        `${nightsLabel(tripNights, false)} at SAR ${NIGHT_RATE}${stops.length > 1 ? `, plus ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"}` : ""}`,
-        `${nightsLabel(tripNights, true)} بـ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? `، بالإضافة إلى ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"}` : ""}`)}</span>
+      {PLANS_FREE
+        ? text(ar, "Free while we get started", "مجانية حاليًا")
+        : text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)}
+      <span>{PLANS_FREE
+        ? text(ar, `normally SAR ${NIGHT_RATE} a night`, `عادةً ${digits(NIGHT_RATE, true)} ريال لليلة`)
+        : text(ar,
+          `${nightsLabel(tripNights, false)} at SAR ${NIGHT_RATE}${stops.length > 1 ? `, plus ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"}` : ""}`,
+          `${nightsLabel(tripNights, true)} بـ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? `، بالإضافة إلى ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"}` : ""}`)}</span>
     </p> : null}
     </section>
 

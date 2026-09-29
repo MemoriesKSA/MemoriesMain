@@ -19,7 +19,7 @@ import {
   verifyPlanPayment,
   type MoyasarPayment,
 } from "../app/journey/payments";
-import { PLAN_CURRENCY, planFee, planFeeForProposal, toHalalas } from "../app/journey/pricing";
+import { PLAN_CURRENCY, listPlanFee, listPlanFeeForProposal, planFeeForProposal, PLANS_FREE, toHalalas } from "../app/journey/pricing";
 
 const PLAN = "0b6f1c2a-3d4e-4f50-8a1b-2c3d4e5f6a7b";
 const OTHER = "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d";
@@ -45,9 +45,10 @@ const cases: [string, unknown, unknown][] = [
   // ---- The price is riyals, in halalas at the provider ----
   ["plans are charged in riyals", PLAN_CURRENCY, "SAR"],
   ["SAR 75 is 7500 halalas", toHalalas(75), 7500],
-  ["the stored plan costs what the page quotes", planFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-08", stops: [{}, {}] }), planFee(7, 2)],
-  ["no stops is one destination", planFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-06", stops: null }), 75],
-  ["more than three stops is capped at three", planFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-10", stops: [{}, {}, {}, {}] }), planFee(9, 3)],
+  ["the stored plan costs what the page quotes", listPlanFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-08", stops: [{}, {}] }), listPlanFee(7, 2)],
+  ["no stops is one destination", listPlanFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-06", stops: null }), 75],
+  ["and nothing is billed for it while plans are free", planFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-06", stops: null }), PLANS_FREE ? 0 : 75],
+  ["more than three stops is capped at three", listPlanFeeForProposal({ from_date: "2026-10-01", to_date: "2026-10-10", stops: [{}, {}, {}, {}] }), listPlanFee(9, 3)],
 
   // ---- A payment unlocks its own plan only ----
   ["the right payment unlocks", ok(pay()), true],

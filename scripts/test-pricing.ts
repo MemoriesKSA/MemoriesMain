@@ -1,4 +1,4 @@
-import { planFee, nightsBetween, daysFromNights, NIGHT_RATE, EXTRA_STOP_FEE } from "../app/journey/pricing";
+import { planFee, listPlanFee, PLANS_FREE, nightsBetween, daysFromNights, NIGHT_RATE, EXTRA_STOP_FEE } from "../app/journey/pricing";
 import { freeDayNumbers, stopsFromNights } from "../app/journey/plan-stops";
 import { applyPaywall } from "../app/journey/paywall";
 
@@ -9,16 +9,22 @@ const cases: [string, unknown, unknown][] = [
   ["extra stop is 20", EXTRA_STOP_FEE, 20],
 
   // Per night, plus each destination after the first.
-  ["1 night, 1 city", planFee(1, 1), 15],
-  ["5 nights, 1 city", planFee(5, 1), 75],
-  ["7 nights, 2 cities", planFee(7, 2), 125],
-  ["9 nights, 3 cities", planFee(9, 3), 175],
-  ["14 nights, 1 city", planFee(14, 1), 210],
+  ["1 night, 1 city", listPlanFee(1, 1), 15],
+  ["5 nights, 1 city", listPlanFee(5, 1), 75],
+  ["7 nights, 2 cities", listPlanFee(7, 2), 125],
+  ["9 nights, 3 cities", listPlanFee(9, 3), 175],
+  ["14 nights, 1 city", listPlanFee(14, 1), 210],
   // The first destination is never surcharged, only the ones after it.
-  ["one city carries no stop fee", planFee(9, 1), 135],
+  ["one city carries no stop fee", listPlanFee(9, 1), 135],
 
-  ["no dates means no fee", planFee(0, 1), 0],
-  ["negative nights cannot bill", planFee(-4, 1), 0],
+  // What a plan is worth and what we bill for it are two questions. They
+  // have different answers while plans are free, and the day that ends the
+  // second one has to start matching the first again.
+  ["a plan keeps its price whether or not we charge for it", listPlanFee(5, 1), 75],
+  ["and is billed at nothing while plans are free", planFee(5, 1), PLANS_FREE ? 0 : 75],
+
+  ["no dates means no fee", listPlanFee(0, 1), 0],
+  ["negative nights cannot bill", listPlanFee(-4, 1), 0],
 
   ["nights between dates", nightsBetween("2026-09-03", "2026-09-12"), 9],
   ["reversed dates are zero", nightsBetween("2026-09-12", "2026-09-03"), 0],
