@@ -65,15 +65,22 @@ export async function POST(request: Request) {
     async start(controller) {
       try {
         const claudeStream = anthropic.messages.stream({
-          // Sonnet 5: strong quality for grounded Q&A at a fraction of
-          // Opus's cost, with faster streaming for a live chat widget.
-          model: "claude-sonnet-5",
-          max_tokens: 600,
-          // This is short, grounded conversation, not a reasoning task.
-          // Adaptive thinking is on by default on Sonnet 5 and can eat into
-          // max_tokens before any visible reply is written, disabling it
-          // keeps the full budget for the actual answer.
-          thinking: { type: "disabled" },
+          // Opus 5.5, not Sonnet. 30 Sep 2026: Habib said ذكرى's Arabic
+          // "doesn't make sense". Sonnet 5 wrote Saudi words over English
+          // sentences ("تناسبه لين حد معين", "تراعي وتيرة أهدأ", "هيك",
+          // "بردو") however the prompt was worded, and Sonnet 5.5 suggested
+          // Cannes for a honeymoon. On the same questions Opus 5.5 wrote the
+          // way a Saudi talks and kept to the countries we plan. Measured with
+          // scripts/ask-concierge.ts: about 1 US cent a reply once the prompt
+          // is cached, about 7 cents for the first reply after 5 quiet minutes.
+          model: "claude-opus-5-5",
+          // Opus 5.5 cannot switch thinking off; low effort keeps it to a
+          // brief think. The thinking counts against max_tokens, hence the
+          // headroom over the ~150-word replies. Only text deltas are sent
+          // on below, so the visitor never sees the thinking.
+          max_tokens: 2000,
+          thinking: { type: "adaptive" },
+          output_config: { effort: "low" },
           system: [
             // Persona/instructions are identical on every request, so this
             // block caches; only the grounded-facts block below varies.
