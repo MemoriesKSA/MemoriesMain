@@ -180,7 +180,7 @@ export function SupportChat() {
     <div className="supportPanel" id="memories-support-panel" aria-hidden={!open}>
       <header className="supportHeader">
         <span className="supportAvatar supportPortrait"><Image src="/images/memory-concierge.webp" alt="" width={40} height={40} /></span>
-        <span><strong>{copy(ar, "Memory", "ذكرى")}</strong><small><i /> {copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
+        <span><strong>{copy(ar, "Memory", "ذكرى")}</strong><small><i /> {copy(ar, "MEMORIES AI concierge", "مساعدة ميموريز الذكية")}</small></span>
         <button type="button" onClick={() => setOpen(false)} aria-label={copy(ar, "Close support chat", "إغلاق محادثة الدعم")}><X /></button>
       </header>
       <div className="supportConversation" ref={conversationRef}>
@@ -235,7 +235,7 @@ export function SupportChat() {
       <span className={open ? "supportLauncherIcon" : "supportLauncherIcon supportPortrait"}>
         {open ? <X aria-hidden="true" /> : <Image src="/images/memory-concierge.webp" alt="" width={43} height={43} />}
       </span>
-      <span className="supportLauncherCopy"><strong>{copy(ar, "Ask Memory", "اسأل ذكرى")}</strong><small>{copy(ar, "MEMORIES AI concierge", "مساعد ميموريز الذكي")}</small></span>
+      <span className="supportLauncherCopy"><strong>{copy(ar, "Ask Memory", "اسأل ذكرى")}</strong><small>{copy(ar, "MEMORIES AI concierge", "مساعدة ميموريز الذكية")}</small></span>
     </button>
   </aside>;
 }
