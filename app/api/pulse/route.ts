@@ -56,7 +56,21 @@ export async function GET(request: Request) {
   const cost = (list: Row[]) => Math.round(list.reduce((sum, r) => sum + (Number(r.draft_cost_usd) || 0), 0) * 100) / 100;
   const day = since(24);
   const week = since(24 * 7);
+  const previousWeek = since(24 * 14).length - week.length;
   const latest = rows[0];
+
+  // Requests per calendar day in Saudi time, oldest first, for the widget's
+  // bar chart. Days with no requests are zeros, not gaps.
+  const riyadhDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh" });
+  const perDay = new Map<string, number>();
+  for (const r of rows) {
+    const key = riyadhDay.format(new Date(r.created_at));
+    perDay.set(key, (perDay.get(key) ?? 0) + 1);
+  }
+  const daily = Array.from({ length: 14 }, (_, i) => {
+    const date = riyadhDay.format(new Date(now - (13 - i) * 86_400_000));
+    return { date, count: perDay.get(date) ?? 0 };
+  });
 
   // Same buckets as the reviewer page, so the widget and /internal agree.
   const waitingForYou = rows.filter((r) => r.review_state === "flagged" && !r.sent_at).length;
@@ -65,10 +79,12 @@ export async function GET(request: Request) {
 
   return Response.json(
     {
-      requests: { last24h: day.length, last7d: week.length, total: rows.length },
+      requests: { last24h: day.length, last7d: week.length, previous7d: previousWeek, total: rows.length },
+      daily,
       plans: { waitingForYou, sendingAutomatically, beingWritten },
-      aiCostUsd: { last24h: cost(day), last7d: cost(week) },
+      aiCostUsd: { last24h: cost(day), last7d: cost(week), total: cost(rows) },
       latest: latest ? { city: latest.city, at: latest.created_at } : null,
+      recent: rows.slice(0, 5).map((r) => ({ city: r.city, at: r.created_at })),
       generatedAt: new Date(now).toISOString(),
     },
     { headers: { "Cache-Control": "no-store" } },
