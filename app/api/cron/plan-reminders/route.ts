@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { createSupabaseAdminClient } from "../../../supabase-admin";
 import { arabicCityLabel } from "../../../components/planner-data";
+import { PLANS_FREE } from "../../../journey/pricing";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -16,6 +17,12 @@ export const maxDuration = 60;
 // Deliberately no invented expiry or countdown. The plan is built for their
 // dates and ages out on its own, and manufacturing urgency on a product whose
 // whole value is honesty would undercut everything else.
+//
+// While plans are free the customer already holds the whole plan, so "the rest
+// is ready whenever you'd like it" is simply untrue, and a real customer was
+// sent exactly that on 2 Oct 2026. Until payment opens, the same single slot
+// asks the one thing worth asking instead: was the plan right, and what should
+// we fix? Same one send per plan, same stamp, and replies go to the team.
 
 const REMIND_AFTER_HOURS = 24;
 const BATCH = 25;
@@ -64,6 +71,7 @@ export async function GET(request: Request) {
   const resend = new Resend(resendKey);
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://memories.tours";
+  const reviewEmail = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
   let sent = 0;
 
   for (const plan of due) {
@@ -90,7 +98,21 @@ export async function GET(request: Request) {
     const cityAr = escapeHtml(arabicCityLabel(plan.city ?? ""));
     const reference = escapeHtml(plan.reference ?? "");
 
-    const result = await resend.emails.send({
+    const result = PLANS_FREE ? await resend.emails.send({
+      from: fromEmail,
+      to: [plan.customer_email],
+      // A reply is the easiest feedback there is, so it has to land with a
+      // person rather than bounce off the sending address.
+      replyTo: reviewEmail,
+      subject: `How was your ${plan.city} plan? · كيف كانت خطتك؟`,
+      html: `<div style="background:#f4f0e7;padding:32px;font-family:Arial,sans-serif"><div style="max-width:620px;margin:auto;background:#fff;border-radius:18px;padding:34px"><p style="color:#b88724;font-size:12px;letter-spacing:2px">MEMORIES</p><h1 style="color:#063b34;font-family:Georgia,serif;font-size:22px">Hello ${name}, how was your ${city} plan?</h1><p style="font-size:15px;line-height:1.8">Your plan is with you. If anything in it is wrong, missing, or could be better, tell us: reply to this email, or write to us on the <a href="${siteUrl}/feedback" style="color:#063b34;font-weight:700">feedback page</a>. We read every message ourselves.</p><p style="margin:22px 0"><a href="${link}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#063b34;color:#fff;text-decoration:none;font-weight:700">Open your plan · افتح خطتك</a></p><div dir="rtl" style="border-top:1px solid #e2e6e1;padding-top:18px"><p style="font-size:15px;line-height:1.9;margin:0">أهلًا ${name}، خطة ${cityAr} وصلتك. إذا فيها شي ناقص أو غلط أو تبي نغيّره، قل لنا: رد على هذا الإيميل، أو اكتب لنا من <a href="${siteUrl}/ar/feedback" style="color:#063b34;font-weight:700">صفحة الملاحظات</a>. نقرأ كل رسالة بأنفسنا.</p></div><p style="color:#6a746f;font-size:13px;margin-top:20px">Reference · رقم الطلب: ${reference}</p></div></div>`,
+      text: `Hello ${plan.customer_name}, how was your ${plan.city} plan? If anything in it is wrong, missing, or could be better, reply to this email or write to us: ${siteUrl}/feedback
+Your plan: ${link}
+
+أهلًا ${plan.customer_name}، خطة ${arabicCityLabel(plan.city ?? "")} وصلتك. إذا فيها شي ناقص أو غلط أو تبي نغيّره، رد على هذا الإيميل أو اكتب لنا: ${siteUrl}/ar/feedback
+خطتك: ${link}`,
+      tags: [{ name: "email_type", value: "plan_feedback" }],
+    }, { idempotencyKey: `plan-reminder/${plan.id}` }) : await resend.emails.send({
       from: fromEmail,
       to: [plan.customer_email],
       subject: `Your ${plan.city} plan is still waiting · خطتك ما زالت بانتظارك`,
