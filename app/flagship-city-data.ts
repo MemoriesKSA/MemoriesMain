@@ -4063,7 +4063,7 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
     ],
     trustedProviders: [
       { nameEn: "Cab Istanbul", nameAr: "كاب إسطنبول", typeEn: "Private transfer & chauffeur service", typeAr: "خدمة نقل خاص وسائق", noteEn: "Operating since 2009 across both airports, and states it is registered with TURSAB (no. 11980) and holds a Ministry of Transport D2 licence; worth confirming current licensing and agreeing a fixed fare when you book.", noteAr: "تعمل منذ 2009 عبر المطارين، وتذكر أنها مسجّلة لدى اتحاد وكالات السفر التركية (رقم 11980) وتحمل رخصة D2 من وزارة النقل؛ ويُفضل تأكيد الترخيص الحالي والاتفاق على سعر ثابت عند الحجز." },
-      { nameEn: "MyChauffeur", nameAr: "ماي شوفير", typeEn: "Private chauffeur service", typeAr: "خدمة سائق خاص", noteEn: "The same chauffeur company we use in Saudi cities also covers Istanbul airport transfers, useful if you want one provider across a multi-country trip.", noteAr: "شركة السائقين نفسها التي نستعين بها في المدن السعودية تغطي أيضًا تنقلات مطار إسطنبول، وهو مفيد إن أردت مزوّدًا واحدًا في رحلة متعددة الدول." },
+      { nameEn: "MyChauffeur", nameAr: "ماي شوفير", typeEn: "Private chauffeur service", typeAr: "خدمة سائق خاص", noteEn: "The chauffeur company listed in our Saudi city guides also covers Istanbul airport transfers, useful if you want one provider across a multi-country trip. You book it directly; MEMORIES does not arrange or operate drivers.", noteAr: "شركة السائقين نفسها المذكورة في أدلّة المدن السعودية تغطي أيضًا تنقلات مطار إسطنبول، وهو مفيد إن أردت مزوّدًا واحدًا في رحلة متعددة الدول. الحجز معها مباشرة، وميموريز لا ترتّب السائقين ولا تشغّلهم." },
     ],
     sampleDay: [
       { timeEn: "Early morning", timeAr: "الصباح الباكر", placeEn: "Hagia Sophia", placeAr: "آيا صوفيا", descriptionEn: "Go at opening, before the tour groups arrive.", descriptionAr: "اذهب عند الافتتاح قبل وصول المجموعات السياحية." },
@@ -5110,8 +5110,8 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         "nameAr": "بلاك لين",
         "typeEn": "Chauffeur & airport transfer service",
         "typeAr": "خدمة سائق خاص ونقل من المطار",
-        "noteEn": "The same global chauffeur company our Riyadh plans use runs a Bangkok service. Its own city page covers airport transfers with an hour of complimentary waiting time and flight tracking, hire by the hour, and city-to-city runs such as Bangkok down to Pattaya, at a fare fixed when you book.",
-        "noteAr": "شركة السائقين العالمية نفسها التي نستعين بها في خطط الرياض تعمل في بانكوك. وصفحتها الخاصة بالمدينة تشمل النقل من المطار مع ساعة انتظار مجانية وتتبّع الرحلة، والاستئجار بالساعة، والرحلات بين المدن مثل بانكوك إلى باتايا، بسعر يُثبَّت عند الحجز."
+        "noteEn": "The global chauffeur company listed in our Riyadh guide runs a Bangkok service. You book it directly; MEMORIES does not arrange or operate drivers. Its own city page covers airport transfers with an hour of complimentary waiting time and flight tracking, hire by the hour, and city-to-city runs such as Bangkok down to Pattaya, at a fare fixed when you book.",
+        "noteAr": "شركة السائقين العالمية نفسها المذكورة في دليل الرياض تعمل في بانكوك. الحجز معها مباشرة، وميموريز لا ترتّب السائقين ولا تشغّلهم. وصفحتها الخاصة بالمدينة تشمل النقل من المطار مع ساعة انتظار مجانية وتتبّع الرحلة، والاستئجار بالساعة، والرحلات بين المدن مثل بانكوك إلى باتايا، بسعر يُثبَّت عند الحجز."
       }
     ],
     "sampleDay": [
