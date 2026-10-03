@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, SyntheticEvent, useEffect, useRef, useState } from "react";
+import { track } from "@vercel/analytics";
 import { ArrowRight, CheckCircle2, GraduationCap, Luggage, Map, MapPin, Plane, Sparkles } from "lucide-react";
 import { ElasticSelect, MultiChoice } from "./form-controls";
 import type { SelectChoice } from "./form-controls";
@@ -190,6 +191,25 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const [missingSections, setMissingSections] = useState<number[]>([]);
   const submissionId = useRef(crypto.randomUUID());
   const resultRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // How far people get, so a form nobody finishes can be fixed where it loses
+  // them. 3 Oct 2026: the ads sent 174 people here in two days, none sent a
+  // request, and nothing said whether they left at the first field or the last.
+  // Each mark is sent once per page load through the cookieless visit counter
+  // and carries the step's name and the ?source= tag only, never an answer.
+  const marked = useRef(new Set<string>());
+  function mark(step: string) {
+    if (marked.current.has(step)) return;
+    marked.current.add(step);
+    // The tag comes straight from the address bar, so only a plain short one
+    // is passed on; anything else is counted as "other".
+    track("plan_form", { step, source: !source ? "none" : /^[a-z0-9-]{1,40}$/i.test(source) ? source : "other" });
+  }
+  function markSection(event: SyntheticEvent) {
+    const step = (event.target as HTMLElement).closest?.("[data-step]")?.getAttribute("data-step");
+    if (step) mark(`step${step}`);
+  }
 
   const countries = path === "saudi" ? [saudiArabia] : path === "study" ? studyCountries : plannableCountries;
   const selectedCountry: CountryOption | undefined = countries.find((item) => item.value === country);
@@ -276,12 +296,14 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // Hard stop, not a "missing field": a non-Muslim traveller cannot enter
     // Makkah at all, so there is nothing to complete and nothing to submit.
     if (studyBlocked) {
+      mark("blocked1");
       setMissingSections([1]);
       setFormError(text(ar, "Our study-abroad service is available to Saudi citizens only. Choose another journey type to continue.", "خدمة الدراسة في الخارج متاحة للمواطنين السعوديين فقط. اختر نوع رحلة آخر للمتابعة."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
     if (makkahBlocked) {
+      mark("blocked1");
       setMissingSections([1]);
       setFormError(text(ar, "Makkah is open to Muslim visitors only. Please choose a different city to continue.", "مكة المكرمة مفتوحة للزوار المسلمين فقط. اختر مدينة أخرى للمتابعة."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -290,6 +312,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // A repeated consecutive stop is a hard stop, not a missing field: there
     // is nothing to fill in, the itinerary itself doesn't make sense.
     if (repeatedStopIndex > 0) {
+      mark("blocked1");
       setMissingSections([1]);
       setFormError(text(ar, "You've chosen the same destination twice in a row. Extend your dates to stay longer in one place, or pick a different next stop.", "اخترت الوجهة نفسها مرتين متتاليتين. مدّد التواريخ للبقاء مدة أطول في مكان واحد، أو اختر وجهة تالية مختلفة."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>('[data-step="1"]')?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -300,6 +323,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // can't exist. Only checked once dates are in, otherwise the ordinary
     // step-2 check below is the one that should fire.
     if (stops.length > 1 && tripNights > 0 && !nightsValid) {
+      mark("blocked2");
       setMissingSections([2]);
       setFormError(nightsTooShort
         ? text(ar,
@@ -324,11 +348,15 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       !delivery.length || !value("name") || (delivery.includes("email") && (!value("email") || !emailField?.validity.valid)) || (delivery.includes("whatsapp") && !value("phone")) || !privacyAccepted ? 5 : 0,
     ].filter(Boolean) as number[];
     if (missing.length) {
+      // The first step still missing something, lowest number first: the place
+      // the form sent them back to.
+      mark(`blocked${Math.min(...missing)}`);
       setMissingSections(missing);
       setFormError(text(ar, "A few details still need your attention. We highlighted each incomplete step below.", "بقيت بعض التفاصيل. أبرزنا لك كل خطوة تحتاج إلى إكمال."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>(`[data-step="${missing[0]}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
       return;
     }
+    mark("submit");
     setMissingSections([]); setFormError(""); setStatus("reviewing");
     const payload = Object.fromEntries(formData.entries()) as Record<string, FormDataEntryValue | FormDataEntryValue[]>;
     for (const field of ["transport", "stays", "planIncludes", "delivery"]) payload[field] = formData.getAll(field);
@@ -340,14 +368,32 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Request failed");
+      mark("sent");
       window.setTimeout(() => setStatus("sent"), 2200);
     } catch {
+      mark("send_failed");
       submissionId.current = crypto.randomUUID();
       setStatus("idle");
       setFormError(text(ar, "We couldn't send your journey yet. Please try again in a moment.", "تعذر إرسال رحلتك الآن. يرجى المحاولة مرة أخرى بعد قليل."));
       requestAnimationFrame(() => form.querySelector<HTMLElement>(".plannerError")?.scrollIntoView({ behavior: "smooth", block: "center" }));
     }
   }
+
+  // "seen" is the first step actually coming on screen, not the page loading:
+  // on a phone the story sits above the form, and an ad visitor who never
+  // scrolls that far never saw a form to fill in.
+  useEffect(() => {
+    const first = formRef.current?.querySelector('[data-step="1"]');
+    if (!first || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      mark("seen");
+      observer.disconnect();
+    }, { threshold: 0.2 });
+    observer.observe(first);
+    return () => observer.disconnect();
+    // Once per mount: `mark` only reads refs and the source tag, which never change.
+  }, []);
 
   useEffect(() => {
     if (status === "idle") return;
@@ -366,7 +412,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const sectionClass = (step: number) => `plannerSection full${missingSections.includes(step) ? " hasError" : ""}`;
   const requiredWarning = (step: number) => missingSections.includes(step) ? <span className="requiredWarning" role="status">* {text(ar, "Complete this step", "أكمل هذه الخطوة")}</span> : null;
 
-  return <form dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} noValidate>
+  return <form ref={formRef} dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} onFocusCapture={markSection} onPointerDownCapture={markSection} noValidate>
     <label className="srOnly" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     <div className="plannerIntro full"><p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Your journey, step by step", "رحلتك، خطوة بخطوة")}</p><h3>{text(ar, "Tell us what your dream looks like.", "شاركنا شكل رحلة أحلامك.")}</h3><p>{text(ar, "Start with the place. We’ll guide you through the people, dates, complete package and how you want to receive it.", "حدد وجهتك، وعلمنا عدد المسافرين وتواريخ الرحلة وراح نصمم لك باقة أحلامك اللي تناسب شخصيتك.")}</p></div>
 
