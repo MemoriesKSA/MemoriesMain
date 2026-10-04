@@ -4,6 +4,7 @@ import { generateDraftGuide } from "../../draft-guide";
 import { arabicCityLabel, isPlannableCountry, STUDY_ABROAD_PAUSED, travelCountries } from "../../components/planner-data";
 import { createSupabaseAdminClient } from "../../supabase-admin";
 import { newFollowToken, followUrl, releaseAt, deliveryPromise } from "../../follow/release";
+import { newPlanToken } from "../../journey/plan-link";
 
 
 export const runtime = "nodejs";
@@ -295,7 +296,11 @@ export async function POST(request: Request) {
   // Minted here because the column is NOT NULL and the row opens now. It
   // opens no door yet: the journey page serves nothing that is not
   // published, and this row is only 'received'.
-  const publicToken = newFollowToken();
+  //
+  // It also remembers the customer's language, so the "ready" email opens the
+  // plan in Arabic for someone who asked on the Arabic site (see plan-link.ts).
+  // Not when they chose English only: that plan has no Arabic half to open.
+  const publicToken = newPlanToken(submission.locale === "ar" && submission.planLanguages !== "en" ? "ar" : "en");
   const submittedAt = new Date();
   const wantsPriority = submission.priority === "yes";
   try {

@@ -154,6 +154,18 @@ export async function JourneyPageContent({ token, locale, paymentNotice }: { tok
           <p style={{ margin: 0, color: "rgba(255,253,249,.75)", fontSize: 15 }}>
             {[fromDate && toDate ? `${fromDate} — ${toDate}` : null, t.referenceLabel(proposal.reference)].filter(Boolean).join(" · ")}
           </p>
+          {/* The other language, said in that language, right under the title.
+              The header's language switch does the same thing, and a customer
+              who got his plan in English on 4 Oct 2026 never found it: someone
+              looking for the Arabic plan is looking for Arabic words, not for
+              a control. Only when the plan really has both halves. */}
+          {visibleEn && visibleAr ? (
+            <p style={{ margin: "18px 0 0" }}>
+              <a href={`${locale === "ar" ? "" : "/ar"}/journey/${token}`} dir={locale === "ar" ? "ltr" : "rtl"} lang={locale === "ar" ? "en" : "ar"} style={{ display: "inline-block", padding: "9px 18px", border: "1px solid rgba(230,185,93,.7)", borderRadius: 999, color: "#e6b95d", fontSize: 14, fontWeight: 700, textDecoration: "none", fontFamily: locale === "ar" ? "var(--font-sans), Arial, sans-serif" : "Tahoma, Arial, sans-serif" }}>
+                {locale === "ar" ? "Read this plan in English" : "اقرأ الخطة بالعربي"}
+              </a>
+            </p>
+          ) : null}
         </div>
       </div>
 

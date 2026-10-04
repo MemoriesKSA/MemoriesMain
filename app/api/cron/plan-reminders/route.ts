@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { createSupabaseAdminClient } from "../../../supabase-admin";
 import { arabicCityLabel } from "../../../components/planner-data";
 import { PLANS_FREE } from "../../../journey/pricing";
+import { planUrl } from "../../../journey/plan-link";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -89,10 +90,10 @@ export async function GET(request: Request) {
       .single();
     if (!claimed) continue;
 
-    // The proposals table doesn't record which language the customer
-    // submitted in, and this is a single short nudge, so it goes out
-    // bilingually rather than guessing wrong or adding a column for one line.
-    const link = `${siteUrl}/journey/${plan.public_token}`;
+    // A single short nudge, so it stays bilingual: plans requested before the
+    // link carried the customer's language (plan-link.ts) would otherwise get
+    // a guess. The button does open the plan in their language when known.
+    const link = planUrl(siteUrl, plan.public_token);
     const name = escapeHtml(plan.customer_name ?? "");
     const city = escapeHtml(plan.city ?? "");
     const cityAr = escapeHtml(arabicCityLabel(plan.city ?? ""));

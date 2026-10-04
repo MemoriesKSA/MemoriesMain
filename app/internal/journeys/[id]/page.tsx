@@ -5,6 +5,7 @@ import { getReviewerLocale } from "../../get-locale";
 import { reviewerT } from "../../i18n";
 import { ProposalForm } from "../proposal-form";
 import { updateProposal, publishProposal, setPlanPaid } from "../actions";
+import { planUrl } from "../../../journey/plan-link";
 
 export default async function EditProposalPage({
   params,
@@ -37,7 +38,7 @@ export default async function EditProposalPage({
       paid={proposal.paid === true}
       paidRef={proposal.payment_ref ?? null}
       unlockAction={setPlanPaid.bind(null, id)}
-      publicUrl={`${siteUrl}/journey/${proposal.public_token}`}
+      publicUrl={planUrl(siteUrl, proposal.public_token)}
       error={search.error}
       justSaved={search.saved === "1"}
       justPublished={search.published === "1"}
