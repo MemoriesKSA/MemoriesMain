@@ -776,3 +776,11 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
 .lockedNote svg{flex-shrink:0;color:var(--gold)}
 .lockedNote:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .consentBanner{position:fixed;z-index:40;left:50%;bottom:16px;transform:translateX(-50%);width:min(580px,calc(100vw - 32px));display:grid;gap:12px;padding:16px 18px;border:1px solid rgba(230,185,93,.45);border-radius:18px;background:rgba(5,43,38,.97);color:#fff;box-shadow:0 20px 60px rgba(4,30,26,.35);font-size:.72rem;line-height:1.6}.consentBanner p{margin:0}.consentBanner a{color:var(--gold-light);text-decoration:underline}.consentActions{display:flex;gap:10px}.consentActions button{flex:1;min-height:42px;border:1px solid var(--gold);border-radius:999px;background:transparent;color:inherit;font:inherit;font-weight:800;cursor:pointer}.consentActions button:first-child{background:var(--gold);color:var(--ink)}.consentActions button:disabled{opacity:.45;cursor:default}.consentSettings{display:grid;gap:12px;max-width:520px;margin:0 0 64px;padding:18px 20px;border:1px solid #e6ddd0;border-radius:16px;background:#fff;color:var(--ink)}.consentSettings p{margin:0}
+/* On a phone the request form now comes straight after the headline, and the
+   story cards follow it instead of standing in front of it.
+   4 Oct 2026: the cards sat between the two, which put the first field more
+   than two screens down. In the first night of counting, 148 people arrived
+   from the ads and 18 of them scrolled far enough to see a form at all.
+   Nothing is removed: display:contents lets the headline and the cards take
+   their own places in the page's single column, either side of the form. */
+@media(max-width:780px){.editorialPlannerHero .plannerStory{display:contents}.editorialPlannerHero .plannerStoryLead{order:1}.editorialPlannerHero .formHeroGrid>:not(.plannerStory){order:2}.editorialPlannerHero .plannerStoryChapters{order:3}}
