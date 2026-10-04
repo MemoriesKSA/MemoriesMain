@@ -784,3 +784,11 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
    Nothing is removed: display:contents lets the headline and the cards take
    their own places in the page's single column, either side of the form. */
 @media(max-width:780px){.editorialPlannerHero .plannerStory{display:contents}.editorialPlannerHero .plannerStoryLead{order:1}.editorialPlannerHero .formHeroGrid>:not(.plannerStory){order:2}.editorialPlannerHero .plannerStoryChapters{order:3}}
+/* Same day, second pass. The form's first question still sat under the first
+   screen on a phone: after the fix above, 26 people landed, 5 scrolled to the
+   form. The intro paragraph and the three-step list say what the form's own
+   card says a moment later, so on a phone they step aside and the headline
+   leads straight into the first question. The cookie notice is also shorter
+   there, because it was lying on top of that question. Wording and buttons
+   are unchanged. */
+@media(max-width:780px){.editorialPlannerHero .plannerStoryLead>p:not(.kicker),.editorialPlannerHero .plannerStoryLead ol,.editorialPlannerHero .plannerIntro>p:not(.kicker){display:none}.consentBanner{bottom:8px;gap:8px;padding:10px 14px;font-size:.66rem;line-height:1.45}.consentActions button{min-height:36px}}
