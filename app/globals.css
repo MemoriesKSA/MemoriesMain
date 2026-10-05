@@ -792,3 +792,56 @@ html[data-theme="dark"] .nightsRow input{border-color:var(--line);background:#17
    there, because it was lying on top of that question. Wording and buttons
    are unchanged. */
 @media(max-width:780px){.editorialPlannerHero .plannerStoryLead>p:not(.kicker),.editorialPlannerHero .plannerStoryLead ol,.editorialPlannerHero .plannerIntro>p:not(.kicker){display:none}.consentBanner{bottom:8px;gap:8px;padding:10px 14px;font-size:.66rem;line-height:1.45}.consentActions button{min-height:36px}}
+/* 5 Oct 2026: the three-question form that ad visitors get (short-planner.tsx).
+   Four days of ads brought 487 people to the five-step form and none sent it,
+   so people arriving with ?source=ad-… see this instead: tap-buttons for
+   where, roughly when and who, then one field for where to send the plan.
+   Its own card rather than .journeyForm, because that grid and its step
+   headers are built for five long sections. */
+.shortPlannerWrap{min-width:0}
+.shortPlanner{display:block;padding:24px 24px 20px;border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
+.shortPlanner fieldset{min-width:0;margin:0;padding:0;border:0}
+.shortKicker{margin:0 0 2px;color:var(--gold);font-size:.8rem;font-weight:800}
+.shortQuestion{margin-top:15px}
+.shortQuestion legend{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding:0;font-size:1.04rem;font-weight:800}
+.shortQuestion legend span{display:grid;flex:none;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--gold-light);font:800 .72rem/1 Arial,sans-serif}
+.shortQuestion.hasError legend{color:#a33a2a}
+.shortChips{display:flex;flex-wrap:wrap;gap:7px}
+.shortChip{min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:.88rem;font-weight:700;white-space:nowrap;cursor:pointer}
+.shortChip.on{border-color:var(--gold);background:#fff5e2;box-shadow:inset 0 0 0 1px var(--gold)}
+.shortChip.ghost{border-style:dashed;color:var(--muted)}
+.shortChip.ghost.on{border-style:solid;color:var(--ink)}
+.shortElsewhere,.shortDates{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.shortDates label{display:grid;gap:5px;font-size:.72rem;font-weight:800}
+.shortDates input{width:100%;height:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.shortStepper{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding:6px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:.88rem;font-weight:700}
+.shortStepper div{display:flex;align-items:center;gap:14px;direction:ltr}
+.shortStepper button{width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--ink);font-size:1.15rem;line-height:1;cursor:pointer}
+.shortStepper button:disabled{opacity:.35;cursor:default}
+.shortStepper output{min-width:1.4em;text-align:center;font:800 1.05rem/1 Arial,sans-serif}
+.shortRule{height:1px;margin-top:15px;background:var(--line)}
+.shortContact{margin-top:12px}
+.shortSegment{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff}
+.shortSegment button{min-height:40px;border:0;background:transparent;color:var(--muted);font-size:.88rem;font-weight:800;cursor:pointer}
+.shortSegment button.on{background:var(--ink);color:#fff}
+.shortContact>input{width:100%;height:48px;margin-top:8px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:400 1rem/1 Arial,sans-serif;letter-spacing:.02em}
+html[dir="rtl"] .shortContact>input{text-align:right}
+.shortContact.hasError>input{border-color:#c0513f}
+.shortProblem{margin:10px 0 0;color:#a33a2a;font-size:.8rem;font-weight:700}
+.shortSubmit{width:100%;min-height:52px;margin-top:11px;border-radius:10px;font-size:1rem}
+.shortSubmit:disabled{opacity:.7;cursor:default}
+.shortPromise{margin:9px 0 0;text-align:center;font-size:.78rem;font-weight:800}
+.shortLegal{margin:5px 0 0;text-align:center;color:var(--muted);font-size:.68rem}
+.shortLegal a{border-bottom:1px solid currentColor}
+.shortFullLink{margin:14px 0 0;text-align:center;color:rgba(255,255,255,.82);font-size:.8rem}
+.shortFullLink button{padding:0;border:0;border-bottom:1px solid currentColor;background:none;color:var(--gold-light);font-weight:800;cursor:pointer}
+.shortPlannerDone{display:grid;justify-items:center;gap:10px;padding:38px 24px;text-align:center}
+.shortPlannerDone strong{font-size:1.45rem}
+.shortPlannerDone p{max-width:34ch;margin:0;color:var(--muted);line-height:1.75}
+.shortPlannerDone small{color:var(--muted);font-size:.74rem}
+.shortOffer{display:inline-block;margin-top:16px;padding:6px 13px;border:1px solid rgba(230,185,93,.5);border-radius:999px;background:rgba(230,185,93,.14);color:var(--gold-light);font-size:.78rem;font-weight:800}
+/* On a phone the whole of it has to sit on the first screen, so the lead is
+   one line and the offer, and the card gives its padding to the buttons. The
+   help bubble sits exactly where the send button lands, so it steps aside on
+   this one page. */
+@media(max-width:780px){.shortPlannerHero{padding-top:10px;padding-bottom:60px}.shortPlannerHero .formHeroGrid{gap:12px}.shortPlannerHero .shortLead .kicker{display:none}.shortPlannerHero .shortLead h1{font-size:1.6rem;line-height:1.3;letter-spacing:0}.shortPlannerHero .shortLead h1 br{display:none}.shortOffer{margin-top:6px;padding:4px 11px;font-size:.72rem}.shortPlanner{padding:12px 14px}.shortKicker{font-size:.76rem}.shortQuestion{margin-top:9px}.shortQuestion legend{margin-bottom:6px;font-size:.96rem}.shortChips{gap:6px}.shortChip{min-height:34px;padding:0 12px;font-size:.84rem}.shortStepper{margin-top:6px;padding:4px 12px}.shortStepper button{width:30px;height:30px}.shortRule{margin-top:11px}.shortContact{margin-top:9px}.shortSegment button{min-height:38px}.shortContact>input{height:46px;margin-top:7px}.shortSubmit{min-height:48px;margin-top:8px}.shortPromise{margin-top:7px}.shortFullLink{margin-top:11px}body:has(.shortPlannerHero) .supportChat{display:none}}

@@ -1,4 +1,5 @@
 import { BookOpen, Compass, GraduationCap, Heart, Home, Route, ShieldCheck, Sparkles } from "lucide-react";
+import { NIGHT_RATE, PLANS_FREE } from "../journey/pricing";
 
 type Story = { icon: typeof Sparkles; eyebrow: string; title: string; copy: string };
 
@@ -32,7 +33,9 @@ const studyStories: Record<"en" | "ar", Story[]> = {
   ],
 };
 
-export function PlannerPageStory({ variant, locale = "en" }: { variant: "dream" | "study"; locale?: "en" | "ar" }) {
+// `short` is the lead for the three-question form ad visitors get: one line
+// and the offer, so the questions start on the first screen of a phone.
+export function PlannerPageStory({ variant, locale = "en", short = false }: { variant: "dream" | "study"; locale?: "en" | "ar"; short?: boolean }) {
   const ar = locale === "ar";
   const study = variant === "study";
   const chapters = study ? studyStories[locale] : dreamStories[locale];
@@ -41,12 +44,16 @@ export function PlannerPageStory({ variant, locale = "en" }: { variant: "dream" 
     : (ar ? ["اختر مسار رحلتك", "شارك حلمك وميزانيتك الكاملة", "استلم مقترحك المصمم خصيصًا لك"] : ["Choose your journey path", "Share your dream and complete budget", "Receive your tailored proposal"]);
 
   return <div className={`plannerStory ${study ? "studyStory" : "dreamStory"}`} dir={ar ? "rtl" : "ltr"}>
-    <div className="plannerStoryLead">
+    {short ? <div className="plannerStoryLead shortLead">
+      <p className="kicker light">{ar ? "حلمك يبدأ من هنا" : "Your dream starts here"}</p>
+      <h1>{ar ? <>خطة رحلتك،{" "}<br /><em>مكتوبة لك.</em></> : <>Your trip plan,{" "}<br /><em>written for you.</em></>}</h1>
+      <div className="shortOffer">{PLANS_FREE ? (ar ? `مجانية حاليًا · سعر الخطة ${NIGHT_RATE} ريال لليلة` : `Free right now · A plan is SAR ${NIGHT_RATE} a night`) : (ar ? `سعر الخطة ${NIGHT_RATE} ريال لليلة` : `A plan is SAR ${NIGHT_RATE} a night`)}</div>
+    </div> : <div className="plannerStoryLead">
       <p className="kicker light">{study ? (ar ? "فصلك القادم" : "Your next chapter") : (ar ? "حلمك يبدأ من هنا" : "Your dream starts here")}</p>
       <h1>{study ? (ar ? <>الدراسة في الخارج،<br /><em>بمسار أوضح.</em></> : <>Study abroad,<br /><em>with a clearer path.</em></>) : (ar ? <>لنصمّم رحلة<br /><em>لا يحلم بها إلا أنت.</em></> : <>Let&apos;s design a journey<br /><em>only you could dream.</em></>)}</h1>
       <p>{study ? (ar ? "اكتشف المملكة المتحدة أو الولايات المتحدة أو كندا أو أستراليا أو اليابان. شاركنا هدفك الدراسي وسنساعدك في تنظيم الرحلة من حوله." : "Explore the UK, United States, Canada, Australia or Japan. Tell us your study goal and we’ll help organize the journey around it.") : (ar ? "اختر مسارك وشاركنا التفاصيل المهمة. سنستخدم وجهتك وتواريخك وميزانيتك الكاملة لإعداد رحلة مصممة حولك." : "Choose your path and share the details that matter. We’ll use your destination, dates and complete budget to prepare a journey shaped around you.")}</p>
       <ol>{steps.map((item, index) => <li key={item}><span>{ar ? ["١", "٢", "٣"][index] : index + 1}</span>{item}</li>)}</ol>
-    </div>
+    </div>}
     <div className="plannerStoryChapters" aria-label={ar ? "إلهام لخطوات رحلتك" : "Inspiration for your journey"}>
       {chapters.map(({ icon: Icon, eyebrow, title, copy }, index) => <article className="plannerStoryChapter" key={title}><span className="plannerStoryNumber">0{index + 1}</span><Icon aria-hidden="true" /><p>{eyebrow}</p><h2>{title}</h2><div>{copy}</div></article>)}
     </div>
