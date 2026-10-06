@@ -206,6 +206,10 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     // is passed on; anything else is counted as "other".
     track("plan_form", { step, source: !source ? "none" : /^[a-z0-9-]{1,40}$/i.test(source) ? source : "other" });
   }
+  // Counted on a tap or a focus, not on pointer-down: until 6 Oct 2026 this
+  // listened for pointer-down, which also fires when a finger lands on a
+  // section only to scroll past it, so "reached step 3" mostly meant
+  // "scrolled that far". The short form's own counts showed the difference.
   function markSection(event: SyntheticEvent) {
     const step = (event.target as HTMLElement).closest?.("[data-step]")?.getAttribute("data-step");
     if (step) mark(`step${step}`);
@@ -412,7 +416,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
   const sectionClass = (step: number) => `plannerSection full${missingSections.includes(step) ? " hasError" : ""}`;
   const requiredWarning = (step: number) => missingSections.includes(step) ? <span className="requiredWarning" role="status">* {text(ar, "Complete this step", "أكمل هذه الخطوة")}</span> : null;
 
-  return <form ref={formRef} dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} onFocusCapture={markSection} onPointerDownCapture={markSection} noValidate>
+  return <form ref={formRef} dir={ar ? "rtl" : "ltr"} className={`${compact ? "quickPlanner" : "journeyForm"} smartPlanner polishedPlanner`} onSubmit={submit} onFocusCapture={markSection} onClickCapture={markSection} noValidate>
     <label className="srOnly" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     <div className="plannerIntro full"><p className={`kicker ${compact ? "light" : ""}`}>{text(ar, "Your journey, step by step", "رحلتك، خطوة بخطوة")}</p><h3>{text(ar, "Tell us what your dream looks like.", "شاركنا شكل رحلة أحلامك.")}</h3><p>{text(ar, "Start with the place. We’ll guide you through the people, dates, complete package and how you want to receive it.", "حدد وجهتك، وعلمنا عدد المسافرين وتواريخ الرحلة وراح نصمم لك باقة أحلامك اللي تناسب شخصيتك.")}</p></div>
 
