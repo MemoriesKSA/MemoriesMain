@@ -18,7 +18,8 @@ function daysLabel(days: number, ar: boolean) {
 }
 
 function offerLine(ar: boolean) {
-  if (PLANS_FREE) return ar ? `مجانية حاليًا · سعر الخطة ${NIGHT_RATE} ريال لليلة` : `Free right now · A plan is SAR ${NIGHT_RATE} a night`;
+  // No figure while plans are free (Habib, 7 Oct 2026: "just say free right now").
+  if (PLANS_FREE) return ar ? "مجانية حاليًا" : "Free right now";
   return ar ? `سعر الخطة ${NIGHT_RATE} ريال لليلة` : `A plan is SAR ${NIGHT_RATE} a night`;
 }
 
@@ -128,7 +129,7 @@ export async function ExamplePlanContent({ slug, locale, source }: { slug: strin
         <div className="exampleEnd">
           <strong>{ar ? "عجبتك؟ نكتب لك وحدة مثلها." : "Like it? We will write you one."}</strong>
           <p>{PLANS_FREE
-            ? (ar ? `خطة بهذا الطول سعرها ${fee} ريال، وما ناخذ عليها شي حاليًا.` : `A plan this long is SAR ${fee}, and we are not charging for plans right now.`)
+            ? (ar ? "الخطط مجانية حاليًا، ما ناخذ عليها شي." : "Plans are free right now; there is nothing to pay.")
             : (ar ? `خطة بهذا الطول سعرها ${fee} ريال.` : `A plan this long is SAR ${fee}.`)}</p>
           <Link href={exampleHref(locale, null, source)} className="exampleBack">{ar ? "شوف باقي الأمثلة" : "See the other examples"}</Link>
         </div>

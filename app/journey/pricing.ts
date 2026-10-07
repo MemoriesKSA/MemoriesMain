@@ -14,8 +14,13 @@
  * no way to take. Free is the honest version of the same state, and it puts
  * real trips in front of real people while the merchant account is sorted.
  *
- * The rate below is kept, not deleted. It is what a plan is worth, every
- * surface still quotes it as the normal price, and this is the switch back.
+ * The rate below is kept, not deleted, and this is the switch back. While
+ * this is true no surface states it: not the forms, the example pages, a
+ * customer's plan, the terms or the chat assistant (Habib, 7 Oct 2026:
+ * "remove anywhere that says the price is 15 a night or was 15 a night, just
+ * say free right now"). Each of them shows the figure again in its paid
+ * branch, except legal-content.ts, whose fee paragraph is plain text and has
+ * to be given its numbers back by hand before a riyal is charged.
  *
  * Turning it off does NOT re-lock what was given away. Mark every existing
  * unpaid plan paid first, or a customer who was handed a finished plan opens

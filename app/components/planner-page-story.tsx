@@ -47,7 +47,7 @@ export function PlannerPageStory({ variant, locale = "en", short = false }: { va
     {short ? <div className="plannerStoryLead shortLead">
       <p className="kicker light">{ar ? "حلمك يبدأ من هنا" : "Your dream starts here"}</p>
       <h1>{ar ? <>خطة رحلتك،{" "}<br /><em>مكتوبة لك.</em></> : <>Your trip plan,{" "}<br /><em>written for you.</em></>}</h1>
-      <div className="shortOffer">{PLANS_FREE ? (ar ? `مجانية حاليًا · سعر الخطة ${NIGHT_RATE} ريال لليلة` : `Free right now · A plan is SAR ${NIGHT_RATE} a night`) : (ar ? `سعر الخطة ${NIGHT_RATE} ريال لليلة` : `A plan is SAR ${NIGHT_RATE} a night`)}</div>
+      <div className="shortOffer">{PLANS_FREE ? (ar ? "مجانية حاليًا" : "Free right now") : (ar ? `سعر الخطة ${NIGHT_RATE} ريال لليلة` : `A plan is SAR ${NIGHT_RATE} a night`)}</div>
     </div> : <div className="plannerStoryLead">
       <p className="kicker light">{study ? (ar ? "فصلك القادم" : "Your next chapter") : (ar ? "حلمك يبدأ من هنا" : "Your dream starts here")}</p>
       <h1>{study ? (ar ? <>الدراسة في الخارج،<br /><em>بمسار أوضح.</em></> : <>Study abroad,<br /><em>with a clearer path.</em></>) : (ar ? <>لنصمّم رحلة<br /><em>لا يحلم بها إلا أنت.</em></> : <>Let&apos;s design a journey<br /><em>only you could dream.</em></>)}</h1>

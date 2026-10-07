@@ -341,11 +341,13 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     }
     const missing = [
       !country || !city || !purpose || extraStops.some((s) => !s.city || !s.purpose) || (isMakkah && !makkahEligible) || (unresearchedPick && !otherDestination.trim()) || (path === "study" && !saudiCitizen) || (path === "study" && (!hasSpecificField || !hasSpecificUniversity || (hasSpecificField === "yes" && !specificField.trim()) || (hasSpecificUniversity === "yes" && !specificUniversity.trim()))) ? 1 : 0,
-      // Asking for flights without saying where from leaves the team unable
-      // to look anything up, so it counts as an incomplete step 3.
-      transport.includes("flights") && !departureCity.trim() ? 3 : 0,
       !travellers || !travellerCount || !value("fromDate") || !value("toDate") ? 2 : 0,
-      !transport.length || !stays.length ? 3 : 0,
+      // Step 3 (the package) is not in this list any more, on purpose. On
+      // 7 Oct 2026 a Saudi visitor finished where, who and when, pressed send,
+      // was sent back up to step 3 and left: the nearest thing to a request
+      // the site had had. Habib, asked whether that step should stop anyone:
+      // "yes build it". What was left unanswered there is filled in below and
+      // the writer is told it is our assumption, the way the short form does.
       // "No set budget" is a complete answer, not a missing one: the customer
       // is asking us to propose the figure, so there is no amount to require.
       budgetMode !== "open" && !value("budget") ? 4 : 0,
@@ -364,6 +366,24 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
     setMissingSections([]); setFormError(""); setStatus("reviewing");
     const payload = Object.fromEntries(formData.entries()) as Record<string, FormDataEntryValue | FormDataEntryValue[]>;
     for (const field of ["transport", "stays", "planIncludes", "delivery"]) payload[field] = formData.getAll(field);
+    // Whatever step 3 left open goes out as our default, with a note the
+    // drafting pass reads. In English because that pass works in English, and
+    // labelled as ours so it is never mistaken for the traveller's own words.
+    const assumed: string[] = [];
+    if (!transport.length) { payload.transport = ["airport", "public"]; assumed.push("the transport (an airport transfer and public transport)"); }
+    if (!stays.length) { payload.stays = ["hotel"]; assumed.push("the stay (a hotel)"); }
+    const flightsWithoutOrigin = transport.includes("flights") && !departureCity.trim();
+    if (assumed.length || flightsWithoutOrigin) {
+      mark("defaults3");
+      payload.packageNotes = [
+        value("packageNotes"),
+        [
+          "INTERNAL NOTE FROM MEMORIES, not written by the traveller.",
+          assumed.length ? `They left part of the package step unanswered, so this is our default and not their choice: ${assumed.join(" and ")}. Say plainly near the top of the plan what was assumed, so they can tell us what to change.` : "",
+          flightsWithoutOrigin ? "They asked for flights but did not say where they are flying from. Do not guess a departure city and do not price flights from one: say what to search for and that the fare depends on where they leave from." : "",
+        ].filter(Boolean).join(" "),
+      ].filter(Boolean).join("\n\n");
+    }
     try {
       const response = await fetch("/api/journeys", {
         method: "POST",
@@ -472,20 +492,20 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
             + {text(ar, "Add another destination", "أضف وجهة أخرى")}
           </button> : null}
           {stops.length ? <p className="planFee">
-            {/* Free for now, and the normal price stays on screen. A plan
-                whose price is simply absent reads as a plan with no value;
-                the number is what makes "free" mean anything, and what makes
-                "for now" believable. */}
+            {/* Free for now, and no figure beside it. The normal price used
+                to stay on screen here; Habib, 7 Oct 2026: "remove anywhere
+                that says the price is 15 a night or was 15 a night, just say
+                free right now". The price comes back with the paid branch. */}
             {PLANS_FREE
-              ? text(ar, "Free while we get started", "مجانية حاليًا")
+              ? text(ar, "Free right now", "مجانية حاليًا")
               : tripNights > 0
                 ? text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)
                 : text(ar, `SAR ${NIGHT_RATE} per night`, `${digits(NIGHT_RATE, true)} ريال لكل ليلة`)}
             <small>
               {PLANS_FREE
                 ? text(ar,
-                    `A plan is normally SAR ${NIGHT_RATE} a night, plus SAR ${EXTRA_STOP_FEE} for each destination after the first. We are not charging for them while our payment account is being set up, so this one is on us.`,
-                    `عادةً الخطة ${digits(NIGHT_RATE, true)} ريال عن كل ليلة، و${digits(EXTRA_STOP_FEE, true)} ريال لكل وجهة بعد الأولى. حاليًا ما ناخذ عليها شي لين نخلص إعداد حساب الدفع، فهذي علينا.`)
+                    "We are not charging for plans right now, so this one is on us.",
+                    "ما ناخذ على الخطط شي حاليًا، فهذي علينا.")
                 : tripNights > 0
                   ? text(ar,
                       // Spelled out rather than just totalled, so the number
@@ -607,24 +627,24 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         `fee`, so the two lines cannot disagree. */}
     {multiStopAvailable && stops.length && tripNights > 0 ? <p className="datesFee">
       {PLANS_FREE
-        ? text(ar, "Free while we get started", "مجانية حاليًا")
+        ? text(ar, "Free right now", "مجانية حاليًا")
         : text(ar, `Plan fee SAR ${fee}`, `رسوم الخطة ${digits(fee, true)} ريال`)}
       <span>{PLANS_FREE
-        ? text(ar, `normally SAR ${NIGHT_RATE} a night`, `عادةً ${digits(NIGHT_RATE, true)} ريال لليلة`)
+        ? text(ar, "nothing to pay", "بدون دفع")
         : text(ar,
           `${nightsLabel(tripNights, false)} at SAR ${NIGHT_RATE}${stops.length > 1 ? `, plus ${stops.length - 1} extra ${stops.length === 2 ? "destination" : "destinations"}` : ""}`,
           `${nightsLabel(tripNights, true)} بـ${digits(NIGHT_RATE, true)} ريال${stops.length > 1 ? `، بالإضافة إلى ${digits(stops.length - 1, true)} ${stops.length === 2 ? "وجهة إضافية" : "وجهات إضافية"}` : ""}`)}</span>
     </p> : null}
     </section>
 
-    <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Select more than one option wherever you like.", "يمكنك اختيار أكثر من خيار حسب رغبتك.")}</small>{requiredWarning(3)}</div></div>
+    <section className={sectionClass(3)} data-step="3"><div className="plannerStep"><span>03</span><div><strong>{text(ar, "Build your complete package", "كوّن باقتك الكاملة")}</strong><small>{text(ar, "Optional. Leave it and we plan around a hotel, an airport transfer and public transport.", "اختياري. لو تركتها نكتب الخطة على فندق وتوصيل من المطار ونقل عام.")}</small>{requiredWarning(3)}</div></div>
       <MultiChoice legend={text(ar, "What transport do you need?", "ما خدمات النقل التي تحتاجها؟")} name="transport" options={localize(ar, transportChoices)} selected={transport} onChange={setTransport} hint={text(ar, "Choose every service you want us to include.", "اختر جميع الخدمات التي ترغب بإضافتها.")} />
       {/* Only meaningful once they've actually asked for flights. No flight
           schedule or fare can be looked up without knowing where they're
           departing from, so this is the field that makes flight planning
           possible at all rather than a nice-to-have. */}
       {transport.includes("flights") ? <div className="flightDetails">
-        <label className="studyReveal"><span>{text(ar, "Where are you flying from?", "من أين ستسافر؟")} *</span><input name="departureCity" value={departureCity} onChange={(event) => setDepartureCity(event.target.value)} placeholder={text(ar, "City or airport, for example Cairo or LHR", "المدينة أو المطار، مثلاً القاهرة أو LHR")} /></label>
+        <label className="studyReveal"><span>{text(ar, "Where are you flying from?", "من أين ستسافر؟")}</span><input name="departureCity" value={departureCity} onChange={(event) => setDepartureCity(event.target.value)} placeholder={text(ar, "City or airport, for example Cairo or LHR", "المدينة أو المطار، مثلاً القاهرة أو LHR")} /></label>
         <ElasticSelect label={text(ar, "Preferred flight timing", "توقيت الرحلة المفضل")} name="flightTiming" placeholder={text(ar, "Daytime, night, or flexible", "نهارية أو ليلية أو مرن")} options={localize(ar, [
           { value: "flexible", en: "Flexible, whatever works best", ar: "مرن، ما يناسب أكثر" },
           { value: "daytime", en: "Daytime flight", ar: "رحلة نهارية" },
@@ -694,8 +714,8 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
         <p className="privacyHint full">
           {PLANS_FREE
             ? text(ar,
-              `Free for now, like the plan itself. Priority is normally SAR ${PRIORITY_PRICE_SAR}.`,
-              `مجانية حاليًا مثل الخطة نفسها. الأولوية عادةً ${digits(PRIORITY_PRICE_SAR, true)} ريال.`)
+              "Free for now, like the plan itself.",
+              "مجانية حاليًا مثل الخطة نفسها.")
             : text(ar,
               "Nothing is charged here. We will confirm the priority fee with you before your plan is prepared.",
               "لا يُخصم شيء الآن. سنؤكد لك رسوم الأولوية قبل إعداد خطتك.")}
