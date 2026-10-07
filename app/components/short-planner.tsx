@@ -280,7 +280,7 @@ export function ShortPlanner({ locale = "en", source = "", today }: { locale?: "
     <span className="successIcon"><CheckCircle2 /></span>
     <strong>{t(ar, "We have your request.", "وصلنا طلبك.")}</strong>
     <p>{channel === "whatsapp"
-      ? t(ar, `Your ${cityLabel} plan is being written now. We will send you its link on WhatsApp within ${hours} hours.`, `خطة ${cityLabel} تنكتب الآن. نرسل لك رابطها على واتساب خلال ${hours} ساعات.`)
+      ? t(ar, `Your ${cityLabel} plan is being written now. We will send you its link on WhatsApp within a day.`, `خطة ${cityLabel} تنكتب الآن. نرسل لك رابطها على واتساب خلال يوم.`)
       : t(ar, `Your ${cityLabel} plan is being written now. It will reach your inbox within ${hours} hours, and a confirmation is on its way to you now.`, `خطة ${cityLabel} تنكتب الآن. توصل إيميلك خلال ${hours} ساعات، ووصلك الآن إيميل تأكيد.`)}</p>
     {reference ? <small>{t(ar, "Request number", "رقم الطلب")}: <bdi>{reference}</bdi></small> : null}
   </div></div>;
@@ -356,7 +356,10 @@ export function ShortPlanner({ locale = "en", source = "", today }: { locale?: "
       <button className="button gold shortSubmit" type="submit" disabled={status === "sending"}>
         {status === "sending" ? t(ar, "Sending your request…", "نرسل طلبك…") : PLANS_FREE ? t(ar, "Send me my free plan", "أرسلوا لي خطتي المجانية") : t(ar, "Send me my plan", "أرسلوا لي خطتي")}
       </button>
-      <p className="shortPromise">{t(ar, `It reaches you within ${hours} hours`, `توصلك خلال ${hours} ساعات`)}{PLANS_FREE ? t(ar, " · nothing to pay", " · بدون دفع") : t(ar, ` · SAR ${NIGHT_RATE} a night`, ` · ${NIGHT_RATE} ريال لليلة`)}</p>
+      {/* An emailed plan goes out by itself once it is written, inside the
+          window; a WhatsApp link is sent by a person, who may be asleep when
+          the plan is ready. So WhatsApp is promised a day, which we can keep. */}
+      <p className="shortPromise">{channel === "whatsapp" ? t(ar, "It reaches you on WhatsApp within a day", "توصلك على واتساب خلال يوم") : t(ar, `It reaches you within ${hours} hours`, `توصلك خلال ${hours} ساعات`)}{PLANS_FREE ? t(ar, " · nothing to pay", " · بدون دفع") : t(ar, ` · SAR ${NIGHT_RATE} a night`, ` · ${NIGHT_RATE} ريال لليلة`)}</p>
       <p className="shortLegal">{ar
         ? <>بالإرسال أنت موافق على <a href="/ar/privacy" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a> و<a href="/ar/terms" target="_blank" rel="noopener noreferrer">الشروط</a></>
         : <>By sending you agree to the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a></>}</p>
