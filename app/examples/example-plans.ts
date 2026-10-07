@@ -45,12 +45,16 @@ export const EXAMPLES_WRITTEN = { ar: "أكتوبر 2026", en: "October 2026" };
 // house wine, which is right for the four who asked and wrong as the first
 // thing a family reads under our name. A plan that only warns where alcohol
 // and pork turn up, as the Istanbul, Bangkok and Kuala Lumpur ones do, stays:
-// that warning is the product.
+// that warning is the product. Georgia is shown by the family plan instead
+// (100E809E: halal arranged first, and plain that alcohol is served around
+// you), which Habib was asked about and answered "yes add the tbilisi family
+// plan".
 export const examplePlans: ExamplePlan[] = [
   { slug: "jeddah", reference: "4FEE5D9B", country: "saudi-arabia", city: "jeddah", fromDate: "2026-11-20", toDate: "2026-11-23", ar: { city: "جدة", forWhom: "لعائلة من خمسة", card: "عائلة من 5" }, en: { city: "Jeddah", forWhom: "for a family of five", card: "Family of 5" } },
   { slug: "alula", reference: "C277961E", country: "saudi-arabia", city: "alula", fromDate: "2026-11-12", toDate: "2026-11-16", ar: { city: "العلا", forWhom: "لعائلة من أربعة", card: "عائلة من 4" }, en: { city: "AlUla", forWhom: "for a family of four", card: "Family of 4" } },
   { slug: "riyadh", reference: "5349DF8A", country: "saudi-arabia", city: "riyadh", fromDate: "2026-10-29", toDate: "2026-11-01", ar: { city: "الرياض", forWhom: "لعائلة من أربعة في موسم الرياض", card: "عائلة من 4" }, en: { city: "Riyadh", forWhom: "for a family of four in Riyadh Season", card: "Family of 4" } },
   { slug: "istanbul", reference: "6D2C248E", country: "turkey", city: "istanbul", fromDate: "2026-12-18", toDate: "2026-12-23", ar: { city: "اسطنبول", forWhom: "لعائلة من أربعة", card: "عائلة من 4" }, en: { city: "Istanbul", forWhom: "for a family of four", card: "Family of 4" } },
+  { slug: "tbilisi", reference: "100E809E", country: "georgia", city: "tbilisi", fromDate: "2027-01-08", toDate: "2027-01-13", ar: { city: "تبليسي", forWhom: "لعائلة من أربعة مع يوم في الثلج", card: "عائلة من 4" }, en: { city: "Tbilisi", forWhom: "for a family of four, with a day in the snow", card: "Family of 4" } },
   { slug: "bangkok", reference: "5F30E881", country: "thailand", city: "bangkok", fromDate: "2026-12-14", toDate: "2026-12-19", ar: { city: "بانكوك", forWhom: "لشخصين", card: "شخصين" }, en: { city: "Bangkok", forWhom: "for two", card: "Couple" } },
   { slug: "kuala-lumpur", reference: "2F4DD370", country: "malaysia", city: "kuala-lumpur", fromDate: "2027-01-10", toDate: "2027-01-15", ar: { city: "كوالالمبور", forWhom: "لعروسين", card: "شهر عسل" }, en: { city: "Kuala Lumpur", forWhom: "for a honeymoon", card: "Honeymoon" } },
 ];
