@@ -36,12 +36,21 @@ export const TEAM_PLAN_NAME = "فريق ميموريز";
 /** When these were written, said on each page because prices and opening hours move. */
 export const EXAMPLES_WRITTEN = { ar: "أكتوبر 2026", en: "October 2026" };
 
+// Which of our plans is shown is a judgement, not a list of everything we
+// have. Two were taken out within the hour of going live, on the Head of
+// Marketing's reading: the first Riyadh plan (53D44626) said the Riyadh Season
+// dates were not announced, which stopped being true, so Riyadh is the plan
+// written after that was fixed; and the Tbilisi plan for four friends
+// (C7796491) spends a day in a wine town and eats in a tavern known for its
+// house wine, which is right for the four who asked and wrong as the first
+// thing a family reads under our name. A plan that only warns where alcohol
+// and pork turn up, as the Istanbul, Bangkok and Kuala Lumpur ones do, stays:
+// that warning is the product.
 export const examplePlans: ExamplePlan[] = [
   { slug: "jeddah", reference: "4FEE5D9B", country: "saudi-arabia", city: "jeddah", fromDate: "2026-11-20", toDate: "2026-11-23", ar: { city: "جدة", forWhom: "لعائلة من خمسة", card: "عائلة من 5" }, en: { city: "Jeddah", forWhom: "for a family of five", card: "Family of 5" } },
   { slug: "alula", reference: "C277961E", country: "saudi-arabia", city: "alula", fromDate: "2026-11-12", toDate: "2026-11-16", ar: { city: "العلا", forWhom: "لعائلة من أربعة", card: "عائلة من 4" }, en: { city: "AlUla", forWhom: "for a family of four", card: "Family of 4" } },
-  { slug: "riyadh", reference: "53D44626", country: "saudi-arabia", city: "riyadh", fromDate: "2026-11-26", toDate: "2026-11-30", ar: { city: "الرياض", forWhom: "لعائلة من خمسة", card: "عائلة من 5" }, en: { city: "Riyadh", forWhom: "for a family of five", card: "Family of 5" } },
+  { slug: "riyadh", reference: "5349DF8A", country: "saudi-arabia", city: "riyadh", fromDate: "2026-10-29", toDate: "2026-11-01", ar: { city: "الرياض", forWhom: "لعائلة من أربعة في موسم الرياض", card: "عائلة من 4" }, en: { city: "Riyadh", forWhom: "for a family of four in Riyadh Season", card: "Family of 4" } },
   { slug: "istanbul", reference: "6D2C248E", country: "turkey", city: "istanbul", fromDate: "2026-12-18", toDate: "2026-12-23", ar: { city: "اسطنبول", forWhom: "لعائلة من أربعة", card: "عائلة من 4" }, en: { city: "Istanbul", forWhom: "for a family of four", card: "Family of 4" } },
-  { slug: "tbilisi", reference: "C7796491", country: "georgia", city: "tbilisi", fromDate: "2026-11-05", toDate: "2026-11-09", ar: { city: "تبليسي", forWhom: "لأربعة أصدقاء", card: "4 أصدقاء" }, en: { city: "Tbilisi", forWhom: "for four friends", card: "4 friends" } },
   { slug: "bangkok", reference: "5F30E881", country: "thailand", city: "bangkok", fromDate: "2026-12-14", toDate: "2026-12-19", ar: { city: "بانكوك", forWhom: "لشخصين", card: "شخصين" }, en: { city: "Bangkok", forWhom: "for two", card: "Couple" } },
   { slug: "kuala-lumpur", reference: "2F4DD370", country: "malaysia", city: "kuala-lumpur", fromDate: "2027-01-10", toDate: "2027-01-15", ar: { city: "كوالالمبور", forWhom: "لعروسين", card: "شهر عسل" }, en: { city: "Kuala Lumpur", forWhom: "for a honeymoon", card: "Honeymoon" } },
 ];

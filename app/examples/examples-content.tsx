@@ -29,6 +29,9 @@ function cityImage(plan: ExamplePlan) {
 /** Every example on one page: a picture each, and one way on to the form. */
 export function ExamplesIndex({ locale, source }: { locale: Locale; source: string }) {
   const ar = locale === "ar";
+  // The cards sit two to a row on a phone and three on a laptop. An odd
+  // number would leave one alone at the end, so the first is drawn wide.
+  const lead = examplePlans.length % 2 === 1;
   return (
     <main className="innerPage examplesPage">
       <ExampleSeen page="index" source={source} />
@@ -40,10 +43,10 @@ export function ExamplesIndex({ locale, source }: { locale: Locale; source: stri
             ? "أمثلة كتبناها بنفس الطريقة اللي نكتب بها خطتك، كاملة بدون اختصار. اختر وجهة وشوف وش بيوصلك."
             : "Examples written the same way we would write yours, whole and unshortened. Pick a place and see what you would get."}</p>
         </header>
-        <div className="examplesGrid">
+        <div className={`examplesGrid${lead ? " examplesGridLead" : ""}`}>
           {examplePlans.map((plan, index) => (
             <Link key={plan.slug} href={exampleHref(locale, plan.slug, source)} className="exampleCard">
-              <Image src={cityImage(plan)} alt="" fill sizes={index === 0 ? "(max-width:780px) 100vw, 1180px" : "(max-width:780px) 50vw, 390px"} priority={index < 3} />
+              <Image src={cityImage(plan)} alt="" fill sizes={lead && index === 0 ? "(max-width:780px) 100vw, 1180px" : "(max-width:780px) 50vw, 390px"} priority={index < 3} />
               <span>
                 <strong>{plan[locale].city}</strong>
                 <small>{plan[locale].card} · {daysLabel(exampleDays(plan), ar)}</small>

@@ -865,7 +865,7 @@ body:has(.shortPlanner:not(.shortPlannerDone)) .consentBanner{display:none}
 .examplesLead>p:last-child{margin:12px 0 0;color:var(--muted);line-height:1.85}
 .examplesGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
 .exampleCard{position:relative;isolation:isolate;display:block;min-height:250px;overflow:hidden;border-radius:16px;background:#0d2a26;color:#fff;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
-.exampleCard:first-child{grid-column:1/-1;min-height:330px}
+.examplesGridLead .exampleCard:first-child{grid-column:1/-1;min-height:330px}
 .exampleCard:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .exampleCard img{object-fit:cover}
 .exampleCard::after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(0deg,rgba(4,20,17,.9),rgba(4,20,17,.04) 62%)}
@@ -894,4 +894,4 @@ body:has(.shortPlanner:not(.shortPlannerDone)) .consentBanner{display:none}
 .exampleBar small{color:rgba(255,255,255,.78);font-size:.7rem;font-weight:700}
 body:has(.exampleBar) footer{padding-bottom:96px}
 body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:104px}
-@media(max-width:780px){.examplesPage{padding:26px 0 70px}.examplesGrid{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.exampleCard{min-height:150px;border-radius:13px}.exampleCard:first-child{min-height:190px}.exampleCard span{inset-inline:12px;bottom:10px}.exampleCard strong{font-size:1.08rem}.exampleCard small{font-size:.72rem}.exampleWrap{width:calc(100% - 28px)}.exampleHero{padding:26px 0 54px}}
+@media(max-width:780px){.examplesPage{padding:26px 0 70px}.examplesGrid{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.exampleCard{min-height:150px;border-radius:13px}.examplesGridLead .exampleCard:first-child{min-height:190px}.exampleCard span{inset-inline:12px;bottom:10px}.exampleCard strong{font-size:1.08rem}.exampleCard small{font-size:.72rem}.exampleWrap{width:calc(100% - 28px)}.exampleHero{padding:26px 0 54px}}
