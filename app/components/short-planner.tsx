@@ -117,11 +117,15 @@ function parsePhone(raw: string): { phoneCode: string; phone: string } | null {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function ShortPlanner({ locale = "en", source = "", today }: { locale?: "en" | "ar"; source?: string; today: string }) {
+export function ShortPlanner({ locale = "en", source = "", today, initialCountry, initialCity }: { locale?: "en" | "ar"; source?: string; today: string; initialCountry?: string; initialCity?: string }) {
   const ar = locale === "ar";
   const [full, setFull] = useState(false);
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
+  // Somebody who tapped "one like it" under an example plan arrives with that
+  // plan's place already chosen. Only one of the buttons below can be chosen
+  // this way: anything else in the address is ignored, not trusted.
+  const [startAt] = useState(() => quickDestinations.find((item) => item.city === initialCity && item.country === initialCountry));
+  const [country, setCountry] = useState(startAt?.country ?? "");
+  const [city, setCity] = useState(startAt?.city ?? "");
   const [elsewhere, setElsewhere] = useState(false);
   const [when, setWhen] = useState("");
   const [fromDate, setFromDate] = useState("");

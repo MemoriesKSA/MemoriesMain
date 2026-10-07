@@ -852,3 +852,46 @@ html[dir="rtl"] .shortContact>input{text-align:right}
    opened. Nothing from Google loads without an answer, so waiting is the
    private choice by default. */
 body:has(.shortPlanner:not(.shortPlannerDone)) .consentBanner{display:none}
+/* Example plans (7 Oct 2026): whole plans a stranger can read before asking
+   for their own, reachable by link only (see examples/example-plans.ts). The
+   hero and the bottom bar use fixed dark colours for the reason the plan page
+   gives: --ink turns near-white in the dark theme. The button rides along at
+   the bottom of the screen because a plan is a long read and the way on to
+   the form should never be a scroll away; the help bubble and the analytics
+   question step up to sit above it. */
+.examplesPage{padding:54px 0 90px}
+.examplesLead{max-width:640px}
+.examplesLead h1{margin:0;font-size:clamp(1.9rem,4.2vw,2.9rem);line-height:1.25}
+.examplesLead>p:last-child{margin:12px 0 0;color:var(--muted);line-height:1.85}
+.examplesGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+.exampleCard{position:relative;isolation:isolate;display:block;min-height:250px;overflow:hidden;border-radius:16px;background:#0d2a26;color:#fff;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
+.exampleCard:first-child{grid-column:1/-1;min-height:330px}
+.exampleCard:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.exampleCard img{object-fit:cover}
+.exampleCard::after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(0deg,rgba(4,20,17,.9),rgba(4,20,17,.04) 62%)}
+.exampleCard span{position:absolute;z-index:2;inset-inline:18px;bottom:15px;display:grid;gap:2px}
+.exampleCard strong{font-size:1.35rem}
+.exampleCard small{color:rgba(255,255,255,.86);font-size:.82rem}
+.examplesAsk{display:grid;justify-items:center;gap:8px;margin-top:34px;text-align:center}
+.examplesAsk .button,.exampleBar .button{justify-content:center;margin:0;padding-inline:21px;font-size:1rem}
+.examplesAsk .button{width:min(100%,340px);min-height:52px}
+.examplesAsk small{color:var(--muted);font-size:.78rem;font-weight:700}
+.exampleWrap{width:min(760px,calc(100% - 48px));margin-inline:auto}
+.exampleHero{padding:46px 0 66px;background:#102d29;color:#fffdf9}
+.exampleRibbon{display:inline-block;padding:5px 13px;border-radius:999px;background:var(--gold-light);color:#122c27;font-size:.76rem;font-weight:800}
+.exampleHero h1{margin:12px 0 0;font-size:clamp(1.9rem,4.2vw,2.9rem);line-height:1.25}
+.exampleHero h1 em{color:var(--gold-light);font-style:normal}
+.exampleHero p{margin:10px 0 0;color:rgba(255,253,249,.76);font-size:.94rem}
+.exampleBody{margin-top:-34px;padding-bottom:70px}
+.exampleNote{margin:0 0 22px;padding:14px 16px;border:1px solid rgba(200,149,63,.38);border-radius:12px;background:var(--paper);box-shadow:var(--shadow);color:var(--ink);font-size:.86rem;line-height:1.8}
+.exampleEnd{display:grid;justify-items:center;gap:8px;margin-top:34px;padding:28px 22px;border:1px solid var(--line);border-radius:16px;background:var(--paper);text-align:center}
+.exampleEnd strong{font-size:1.3rem}
+.exampleEnd p{margin:0;color:var(--muted);line-height:1.7}
+.exampleBack{margin-top:6px;border-bottom:1px solid currentColor;color:var(--gold);font-size:.86rem;font-weight:800}
+.exampleBar{position:fixed;z-index:35;inset-inline:0;bottom:0;display:grid;justify-items:center;gap:5px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(230,185,93,.4);background:rgba(16,45,41,.97);backdrop-filter:blur(10px)}
+.exampleBar[dir="rtl"]{font-family:Tahoma,Arial,sans-serif}
+.exampleBar .button{width:min(100%,520px);min-height:48px}
+.exampleBar small{color:rgba(255,255,255,.78);font-size:.7rem;font-weight:700}
+body:has(.exampleBar) footer{padding-bottom:96px}
+body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:104px}
+@media(max-width:780px){.examplesPage{padding:26px 0 70px}.examplesGrid{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.exampleCard{min-height:150px;border-radius:13px}.exampleCard:first-child{min-height:190px}.exampleCard span{inset-inline:12px;bottom:10px}.exampleCard strong{font-size:1.08rem}.exampleCard small{font-size:.72rem}.exampleWrap{width:calc(100% - 28px)}.exampleHero{padding:26px 0 54px}}

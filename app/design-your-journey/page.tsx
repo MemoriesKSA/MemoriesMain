@@ -14,9 +14,11 @@ export default async function DesignJourneyPage({ searchParams }: { searchParams
   // to people's travel questions carry ?source=x-reply. Both bring a stranger
   // on a phone, so both get the three-question form; everyone else gets the
   // full one (Habib, 5 Oct 2026: "normal website shows the normal form"; 7 Oct,
-  // asked which form a reply link should open: "short").
-  const fromAd = /^ad-|-reply$/i.test(source ?? "");
+  // asked which form a reply link should open: "short"). The example plans are
+  // reachable by link only, so "one like it" under an example is the same
+  // stranger, and arrives as ?source=example when the link carried no tag.
+  const fromAd = /^ad-|^example$|-reply$/i.test(source ?? "");
   // Riyadh's date, so the month buttons are the same on the server and the phone.
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh" }).format(new Date());
-  return <main className="innerPage"><section className={`formHero editorialPlannerHero${fromAd ? " shortPlannerHero" : ""}`}><div className="container formHeroGrid"><PlannerPageStory variant="dream" short={fromAd} />{fromAd ? <ShortPlanner source={source ?? ""} today={today} /> : <JourneyPlanner initialPath={country === "saudi-arabia" ? "saudi" : "journey"} initialCountry={country} initialCity={city} fromCityGuide={source === "city-guide"} source={source ?? ""} />}</div></section></main>;
+  return <main className="innerPage"><section className={`formHero editorialPlannerHero${fromAd ? " shortPlannerHero" : ""}`}><div className="container formHeroGrid"><PlannerPageStory variant="dream" short={fromAd} />{fromAd ? <ShortPlanner source={source ?? ""} today={today} initialCountry={country} initialCity={city} /> : <JourneyPlanner initialPath={country === "saudi-arabia" ? "saudi" : "journey"} initialCountry={country} initialCity={city} fromCityGuide={source === "city-guide"} source={source ?? ""} />}</div></section></main>;
 }
