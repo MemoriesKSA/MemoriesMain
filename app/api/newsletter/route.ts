@@ -18,6 +18,22 @@ export async function POST(request: Request) {
   const contact = existing.data
     ? await resend.contacts.update({ email, unsubscribed: false, properties })
     : await resend.contacts.create({ email, unsubscribed: false, properties });
-  if (contact.error) { console.error("Newsletter contact failed", contact.error.name); return Response.json({ error: "We could not save your subscription." }, { status: 502 }); }
+  if (contact.error) {
+    // 8 Oct 2026: the live mail key may only send, so keeping a contact has
+    // failed for every visitor since this box went up ("restricted_api_key")
+    // and each of them was told we could not save their subscription. Sending
+    // is the one thing that key can do, so until it can keep a list the
+    // sign-up goes to our own inbox instead, and nobody who asked is lost.
+    const inbox = process.env.JOURNEY_REVIEW_EMAIL ?? "memoriesksasupport@gmail.com";
+    const note = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL ?? "MEMORIES Journeys <journeys@send.memories.tours>",
+      to: [inbox],
+      subject: "Newsletter sign-up",
+      text: [`Someone joined the list on the website.`, `Email: ${email}`, `Language: ${locale}`, `Agreed to marketing emails: ${properties.consent_date}`, "", "The mail key could not add them to a contact list, so this note is the record. Keep it."].join("\n"),
+      tags: [{ name: "email_type", value: "newsletter_signup" }],
+    });
+    if (note.error) { console.error("Newsletter contact failed", contact.error.name, "and so did the note to our inbox", note.error.name); return Response.json({ error: "We could not save your subscription." }, { status: 502 }); }
+    console.log("Newsletter sign-up kept as a note to our inbox: the mail key cannot keep a list.");
+  }
   return Response.json({ ok: true });
 }
