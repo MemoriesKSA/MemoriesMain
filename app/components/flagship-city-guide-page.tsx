@@ -8,6 +8,7 @@ import { countryGuideBySlug } from "../destination-guide-data";
 import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
 import { publicPreview } from "./public-preview";
 import { fetchLiveWeather } from "../weather-live";
+import { activeSeasonFor } from "../seasons-data";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -135,6 +136,9 @@ export async function FlagshipCityGuidePage({
   const planHref = `${prefix}/design-your-journey?country=${country.slug}&city=${city.slug}&source=flagship-guide`;
   const story = ar ? guide.storyAr : guide.storyEn;
   const cityName = ar ? city.nameAr : city.nameEn;
+  // Rendered with the page, which already refreshes every few minutes for
+  // the weather, so the badge comes down within minutes of the season ending.
+  const season = activeSeasonFor(country.slug, city.slug);
 
   // See publicPreview: the cap is display-only. The full lists stay in the
   // flagship data and still ground the AI draft, so a plan can still match a
@@ -211,7 +215,9 @@ export async function FlagshipCityGuidePage({
           <h1>{cityName}</h1>
           <div className="cityHeroMeta">
             <span><MapPin /> {ar ? country.regionAr : country.region}</span>
+            {season && <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>}
           </div>
+          {season && <p className="seasonLine">{ar ? season.lineAr : season.lineEn}</p>}
         </div>
       </section>
 

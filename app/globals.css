@@ -895,3 +895,27 @@ body:has(.shortPlanner:not(.shortPlannerDone)) .consentBanner{display:none}
 body:has(.exampleBar) footer{padding-bottom:96px}
 body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:104px}
 @media(max-width:780px){.examplesPage{padding:26px 0 70px}.examplesGrid{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.exampleCard{min-height:150px;border-radius:13px}.examplesGridLead .exampleCard:first-child{min-height:190px}.exampleCard span{inset-inline:12px;bottom:10px}.exampleCard strong{font-size:1.08rem}.exampleCard small{font-size:.72rem}.exampleWrap{width:calc(100% - 28px)}.exampleHero{padding:26px 0 54px}}
+/* Seasons on now (seasons-data.ts): the badge on a city's card and page, and the Saudi Winter band on Discover Saudi. */
+.seasonBadge{display:inline-flex;align-items:center;gap:7px;width:fit-content;padding:6px 11px;border-radius:999px;background:var(--ink);color:var(--gold-light);font-size:.6rem;font-weight:800;letter-spacing:.03em;line-height:1.1}
+.seasonBadge i,.cityHeroMeta .seasonMeta i{flex:none;width:7px;height:7px;border-radius:50%;background:#43d39a;box-shadow:0 0 0 3px rgba(67,211,154,.22);animation:season-pulse 2.6s ease-in-out infinite}
+.seasonBadge.onImage{position:absolute;z-index:2;top:14px;inset-inline-start:14px;border:1px solid rgba(230,185,93,.45);background:rgba(4,35,30,.8);backdrop-filter:blur(8px);font-size:.66rem;padding:8px 13px}
+.cityHeroMeta .seasonMeta{border-color:rgba(230,185,93,.5);color:var(--gold-light)}
+.seasonLine{max-width:560px;margin:14px 0 0;color:rgba(255,255,255,.86);font-size:.9rem;line-height:1.6}
+@keyframes season-pulse{0%,100%{box-shadow:0 0 0 3px rgba(67,211,154,.24)}50%{box-shadow:0 0 0 6px rgba(67,211,154,0)}}
+@media (prefers-reduced-motion:reduce){.seasonBadge i,.cityHeroMeta .seasonMeta i{animation:none}}
+.winterBand{padding-top:72px}
+.winterBandHeading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:26px}
+.winterBandHeading>p{max-width:470px;margin:0;color:var(--muted);line-height:1.7}
+.winterBandHeading h2 em{font-style:normal;color:var(--gold)}
+.winterGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.winterCard{display:flex;gap:14px;min-width:0;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);transition:transform .4s cubic-bezier(.22,1,.36,1),border-color .3s ease,box-shadow .4s ease}
+.winterCard:hover{transform:translateY(-4px);border-color:rgba(200,149,63,.5);box-shadow:0 16px 36px rgba(16,45,41,.1)}
+.winterCardImage{position:relative;flex:0 0 96px;min-height:96px;border-radius:10px;overflow:hidden}
+.winterCardImage img{object-fit:cover}
+.winterCardBody{display:flex;min-width:0;flex-direction:column;justify-content:center;gap:6px}
+.winterCardBody strong{font-family:var(--font-display),Georgia,serif;font-size:1.25rem;font-weight:600;line-height:1.1}
+.winterCardBody>span{color:var(--muted);font-size:.7rem;line-height:1.5}
+.winterNote{margin:18px 0 0;color:var(--muted);font-size:.75rem;line-height:1.7}
+.winterNote a{color:var(--ink);font-weight:800;border-bottom:1px solid var(--gold)}
+@media(max-width:1000px){.winterGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.winterBand{padding-top:48px}.winterBandHeading{display:block}.winterBandHeading>p{margin-top:12px}.winterGrid{grid-template-columns:1fr}.winterCardImage{flex-basis:84px;min-height:84px}}

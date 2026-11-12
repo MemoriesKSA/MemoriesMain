@@ -301,3 +301,11 @@ as orphans; that is expected.
 | stay-1.webp | Iván Rivero | [Pexels 1001965](https://www.pexels.com/photo/1001965/) |
 | stay-2.webp | K (as credited on the page) | [Pexels 2869215](https://www.pexels.com/photo/2869215/) |
 | stay-3.webp | Roy Serafin | [Pexels 38197473](https://www.pexels.com/photo/38197473/) |
+
+## AMAALA, 12 November 2026
+
+| Country | City/file | Photographer | Source |
+| --- | --- | --- | --- |
+| saudi-arabia | public/images/cities/saudi-arabia/amaala.webp | Abdulhalim Mudag | [Pexels 24415222](https://www.pexels.com/photo/view-of-a-rocky-coastline-and-turquoise-water-washing-up-the-beach-24415222/) |
+
+Pexels License, as above. A generic Red Sea coral shore, not AMAALA itself: the source page gives no location. It was taken 14 January 2022 by the same photographer, a day after their Catalina seaplane wreck photo tagged Tabuk, Saudi Arabia (Pexels 24415229), so it is very likely the same north-west Saudi coast. There were no freely licensed photographs of AMAALA. Centre-cropped to 1400 × 933 WebP, about 143 KB.

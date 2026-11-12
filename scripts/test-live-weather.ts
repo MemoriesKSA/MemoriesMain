@@ -39,7 +39,7 @@ const cases: [string, unknown, unknown][] = [
   // sixteenth editorial city without coordinates and this fails rather than
   // the panel silently going missing on one city.
   ["every city with a weather panel has coordinates", panelWithoutCoords.length, 0],
-  ["and there are fifteen of them", panelCities.length, 15],
+  ["and there are sixteen of them", panelCities.length, 16],
   ["a city we hold no coordinates for says so", hasLiveWeather("bali"), false],
 
   // Peak heat. The card above already says the season is brutal; this says

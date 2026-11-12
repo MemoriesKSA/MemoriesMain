@@ -39,7 +39,7 @@ export type LiveWeather = {
 };
 
 /**
- * City-centre coordinates for the fifteen cities whose pages carry a weather
+ * City-centre coordinates for the sixteen cities whose pages carry a weather
  * panel. Two are regions rather than cities and use the town a visitor would
  * actually be standing in: Aseer reads from the highlands near Abha, and the
  * Red Sea destination from Umluj on that coast.
@@ -51,6 +51,8 @@ const COORDS: Record<string, [number, number]> = {
   makkah: [21.3891, 39.8579],
   madinah: [24.5247, 39.5692],
   "red-sea": [25.0213, 37.2685],
+  // Triple Bay, the part of AMAALA that is open (Wikipedia's coordinates).
+  amaala: [26.6436, 36.2258],
   abha: [18.2164, 42.5053],
   aseer: [18.3000, 42.7300],
   taif: [21.2703, 40.4158],
