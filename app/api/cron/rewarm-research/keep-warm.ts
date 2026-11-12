@@ -47,6 +47,9 @@ export const PAUSED = true;
 export const KEEP_WARM = [
   // Saudi Arabia, the ten automated ones
   "red-sea", "abha", "aseer", "taif", "al-ahsa", "jazan", "al-jouf", "dammam", "tabuk", "yanbu",
+  // AMAALA, warmed 12 Nov 2026 on Habib's yes ("amaala should get pre warmed and ready to load when
+  // someone orders it"); its research lasts RESEARCH_CACHE_TTL_DAYS either way.
+  "amaala",
   // Türkiye
   "istanbul", "cappadocia", "antalya", "bodrum", "izmir", "fethiye", "ankara", "bursa", "trabzon",
   // Thailand

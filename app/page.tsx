@@ -4,6 +4,8 @@ import { ArrowRight, Compass, Globe2, Medal, MoonStar } from "lucide-react";
 import { FeaturedJourneys } from "./components/featured-journeys";
 import { JourneyPlanner } from "./components/journey-planner";
 import { NewsletterForm } from "./components/newsletter-form";
+import { HomeSeasonNotice } from "./components/home-season-notice";
+import { activeSeasonFor } from "./seasons-data";
 
 const promises = [
   { icon: Medal, title: "Tailor-made journeys", text: "Built around your dream" },
@@ -26,6 +28,7 @@ export default function Home() {
             <Link className="button gold" href="/design-your-journey">Design your dream journey <ArrowRight size={16} /></Link>
             <Link className="button glass" href="/discover-saudi-arabia">Discover Saudi Arabia <ArrowRight size={16} /></Link>
           </div>
+          <HomeSeasonNotice ar={false} builtOn={!!activeSeasonFor("saudi-arabia", "riyadh")} />
         </div>
       </section>
 
