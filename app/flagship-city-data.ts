@@ -367,6 +367,14 @@ const flagshipCityGuides: Record<string, FlagshipCityGuide> = {
         descriptionEn: "24 country-themed zones, the world's largest artificial lake and submarine rides. Open seasonally during Riyadh Season, so check dates before you plan around it.",
         descriptionAr: "24 منطقة بطابع دول مختلفة، وأكبر بحيرة اصطناعية في العالم ورحلات غواصات، ويعمل موسميًا خلال موسم الرياض، لذا تحقق من المواعيد قبل التخطيط حوله.",
       },
+      {
+        nameEn: "Ad Dirah & Al Masmak",
+        nameAr: "الديرة وقصر المصمك",
+        categoryEn: "Heritage",
+        categoryAr: "تراث",
+        descriptionEn: "Old Riyadh around Qasr Al Hukm: the restored Al Masmak fort, Souq Al Zal, the Sikkat Al At'ima food street and, in season, Al Dirah Winter. A short drive from the National Museum, so the two make one easy day.",
+        descriptionAr: "قلب الرياض القديم حول قصر الحكم: قصر المصمك بعد ترميمه، وسوق الزل، وسكة الأطعمة، وفي الموسم شتاء الديرة. على مسافة قصيرة بالسيارة من المتحف الوطني، فيجتمعان في يوم واحد مريح.",
+      },
     ],
     dining: [
       {

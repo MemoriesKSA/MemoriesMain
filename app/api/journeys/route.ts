@@ -5,6 +5,7 @@ import { arabicCityLabel, isPlannableCountry, STUDY_ABROAD_PAUSED, travelCountri
 import { createSupabaseAdminClient } from "../../supabase-admin";
 import { newFollowToken, followUrl, releaseAt, deliveryPromise } from "../../follow/release";
 import { newPlanToken } from "../../journey/plan-link";
+import { saveRequestAnswers } from "../../request-answers";
 
 
 export const runtime = "nodejs";
@@ -326,6 +327,8 @@ export async function POST(request: Request) {
       release_at: releaseAt(submittedAt, wantsPriority).toISOString(),
     });
     if (rowError) console.error("Could not open the follow record", rowError.message);
+    // What the customer actually typed, kept beside the plan (request-answers.ts).
+    await saveRequestAnswers(supabase, reference, submission, submittedAt);
   } catch (error) {
     console.error("Could not open the follow record", error);
   }
