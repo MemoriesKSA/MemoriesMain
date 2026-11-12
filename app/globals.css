@@ -933,6 +933,11 @@ body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:1
 @media(min-width:781px){.hero:has(.homeSeason){height:auto;max-height:none;min-height:clamp(790px,84vh,960px);padding-bottom:96px}}
 .seasonMark.onHero .rsLogo{height:50px}
 .seasonMark.onHero .seasonTimer{padding:7px 14px;border:1px solid rgba(230,185,93,.4);font-size:.74rem;backdrop-filter:blur(10px)}
+/* Khobar Season's mark is a tall white picture, so it needs more height than Riyadh's wide one to read the same size, and ink on a light card. */
+.ksLogo{height:44px}
+.seasonMark.onImage .ksLogo{height:66px}
+.seasonMark.onHero .ksLogo{height:88px}
+.seasonMark.inline .ksLogo{filter:brightness(0);opacity:.82}
 .winterBand{padding-top:72px}
 .winterBandHeading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:26px}
 .winterBandHeading>p{max-width:470px;margin:0;color:var(--muted);line-height:1.7}

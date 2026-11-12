@@ -12,6 +12,8 @@
  * (`logo`), the badge carries it: Habib's call on 12 Nov 2026 that Riyadh
  * Season's logo is a public government mark and fine to show. The mark itself
  * is in components/riyadh-season-logo.tsx, copied from riyadhseason.com.
+ * Khobar Season's (12 Nov 2026, at Habib's dad's request) is in
+ * components/season-logo.tsx, which picks the right mark for any season.
  */
 
 export type CitySeason = {
@@ -26,7 +28,7 @@ export type CitySeason = {
   lineEn: string;
   lineAr: string;
   /** The season's own mark, shown inside the badge. */
-  logo?: "riyadh-season";
+  logo?: "riyadh-season" | "khobar-season";
 };
 
 export const CITY_SEASONS: CitySeason[] = [
@@ -46,6 +48,25 @@ export const CITY_SEASONS: CitySeason[] = [
     labelAr: "انطلق موسم الرياض",
     lineEn: "Riyadh Season opened on 21 October and runs until 28 February. Its zones, concerts, shows and sports nights fill the winter, so evenings here are busier than any other time of year.",
     lineAr: "انطلق موسم الرياض في 21 أكتوبر ويستمر حتى 28 فبراير، ومناطقه وحفلاته وعروضه وأمسياته الرياضية تملأ الشتاء، فأمسيات الرياض الآن أحلى من أي وقت في السنة.",
+  },
+  {
+    // Khobar Season, second edition, asked for by Habib's dad on 12 Nov 2026
+    // for the Dammam and Al Khobar page only, not the homepage. The Eastern
+    // Province Development Authority announced it on 30 October (SPA, via
+    // ahwal.sa); it opens on the waterfront on 13 November and runs to
+    // 5 February 2027 (Sayidaty and Fact Magazine). More than 40 events and
+    // 100 experiences across 10+ sites in Al Khobar, with Ithra a partner.
+    // The page re-renders every few minutes for its weather, so the logo goes
+    // up by itself at Saudi midnight on the 13th.
+    country: "saudi-arabia",
+    city: "dammam",
+    startsOn: "2026-11-13",
+    endsOn: "2027-02-05",
+    logo: "khobar-season",
+    labelEn: "Khobar Season is on",
+    labelAr: "انطلق موسم الخبر",
+    lineEn: "Khobar Season opened on the Al Khobar waterfront on 13 November and runs until 5 February, with more than 40 events and 100 experiences across the city, so winter evenings by the sea are the liveliest of the year.",
+    lineAr: "انطلق موسم الخبر من الواجهة البحرية في 13 نوفمبر ويستمر حتى 5 فبراير، بأكثر من 40 فعالية و100 تجربة في أنحاء المدينة، فأمسيات الخبر على البحر هالشتاء أحلى من أي وقت.",
   },
 ];
 

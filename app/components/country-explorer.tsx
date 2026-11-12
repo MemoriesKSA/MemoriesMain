@@ -4,16 +4,16 @@ import { ArrowLeft, ArrowRight, Compass, MapPin } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { CountryGuide, Locale } from "../destination-guide-data";
 import { activeSeasonFor, SAUDI_WINTER, saudiWinterIsOn, seasonEndsAt, type CitySeason } from "../seasons-data";
-import { RiyadhSeasonLogo } from "./riyadh-season-logo";
+import { SeasonLogo } from "./season-logo";
 import { SeasonCountdown } from "./season-countdown";
 
 /** A season that is on: its own logo with a countdown under it, or our text badge when it has no logo. */
 function SeasonBadge({ season, ar, onImage = false }: { season: CitySeason; ar: boolean; onImage?: boolean }) {
-  if (season.logo === "riyadh-season") {
+  if (season.logo) {
     return <>
       {onImage && <i className="seasonShade" aria-hidden="true" />}
       <b className={onImage ? "seasonMark onImage" : "seasonMark inline"}>
-        <RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />
+        <SeasonLogo season={season} ar={ar} />
         <SeasonCountdown endsAt={seasonEndsAt(season)} ar={ar} />
       </b>
     </>;

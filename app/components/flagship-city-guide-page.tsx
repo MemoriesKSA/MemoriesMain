@@ -9,7 +9,7 @@ import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } 
 import { publicPreview } from "./public-preview";
 import { fetchLiveWeather } from "../weather-live";
 import { activeSeasonFor, seasonEndsAt } from "../seasons-data";
-import { RiyadhSeasonLogo } from "./riyadh-season-logo";
+import { SeasonLogo } from "./season-logo";
 import { SeasonCountdown } from "./season-countdown";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
@@ -219,8 +219,8 @@ export async function FlagshipCityGuidePage({
             <span><MapPin /> {ar ? country.regionAr : country.region}</span>
             {season && !season.logo && <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>}
           </div>
-          {season?.logo === "riyadh-season" && <div className="seasonMark onHero">
-            <RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />
+          {season?.logo && <div className="seasonMark onHero">
+            <SeasonLogo season={season} ar={ar} />
             <SeasonCountdown endsAt={seasonEndsAt(season)} ar={ar} />
           </div>}
           {season && <p className="seasonLine">{ar ? season.lineAr : season.lineEn}</p>}

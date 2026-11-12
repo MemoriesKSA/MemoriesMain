@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CITY_SEASONS, seasonEndsAt, seasonIsOnAt } from "../seasons-data";
 import { RiyadhSeasonLogo } from "./riyadh-season-logo";
+import { SeasonLogo } from "./season-logo";
 import { SeasonCountdown } from "./season-countdown";
 
 // The homepage is a static page, built once per deploy, so the build cannot be
@@ -53,6 +54,6 @@ export function SeasonLogoOnImage({ ar, country, city, builtOn }: { ar: boolean;
 
   return <>
     <i className="seasonShade" aria-hidden="true" />
-    <b className="seasonMark onImage"><RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} /></b>
+    <b className="seasonMark onImage"><SeasonLogo season={season} ar={ar} /></b>
   </>;
 }
