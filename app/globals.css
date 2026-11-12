@@ -926,6 +926,10 @@ body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:1
 .homeSeason:hover strong,.homeSeason:focus-visible strong{color:var(--gold-light)}
 /* The notice adds ~100px to a vertically centred, fixed-height hero, and the English four-line title then ran it under the promise bar
    (1280x800, 1536x864, 1920x1080). While it shows, the hero grows with its content instead, keeping clear of the bar's 42px overlap. */
+/* The season's logo alone on a homepage featured card (SeasonLogoOnImage), lined up with the card's big number below it. */
+.featuredJourneyImage .seasonMark.onImage{top:24px;inset-inline-start:28px}
+.featuredJourneyImage .seasonMark.onImage .rsLogo{height:52px}
+@media(max-width:780px){.featuredJourneyImage .seasonMark.onImage{top:18px;inset-inline-start:20px}.featuredJourneyImage .seasonMark.onImage .rsLogo{height:44px}}
 @media(min-width:781px){.hero:has(.homeSeason){height:auto;max-height:none;min-height:clamp(790px,84vh,960px);padding-bottom:96px}}
 .seasonMark.onHero .rsLogo{height:50px}
 .seasonMark.onHero .seasonTimer{padding:7px 14px;border:1px solid rgba(230,185,93,.4);font-size:.74rem;backdrop-filter:blur(10px)}

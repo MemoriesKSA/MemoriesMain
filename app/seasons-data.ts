@@ -59,6 +59,11 @@ export function seasonEndsAt(season: CitySeason): number {
   return Date.parse(`${season.endsOn}T23:59:59+03:00`) + 1000;
 }
 
+/** Whether a season is on at a moment, for code that has to decide in the browser because its page is static. */
+export function seasonIsOnAt(season: CitySeason, now: number): boolean {
+  return now >= Date.parse(`${season.startsOn}T00:00:00+03:00`) && now < seasonEndsAt(season);
+}
+
 export function activeSeasonFor(country: string, city: string, now: Date = new Date()): CitySeason | null {
   const today = saudiToday(now);
   return CITY_SEASONS.find((s) => s.country === country && s.city === city && s.startsOn <= today && today <= s.endsOn) ?? null;
