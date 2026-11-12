@@ -8,8 +8,9 @@ import { countryGuideBySlug } from "../destination-guide-data";
 import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } from "../flagship-city-data";
 import { publicPreview } from "./public-preview";
 import { fetchLiveWeather } from "../weather-live";
-import { activeSeasonFor } from "../seasons-data";
+import { activeSeasonFor, seasonEndsAt } from "../seasons-data";
 import { RiyadhSeasonLogo } from "./riyadh-season-logo";
+import { SeasonCountdown } from "./season-countdown";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -216,10 +217,12 @@ export async function FlagshipCityGuidePage({
           <h1>{cityName}</h1>
           <div className="cityHeroMeta">
             <span><MapPin /> {ar ? country.regionAr : country.region}</span>
-            {season && (season.logo === "riyadh-season"
-              ? <span className="seasonMeta hasLogo"><i aria-hidden="true" /><RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />{ar ? "انطلق" : "is on"}</span>
-              : <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>)}
+            {season && !season.logo && <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>}
           </div>
+          {season?.logo === "riyadh-season" && <div className="seasonMark onHero">
+            <RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />
+            <SeasonCountdown endsAt={seasonEndsAt(season)} ar={ar} />
+          </div>}
           {season && <p className="seasonLine">{ar ? season.lineAr : season.lineEn}</p>}
         </div>
       </section>

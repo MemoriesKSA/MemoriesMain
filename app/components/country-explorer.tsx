@@ -3,15 +3,22 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Compass, MapPin } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { CountryGuide, Locale } from "../destination-guide-data";
-import { activeSeasonFor, SAUDI_WINTER, saudiWinterIsOn, type CitySeason } from "../seasons-data";
+import { activeSeasonFor, SAUDI_WINTER, saudiWinterIsOn, seasonEndsAt, type CitySeason } from "../seasons-data";
 import { RiyadhSeasonLogo } from "./riyadh-season-logo";
+import { SeasonCountdown } from "./season-countdown";
 
+/** A season that is on: its own logo with a countdown under it, or our text badge when it has no logo. */
 function SeasonBadge({ season, ar, onImage = false }: { season: CitySeason; ar: boolean; onImage?: boolean }) {
-  const classes = ["seasonBadge", onImage ? "onImage" : "", season.logo ? "hasLogo" : ""].filter(Boolean).join(" ");
   if (season.logo === "riyadh-season") {
-    return <b className={classes}><i aria-hidden="true" /><RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />{ar ? "انطلق" : "is on"}</b>;
+    return <>
+      {onImage && <i className="seasonShade" aria-hidden="true" />}
+      <b className={onImage ? "seasonMark onImage" : "seasonMark inline"}>
+        <RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />
+        <SeasonCountdown endsAt={seasonEndsAt(season)} ar={ar} />
+      </b>
+    </>;
   }
-  return <b className={classes}><i aria-hidden="true" />{ar ? season.labelAr : season.labelEn}</b>;
+  return <b className={onImage ? "seasonBadge onImage" : "seasonBadge"}><i aria-hidden="true" />{ar ? season.labelAr : season.labelEn}</b>;
 }
 
 /** Saudi Winter: the season's best places, with what makes each one worth it now. */

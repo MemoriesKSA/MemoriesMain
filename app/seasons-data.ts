@@ -34,22 +34,29 @@ export const CITY_SEASONS: CitySeason[] = [
     country: "saudi-arabia",
     city: "riyadh",
     // Opened 21 October 2026 (the GEA chairman's announcement, reported by
-    // Gulf News and Asharq Al-Awsat on 27 September 2026). The headline
-    // programme is ten weeks; the wider season is listed to 1 March 2027 and
-    // zones like Boulevard World run that long. Re-check the end in January.
+    // Gulf News and Asharq Al-Awsat on 27 September 2026). No official end
+    // date was published; Habib, 12 Nov 2026: "it finishes 28 february 2027".
+    // The badge's countdown runs to the end of that day, Saudi time. Some
+    // zones and events (Battle Dome at Boulevard World, "until 22 May") run on
+    // after it. Re-check in January in case the authority announces a date.
     startsOn: "2026-10-21",
-    endsOn: "2027-03-01",
+    endsOn: "2027-02-28",
     logo: "riyadh-season",
     labelEn: "Riyadh Season is on",
     labelAr: "انطلق موسم الرياض",
-    lineEn: "Riyadh Season opened on 21 October. Its zones, concerts, shows and sports nights run through the winter, so evenings here are busier than any other time of year.",
-    lineAr: "انطلق موسم الرياض في 21 أكتوبر، ومناطقه وحفلاته وعروضه وأمسياته الرياضية مستمرة طوال الشتاء، فأمسيات الرياض الآن أحلى من أي وقت في السنة.",
+    lineEn: "Riyadh Season opened on 21 October and runs until 28 February. Its zones, concerts, shows and sports nights fill the winter, so evenings here are busier than any other time of year.",
+    lineAr: "انطلق موسم الرياض في 21 أكتوبر ويستمر حتى 28 فبراير، ومناطقه وحفلاته وعروضه وأمسياته الرياضية تملأ الشتاء، فأمسيات الرياض الآن أحلى من أي وقت في السنة.",
   },
 ];
 
 /** Today's date in Riyadh, YYYY-MM-DD, so the switch happens at Saudi midnight. */
 function saudiToday(now: Date): string {
   return new Date(now.getTime() + 3 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+/** Midnight at the end of the season's final day, Saudi time, as epoch ms. */
+export function seasonEndsAt(season: CitySeason): number {
+  return Date.parse(`${season.endsOn}T23:59:59+03:00`) + 1000;
 }
 
 export function activeSeasonFor(country: string, city: string, now: Date = new Date()): CitySeason | null {

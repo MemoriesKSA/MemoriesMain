@@ -903,13 +903,22 @@ body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:1
 .seasonLine{max-width:560px;margin:14px 0 0;color:rgba(255,255,255,.86);font-size:.9rem;line-height:1.6}
 @keyframes season-pulse{0%,100%{box-shadow:0 0 0 3px rgba(67,211,154,.24)}50%{box-shadow:0 0 0 6px rgba(67,211,154,0)}}
 @media (prefers-reduced-motion:reduce){.seasonBadge i,.cityHeroMeta .seasonMeta i{animation:none}}
-/* Riyadh Season's own mark inside the badge: white wordmark, the ring in its colours. */
-.rsLogo{flex:none;display:block;width:auto;height:26px;color:#fff}
-.seasonBadge.hasLogo{gap:8px;padding:5px 12px 5px 10px;font-size:.66rem}
-.seasonBadge.onImage.hasLogo{padding:6px 14px 6px 12px;font-size:.72rem}
-.seasonBadge.onImage .rsLogo{height:32px}
-.cityHeroMeta .seasonMeta.hasLogo{gap:9px;padding-block:5px}
-.cityHeroMeta .seasonMeta .rsLogo{width:auto;height:34px;color:#fff}
+/* Riyadh Season's own logo with a live countdown under it (Habib's pick C, 12 Nov 2026).
+   The wordmark takes currentColor: white on photos, the ink colour on cards, so it reads in light and dark mode. */
+.rsLogo{flex:none;display:block;align-self:flex-start;width:auto;height:26px;color:#fff}
+.seasonShade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(4,20,18,.55),transparent 40%)}
+.seasonMark{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.seasonMark.onImage{position:absolute;z-index:2;top:16px;inset-inline-start:16px}
+.seasonMark.onImage .rsLogo{height:40px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.seasonTimer{display:inline-block;width:fit-content;padding:5px 10px;border-radius:999px;background:rgba(6,22,20,.66);color:#fff;font-size:.64rem;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.seasonTimer b{color:var(--gold-light);font-weight:700;font-variant-numeric:tabular-nums}
+.seasonMark.inline{flex-direction:row;align-items:center}
+.seasonMark.inline .rsLogo{align-self:center;color:var(--ink)}
+.seasonMark.inline .seasonTimer{padding:0;border-radius:0;background:none;color:var(--muted);font-size:.62rem;line-height:1.35;white-space:normal}
+.seasonMark.inline .seasonTimer b{display:block;color:var(--gold)}
+.seasonMark.onHero{margin-top:18px}
+.seasonMark.onHero .rsLogo{height:50px}
+.seasonMark.onHero .seasonTimer{padding:7px 14px;border:1px solid rgba(230,185,93,.4);font-size:.74rem;backdrop-filter:blur(10px)}
 .winterBand{padding-top:72px}
 .winterBandHeading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:26px}
 .winterBandHeading>p{max-width:470px;margin:0;color:var(--muted);line-height:1.7}
