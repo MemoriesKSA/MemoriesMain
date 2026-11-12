@@ -9,6 +9,7 @@ import type { EditorialCityGuide, FlagshipDining, FlagshipPlace, FlagshipStay } 
 import { publicPreview } from "./public-preview";
 import { fetchLiveWeather } from "../weather-live";
 import { activeSeasonFor } from "../seasons-data";
+import { RiyadhSeasonLogo } from "./riyadh-season-logo";
 import { Breadcrumb } from "./breadcrumb";
 import { SectionJumpNav, type JumpNavItem } from "./section-jump-nav";
 import { WeatherTransportTabs } from "./weather-transport-tabs";
@@ -215,7 +216,9 @@ export async function FlagshipCityGuidePage({
           <h1>{cityName}</h1>
           <div className="cityHeroMeta">
             <span><MapPin /> {ar ? country.regionAr : country.region}</span>
-            {season && <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>}
+            {season && (season.logo === "riyadh-season"
+              ? <span className="seasonMeta hasLogo"><i aria-hidden="true" /><RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />{ar ? "انطلق" : "is on"}</span>
+              : <span className="seasonMeta"><i aria-hidden="true" /> {ar ? season.labelAr : season.labelEn}</span>)}
           </div>
           {season && <p className="seasonLine">{ar ? season.lineAr : season.lineEn}</p>}
         </div>

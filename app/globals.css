@@ -903,6 +903,13 @@ body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:1
 .seasonLine{max-width:560px;margin:14px 0 0;color:rgba(255,255,255,.86);font-size:.9rem;line-height:1.6}
 @keyframes season-pulse{0%,100%{box-shadow:0 0 0 3px rgba(67,211,154,.24)}50%{box-shadow:0 0 0 6px rgba(67,211,154,0)}}
 @media (prefers-reduced-motion:reduce){.seasonBadge i,.cityHeroMeta .seasonMeta i{animation:none}}
+/* Riyadh Season's own mark inside the badge: white wordmark, the ring in its colours. */
+.rsLogo{flex:none;display:block;width:auto;height:26px;color:#fff}
+.seasonBadge.hasLogo{gap:8px;padding:5px 12px 5px 10px;font-size:.66rem}
+.seasonBadge.onImage.hasLogo{padding:6px 14px 6px 12px;font-size:.72rem}
+.seasonBadge.onImage .rsLogo{height:32px}
+.cityHeroMeta .seasonMeta.hasLogo{gap:9px;padding-block:5px}
+.cityHeroMeta .seasonMeta .rsLogo{width:auto;height:34px;color:#fff}
 .winterBand{padding-top:72px}
 .winterBandHeading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:26px}
 .winterBandHeading>p{max-width:470px;margin:0;color:var(--muted);line-height:1.7}

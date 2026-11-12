@@ -8,9 +8,10 @@
  * dates, so a badge comes down by itself when the season ends and nobody has
  * to remember to take it off.
  *
- * The badge is ours, in our own style. Riyadh Season's logo belongs to the
- * General Entertainment Authority, and putting it here would read as an
- * endorsement we don't have.
+ * The badge is ours, in our own style. Where a season has an official mark
+ * (`logo`), the badge carries it: Habib's call on 12 Nov 2026 that Riyadh
+ * Season's logo is a public government mark and fine to show. The mark itself
+ * is in components/riyadh-season-logo.tsx, copied from riyadhseason.com.
  */
 
 export type CitySeason = {
@@ -24,6 +25,8 @@ export type CitySeason = {
   labelAr: string;
   lineEn: string;
   lineAr: string;
+  /** The season's own mark, shown inside the badge. */
+  logo?: "riyadh-season";
 };
 
 export const CITY_SEASONS: CitySeason[] = [
@@ -36,6 +39,7 @@ export const CITY_SEASONS: CitySeason[] = [
     // zones like Boulevard World run that long. Re-check the end in January.
     startsOn: "2026-10-21",
     endsOn: "2027-03-01",
+    logo: "riyadh-season",
     labelEn: "Riyadh Season is on",
     labelAr: "انطلق موسم الرياض",
     lineEn: "Riyadh Season opened on 21 October. Its zones, concerts, shows and sports nights run through the winter, so evenings here are busier than any other time of year.",

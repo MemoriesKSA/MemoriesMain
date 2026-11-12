@@ -3,10 +3,15 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Compass, MapPin } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { CountryGuide, Locale } from "../destination-guide-data";
-import { activeSeasonFor, SAUDI_WINTER, saudiWinterIsOn } from "../seasons-data";
+import { activeSeasonFor, SAUDI_WINTER, saudiWinterIsOn, type CitySeason } from "../seasons-data";
+import { RiyadhSeasonLogo } from "./riyadh-season-logo";
 
-function SeasonBadge({ label, onImage = false }: { label: string; onImage?: boolean }) {
-  return <b className={onImage ? "seasonBadge onImage" : "seasonBadge"}><i aria-hidden="true" />{label}</b>;
+function SeasonBadge({ season, ar, onImage = false }: { season: CitySeason; ar: boolean; onImage?: boolean }) {
+  const classes = ["seasonBadge", onImage ? "onImage" : "", season.logo ? "hasLogo" : ""].filter(Boolean).join(" ");
+  if (season.logo === "riyadh-season") {
+    return <b className={classes}><i aria-hidden="true" /><RiyadhSeasonLogo title={ar ? "موسم الرياض" : "Riyadh Season"} />{ar ? "انطلق" : "is on"}</b>;
+  }
+  return <b className={classes}><i aria-hidden="true" />{ar ? season.labelAr : season.labelEn}</b>;
 }
 
 /** Saudi Winter: the season's best places, with what makes each one worth it now. */
@@ -27,7 +32,7 @@ function SaudiWinterBand({ country, ar, prefix }: { country: CountryGuide; ar: b
           <span className="winterCardImage"><Image src={guide.image} alt="" fill sizes="96px" /></span>
           <span className="winterCardBody">
             <strong>{ar ? guide.nameAr : guide.nameEn}</strong>
-            {season && <SeasonBadge label={ar ? season.labelAr : season.labelEn} />}
+            {season && <SeasonBadge season={season} ar={ar} />}
             <span>{ar ? lineAr : lineEn}</span>
           </span>
         </Link>;
@@ -70,7 +75,7 @@ export function CountryExplorer({ country, locale = "en" }: { country: CountryGu
       </div>
       <div className="cityGallery">
         {country.cities.map((city, index) => { const season = activeSeasonFor(country.slug, city.slug); return <Link href={`${prefix}/destinations/${country.slug}/${city.slug}`} className="cityGalleryCard" key={city.slug} style={{ "--city-order": index } as CSSProperties}>
-          <span className="cityGalleryImage"><Image src={city.image} alt={ar ? city.nameAr : city.nameEn} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" /><span />{season && <SeasonBadge onImage label={ar ? season.labelAr : season.labelEn} />}</span>
+          <span className="cityGalleryImage"><Image src={city.image} alt={ar ? city.nameAr : city.nameEn} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" /><span />{season && <SeasonBadge onImage season={season} ar={ar} />}</span>
           <span className="cityGalleryBody"><small><MapPin size={13} /> {ar ? country.nameAr : country.nameEn}</small><strong>{ar ? city.nameAr : city.nameEn}</strong><span>{ar ? city.introAr : city.introEn}</span><em>{ar ? "ادخل المدينة" : "Step inside"} <ArrowRight className="directionArrow" size={16} /></em></span>
         </Link>; })}
         <Link className="cityGalleryCard cityAnywhereCard" href={`${prefix}/design-your-journey?country=${country.slug}`}>
