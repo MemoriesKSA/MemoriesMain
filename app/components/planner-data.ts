@@ -163,6 +163,11 @@ const PLANNER_CITIES: Record<string, string[]> = {
   "united-kingdom": ["london"],
 };
 
+/** The only cities the planner offers for a country, or undefined when it offers them all. */
+export function plannerCityLimit(slug: string): string[] | undefined {
+  return PLANNER_CITIES[slug];
+}
+
 export function isPlannableCountry(slug: string): boolean {
   return PLANNABLE.has(slug);
 }
