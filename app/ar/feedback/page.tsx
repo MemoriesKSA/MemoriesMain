@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../page-alternates";
 import { FeedbackForm } from "../../components/feedback-form";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = { alternates: pageAlternates("/feedback", "ar"),
   title: "قل لنا رأيك",
   description: "شاركنا رأيك في ميموريز. ما الذي أعجبك، وما الذي لم يعجبك، وما الذي تتمنى أن نضيفه.",
 };

@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+import { pageAlternates } from "./page-alternates";
+
+export const metadata: Metadata = { alternates: pageAlternates("/", "en") };
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, Globe2, Medal, MoonStar } from "lucide-react";

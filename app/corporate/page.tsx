@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../page-alternates";
 import { PausedNotice } from "../components/paused-notice";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarCheck, FileText, Users } from "lucide-react";
 
-export const metadata: Metadata = { title: "Corporate Travel" };
+export const metadata: Metadata = { alternates: pageAlternates("/corporate", "en"), title: "Corporate Travel" };
 
 const items = [
   { icon: BriefcaseBusiness, title: "Executive travel", text: "Discreet, dependable itineraries for leaders and guests, with every important movement clearly coordinated." },

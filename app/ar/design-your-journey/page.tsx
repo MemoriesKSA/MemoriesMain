@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../page-alternates";
 import { JourneyPlanner } from "../../components/journey-planner";
 import { PlannerPageStory } from "../../components/planner-page-story";
 import { ShortPlanner } from "../../components/short-planner";
 
-export const metadata: Metadata = { title: "صمّم رحلة أحلامك", description: "اختر الدولة والمدينة والتواريخ وميزانية الرحلة الكاملة، ثم شارك ميموريز تفاصيل حلمك." };
+export const metadata: Metadata = { alternates: pageAlternates("/design-your-journey", "ar"), title: "صمّم رحلة أحلامك", description: "اختر الدولة والمدينة والتواريخ وميزانية الرحلة الكاملة، ثم شارك ميموريز تفاصيل حلمك." };
 
 export default async function DesignJourneyPage({ searchParams }: { searchParams: Promise<{ country?: string | string[]; city?: string | string[]; source?: string | string[] }> }) {
   const query = await searchParams;

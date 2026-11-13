@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../page-alternates";
 import Link from "next/link";
 import { ArrowRight, Compass, HeartHandshake, ListChecks, Search, Sparkles, Waypoints } from "lucide-react";
 import { COMPANY } from "../company";
 
-export const metadata: Metadata = { title: "About MEMORIES", description: "MEMORIES is a Saudi-born travel platform for dream journeys, visits to Saudi Arabia and study-abroad planning." };
+export const metadata: Metadata = { alternates: pageAlternates("/about", "en"), title: "About MEMORIES", description: "MEMORIES is a Saudi-born travel platform for dream journeys, visits to Saudi Arabia and study-abroad planning." };
 
 const principles = [
   { icon: HeartHandshake, title: "Listen first", text: "We begin with the person, the purpose and the feeling they want from the journey." },

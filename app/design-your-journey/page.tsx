@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../page-alternates";
 import { JourneyPlanner } from "../components/journey-planner";
 import { PlannerPageStory } from "../components/planner-page-story";
 import { ShortPlanner } from "../components/short-planner";
 
-export const metadata: Metadata = { title: "Design Your Dream Journey", description: "Choose your country, city, dates and complete journey budget, then tell MEMORIES what your dream looks like." };
+export const metadata: Metadata = { alternates: pageAlternates("/design-your-journey", "en"), title: "Design Your Dream Journey", description: "Choose your country, city, dates and complete journey budget, then tell MEMORIES what your dream looks like." };
 
 export default async function DesignJourneyPage({ searchParams }: { searchParams: Promise<{ country?: string | string[]; city?: string | string[]; source?: string | string[] }> }) {
   const query = await searchParams;

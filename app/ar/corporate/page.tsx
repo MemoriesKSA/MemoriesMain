@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../page-alternates";
 import { PausedNotice } from "../../components/paused-notice";
 import Image from "next/image";
 import { BriefcaseBusiness, CalendarCheck, FileText, Users } from "lucide-react";
 
-export const metadata: Metadata = { title: "سفر الأعمال", description: "إدارة متكاملة وراقية لسفر الشركات والوفود والقيادات." };
+export const metadata: Metadata = { alternates: pageAlternates("/corporate", "ar"), title: "سفر الأعمال", description: "إدارة متكاملة وراقية لسفر الشركات والوفود والقيادات." };
 
 const items = [
   { icon: BriefcaseBusiness, title: "سفر القيادات", text: "برامج دقيقة وموثوقة للقيادات والضيوف، مع تنسيق واضح لكل تنقل مهم." },

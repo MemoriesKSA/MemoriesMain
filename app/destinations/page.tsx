@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../page-alternates";
 import { CountryCatalogue } from "../components/country-catalogue";
 import { countryGuides } from "../destination-guide-data";
 
-export const metadata: Metadata = { title: "Destinations", description: "Explore curated journeys across Saudi Arabia and the world." };
+export const metadata: Metadata = { alternates: pageAlternates("/destinations", "en"), title: "Destinations", description: "Explore curated journeys across Saudi Arabia and the world." };
 
 export default function DestinationsPage() {
   return <main className="innerPage destinationsPage">

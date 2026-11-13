@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../../../page-alternates";
 import { notFound } from "next/navigation";
 import { CityGuidePage } from "../../../../components/city-guide-page";
 import { FlagshipCityGuidePage } from "../../../../components/flagship-city-guide-page";
@@ -9,7 +10,7 @@ export function generateStaticParams() { return countryGuides.flatMap((country) 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; city: string }> }): Promise<Metadata> {
   const { slug, city: citySlug } = await params;
   const country = countryGuideBySlug(slug); const city = cityGuideBySlug(slug, citySlug);
-  return country && city ? { title: `${city.nameAr}، ${country.nameAr}`, description: city.introAr } : {};
+  return country && city ? { title: `${city.nameAr}، ${country.nameAr}`, description: city.introAr, alternates: pageAlternates(`/destinations/${slug}/${citySlug}`, "ar") } : {};
 }
 export default async function CityPage({ params }: { params: Promise<{ slug: string; city: string }> }) {
   const { slug, city: citySlug } = await params;

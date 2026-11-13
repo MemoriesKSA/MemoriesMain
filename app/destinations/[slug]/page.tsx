@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../page-alternates";
 import { notFound, redirect } from "next/navigation";
 import { CountryExplorer } from "../../components/country-explorer";
 import { countryGuideBySlug, countryGuides, legacyDestinationRoutes } from "../../destination-guide-data";
@@ -10,7 +11,7 @@ export function generateStaticParams() { return countryGuides.map(({ slug }) => 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const country = countryGuideBySlug(slug);
-  return country ? { title: `Explore ${country.nameEn}`, description: country.introEn } : {};
+  return country ? { title: `Explore ${country.nameEn}`, description: country.introEn, alternates: pageAlternates(`/destinations/${slug}`, "en") } : {};
 }
 
 export default async function CountryPage({ params }: { params: Promise<{ slug: string }> }) {

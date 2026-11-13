@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { pageAlternates } from "../../page-alternates";
 import Link from "next/link";
 import { ArrowRight, Compass, HeartHandshake, ListChecks, Search, Sparkles, Waypoints } from "lucide-react";
 import { COMPANY } from "../../company";
 
-export const metadata: Metadata = { title: "عن ميموريز", description: "ميموريز منصة سفر انطلقت من السعودية لرحلات الأحلام وزيارة المملكة والتخطيط للدراسة في الخارج." };
+export const metadata: Metadata = { alternates: pageAlternates("/about", "ar"), title: "عن ميموريز", description: "ميموريز منصة سفر انطلقت من السعودية لرحلات الأحلام وزيارة المملكة والتخطيط للدراسة في الخارج." };
 
 const principles = [
   { icon: HeartHandshake, title: "نستمع أولاً", text: "نبدأ بالإنسان وهدف الرحلة والشعور الذي يريد أن يعود به." },
