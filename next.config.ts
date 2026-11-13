@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
     const policy = [{ key: "Referrer-Policy", value: "origin" }];
     return ["/journey/:path*", "/ar/journey/:path*", "/follow/:path*", "/ar/follow/:path*", "/internal/:path*"].map((source) => ({ source, headers: policy }));
   },
+  // Short links for video captions: memories.tours/94 opens the short Arabic
+  // form tagged ?source=v94, so a request can be traced to the video it came
+  // from (Habib, 13 Nov 2026: yes to short tagged links per video). Not
+  // permanent, so a number can be pointed somewhere else later.
+  async redirects() {
+    return [{ source: "/:post(\\d{2,4})", destination: "/ar/design-your-journey?source=v:post", permanent: false }];
+  },
 };
 
 export default nextConfig;

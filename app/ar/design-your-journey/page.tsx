@@ -18,7 +18,8 @@ export default async function DesignJourneyPage({ searchParams }: { searchParams
   // asked which form a reply link should open: "short"). The example plans are
   // reachable by link only, so "one like it" under an example is the same
   // stranger, and arrives as ?source=example when the link carried no tag.
-  const fromAd = /^ad-|^example$|-reply$/i.test(source ?? "");
+  // A video caption link (memories.tours/94) arrives as ?source=v94.
+  const fromAd = /^ad-|^example$|-reply$|^v\d+$/i.test(source ?? "");
   // Riyadh's date, so the month buttons are the same on the server and the phone.
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh" }).format(new Date());
   return <main className="innerPage"><section className={`formHero editorialPlannerHero${fromAd ? " shortPlannerHero" : ""}`}><div className="container formHeroGrid"><PlannerPageStory variant="dream" locale="ar" short={fromAd} />{fromAd ? <ShortPlanner locale="ar" source={source ?? ""} today={today} initialCountry={country} initialCity={city} /> : <JourneyPlanner locale="ar" initialPath={country === "saudi-arabia" ? "saudi" : "journey"} initialCountry={country} initialCity={city} fromCityGuide={source === "city-guide"} source={source ?? ""} />}</div></section></main>;
