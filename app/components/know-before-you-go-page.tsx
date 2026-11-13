@@ -51,8 +51,8 @@ const moneyCards = [
   {
     titleEn: "Paying for things",
     titleAr: "طرق الدفع",
-    bodyEn: "Cards (Visa, Mastercard, American Express), Apple Pay and Samsung Wallet are widely accepted in cities. It's still worth carrying some cash for smaller towns, local markets and taxis.",
-    bodyAr: "البطاقات (فيزا وماستركارد وأمريكان إكسبريس) وآبل باي ومحفظة سامسونج مقبولة على نطاق واسع في المدن. يُستحسن حمل بعض النقد للبلدات الصغيرة والأسواق المحلية وسيارات الأجرة.",
+    bodyEn: "Payment cards (Visa, Mastercard, American Express), as well as Apple Pay and Samsung Wallet, are widely accepted in cities, smaller towns, local markets and taxis. Still, it's wise to keep some cash on hand for the times you need to pay in cash.",
+    bodyAr: "تُقبل بطاقات الدفع الإلكتروني (فيزا، وماستركارد، وأمريكان إكسبريس)، بالإضافة إلى خدمات الدفع عبر آبل باي ومحفظة سامسونج، على نطاق واسع في المدن والبلدات الصغيرة والأسواق المحلية وسيارات الأجرة. ومع ذلك، يُنصح بالاحتفاظ بمبلغ نقدي احتياطي للمواقف التي قد تتطلب الدفع النقدي.",
   },
   {
     titleEn: "ATMs",
