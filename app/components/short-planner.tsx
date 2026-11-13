@@ -133,8 +133,11 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
   const [party, setParty] = useState("");
   const [people, setPeople] = useState(2);
   const [peopleTouched, setPeopleTouched] = useState(false);
-  const [channel, setChannel] = useState<"whatsapp" | "email">("whatsapp");
+  // Email is required on every request (Habib 13 Nov: "we need to make sure
+  // email is a manadatory option"): the plan goes out by email on its own.
+  // A WhatsApp number is optional, for people who also want it there.
   const [contact, setContact] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [problem, setProblem] = useState<"" | "where" | "when" | "who" | "contact" | "send">("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [reference, setReference] = useState("");
@@ -224,9 +227,9 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
     const today = isoDate(new Date());
     if (!when || (when === "exact" && (!fromDate || !toDate || toDate < fromDate || fromDate < today))) return fail("when");
     if (!party) return fail("who");
-    const phone = channel === "whatsapp" ? parsePhone(contact) : null;
-    const email = channel === "email" ? contact.trim().toLowerCase() : "";
-    if (channel === "whatsapp" ? !phone : !emailPattern.test(email)) return fail("contact");
+    const email = contact.trim().toLowerCase();
+    const phone = whatsapp.trim() ? parsePhone(whatsapp) : null;
+    if (!emailPattern.test(email) || (whatsapp.trim() && !phone)) return fail("contact");
 
     const dates = when === "exact" ? { fromDate, toDate } : placeholderDates(when, new Date());
     const [year, month] = when.split("-").map(Number);
@@ -260,7 +263,7 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
           transport: ["airport", "public"], stays: ["hotel"], stayRating: "flexible", flightTiming: "flexible",
           planIncludes: party === "family" ? ["attractions", "restaurants", "experiences", "family"] : ["attractions", "restaurants", "experiences"],
           packageNotes, currency: "SAR", budgetMode: "open", budget: "",
-          delivery: [channel], name: t(ar, "there", "ضيفنا الكريم"), email, phoneCode: phone?.phoneCode ?? "", phone: phone?.phone ?? "",
+          delivery: phone ? ["email", "whatsapp"] : ["email"], name: t(ar, "there", "ضيفنا الكريم"), email, phoneCode: phone?.phoneCode ?? "", phone: phone?.phone ?? "",
           planLanguages: "both", priority: "no",
           // The line under the button says that sending is agreeing, and the
           // privacy notice says the same of every request.
@@ -283,16 +286,14 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
   if (status === "sent") return <div className="shortPlannerWrap"><div ref={doneRef} className="shortPlanner shortPlannerDone" role="status" aria-live="assertive">
     <span className="successIcon"><CheckCircle2 /></span>
     <strong>{t(ar, "We have your request.", "وصلنا طلبك.")}</strong>
-    <p>{channel === "whatsapp"
-      ? t(ar, `Your ${cityLabel} plan is being written now. We will send you its link on WhatsApp within a day.`, `خطة ${cityLabel} تنكتب الآن. نرسل لك رابطها على واتساب خلال يوم.`)
-      : t(ar, `Your ${cityLabel} plan is being written now. It will reach your inbox within ${hours} hours, and a confirmation is on its way to you now.`, `خطة ${cityLabel} تنكتب الآن. توصل إيميلك خلال ${hours} ساعات، ووصلك الآن إيميل تأكيد.`)}</p>
+    <p>{t(ar, `Your ${cityLabel} plan is being written now. It will reach your inbox within ${hours} hours, and a confirmation is on its way to you now.`, `خطة ${cityLabel} تنكتب الآن. توصل إيميلك خلال ${hours} ساعات، ووصلك الآن إيميل تأكيد.`)}</p>
     {reference ? <small>{t(ar, "Request number", "رقم الطلب")}: <bdi>{reference}</bdi></small> : null}
   </div></div>;
 
   const problemText = problem === "where" ? t(ar, "Choose where you want to go.", "اختر وين ودك تروح.")
     : problem === "when" ? (when === "exact" ? t(ar, "Choose both dates, starting from today or later.", "اختر التاريخين، من اليوم وطالع.") : t(ar, "Choose roughly when.", "اختر متى تقريبًا."))
     : problem === "who" ? t(ar, "Choose who is travelling.", "اختر مين مسافر.")
-    : problem === "contact" ? (channel === "whatsapp" ? t(ar, "Write a mobile number we can message, like 05X XXX XXXX.", "اكتب رقم جوال نقدر نراسلك عليه، مثل 05X XXX XXXX.") : t(ar, "Write an email address we can send the plan to.", "اكتب إيميل نقدر نرسل عليه الخطة."))
+    : problem === "contact" ? (!emailPattern.test(contact.trim()) ? t(ar, "Write an email address we can send the plan to.", "اكتب إيميل نقدر نرسل عليه الخطة.") : t(ar, "Check the WhatsApp number, like 05X XXX XXXX, or leave it empty.", "تأكد من رقم الواتساب، مثل 05X XXX XXXX، أو خلّه فاضي."))
     : problem === "send" ? t(ar, "We couldn't send your request yet. Please try again in a moment.", "ما قدرنا نرسل طلبك الآن. جرّب مرة ثانية بعد شوي.")
     : "";
   const chip = (on: boolean, ghost = false) => `shortChip${on ? " on" : ""}${ghost ? " ghost" : ""}`;
@@ -347,23 +348,18 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
       <div className="shortRule" aria-hidden="true" />
       <fieldset className={`${question("contact")} shortContact`} data-q="contact">
         <legend>{t(ar, "Where do we send your plan?", "وين نرسل لك الخطة؟")}</legend>
-        <div className="shortSegment" role="group">
-          <button type="button" className={channel === "whatsapp" ? "on" : ""} aria-pressed={channel === "whatsapp"} onClick={() => { setChannel("whatsapp"); setContact(""); if (problem === "contact") setProblem(""); }}>{t(ar, "WhatsApp", "واتساب")}</button>
-          <button type="button" className={channel === "email" ? "on" : ""} aria-pressed={channel === "email"} onClick={() => { setChannel("email"); setContact(""); if (problem === "contact") setProblem(""); }}>{t(ar, "Email", "إيميل")}</button>
-        </div>
-        {channel === "whatsapp"
-          ? <input key="phone" dir="ltr" type="tel" inputMode="tel" autoComplete="tel" aria-label={t(ar, "Mobile number for WhatsApp", "رقم الجوال للواتساب")} placeholder="05X XXX XXXX" value={contact} onFocus={() => mark("contact")} onChange={(event) => { setContact(event.target.value); if (problem === "contact") setProblem(""); }} />
-          : <input key="email" dir="ltr" type="email" inputMode="email" autoComplete="email" aria-label={t(ar, "Email address", "الإيميل")} placeholder="you@example.com" value={contact} onFocus={() => mark("contact")} onChange={(event) => { setContact(event.target.value); if (problem === "contact") setProblem(""); }} />}
+        <input dir="ltr" type="email" inputMode="email" autoComplete="email" required aria-label={t(ar, "Email address (required)", "الإيميل (مطلوب)")} placeholder="you@example.com" value={contact} onFocus={() => mark("contact")} onChange={(event) => { setContact(event.target.value); if (problem === "contact") setProblem(""); }} />
+        <p className="shortOptional" aria-hidden="true">{t(ar, "WhatsApp too? (optional)", "تبيها على الواتساب بعد؟ (اختياري)")}</p>
+        <input dir="ltr" type="tel" inputMode="tel" autoComplete="tel" aria-label={t(ar, "WhatsApp number (optional)", "رقم الواتساب (اختياري)")} placeholder="05X XXX XXXX" value={whatsapp} onChange={(event) => { setWhatsapp(event.target.value); if (problem === "contact") setProblem(""); }} />
       </fieldset>
 
       {problemText ? <p className="shortProblem" role="alert">{problemText}</p> : null}
       <button className="button gold shortSubmit" type="submit" disabled={status === "sending"}>
         {status === "sending" ? t(ar, "Sending your request…", "نرسل طلبك…") : PLANS_FREE ? t(ar, "Send me my free plan", "أرسلوا لي خطتي المجانية") : t(ar, "Send me my plan", "أرسلوا لي خطتي")}
       </button>
-      {/* An emailed plan goes out by itself once it is written, inside the
-          window; a WhatsApp link is sent by a person, who may be asleep when
-          the plan is ready. So WhatsApp is promised a day, which we can keep. */}
-      <p className="shortPromise">{channel === "whatsapp" ? t(ar, "It reaches you on WhatsApp within a day", "توصلك على واتساب خلال يوم") : t(ar, `It reaches you within ${hours} hours`, `توصلك خلال ${hours} ساعات`)}{PLANS_FREE ? t(ar, " · nothing to pay", " · بدون دفع") : t(ar, ` · SAR ${NIGHT_RATE} a night`, ` · ${NIGHT_RATE} ريال لليلة`)}</p>
+      {/* Every request now has an email, and an emailed plan goes out by
+          itself once it is written, inside the window. */}
+      <p className="shortPromise">{t(ar, `It reaches your inbox within ${hours} hours`, `توصل إيميلك خلال ${hours} ساعات`)}{PLANS_FREE ? t(ar, " · nothing to pay", " · بدون دفع") : t(ar, ` · SAR ${NIGHT_RATE} a night`, ` · ${NIGHT_RATE} ريال لليلة`)}</p>
       <p className="shortLegal">{ar
         ? <>بالإرسال أنت موافق على <a href="/ar/privacy" target="_blank" rel="noopener noreferrer">سياسة الخصوصية</a> و<a href="/ar/terms" target="_blank" rel="noopener noreferrer">الشروط</a></>
         : <>By sending you agree to the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a></>}</p>

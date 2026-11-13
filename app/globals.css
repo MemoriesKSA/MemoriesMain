@@ -964,3 +964,5 @@ html[data-theme="dark"] .shortSegment button{color:#c0cec9}
 html[data-theme="dark"] .shortSegment button.on{background:var(--gold-light);color:#102d29}
 html[data-theme="dark"] .shortQuestion legend span{background:var(--gold-light);color:#102d29}
 html[data-theme="dark"] .shortContact>input::placeholder,html[data-theme="dark"] .shortDates input::placeholder{color:#8fa39c}
+/* Ad form: email is required, WhatsApp is an optional second box under it (13 Nov). */
+.shortOptional{margin:10px 0 0;color:var(--muted);font-size:.78rem;font-weight:700}
