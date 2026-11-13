@@ -938,6 +938,7 @@ body:has(.exampleBar) .supportChat,body:has(.exampleBar) .consentBanner{bottom:1
 .seasonMark.onImage .ksLogo{height:66px}
 .seasonMark.onHero .ksLogo{height:88px}
 .seasonMark.inline .ksLogo{filter:brightness(0);opacity:.82}
+html[data-theme="dark"] .seasonMark.inline .ksLogo{filter:none;opacity:.92}
 .winterBand{padding-top:72px}
 .winterBandHeading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:26px}
 .winterBandHeading>p{max-width:470px;margin:0;color:var(--muted);line-height:1.7}
