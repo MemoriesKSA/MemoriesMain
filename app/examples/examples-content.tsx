@@ -9,6 +9,7 @@ import { primaryPlanLanguage } from "../journey/plan-language";
 import { listPlanFeeForProposal, NIGHT_RATE, PLANS_FREE } from "../journey/pricing";
 import { parseAllNamedPlaces, parseSiteLinks, parseNameAliases, parseNameKinds } from "../journey/plan-stops";
 import { ExampleBar, ExampleRequestLink, ExampleSeen } from "./example-events";
+import { cityImagePath } from "../city-hero-image";
 import { examplePlans, exampleDays, exampleHref, requestHref, EXAMPLES_WRITTEN, TEAM_PLAN_NAME, type ExamplePlan } from "./example-plans";
 
 type Locale = "en" | "ar";
@@ -24,7 +25,7 @@ function offerLine(ar: boolean) {
 }
 
 function cityImage(plan: ExamplePlan) {
-  return `/images/cities/${plan.country}/${plan.city}.webp`;
+  return cityImagePath(plan.country, plan.city);
 }
 
 /** Every example on one page: a picture each, and one way on to the form. */

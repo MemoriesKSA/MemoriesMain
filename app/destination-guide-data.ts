@@ -1,4 +1,5 @@
 import { travelCountries } from "./components/planner-data";
+import { cityImagePath } from "./city-hero-image";
 
 export type Locale = "en" | "ar";
 
@@ -128,7 +129,7 @@ export const countryGuides: CountryGuide[] = travelCountries.flatMap((country) =
       slug: city.value,
       nameEn: city.en,
       nameAr: city.ar,
-      image: `/images/cities/${country.value}/${city.value}.webp`,
+      image: cityImagePath(country.value, city.value),
       introEn: detail?.introEn ?? `${city.en} offers a distinct way into ${country.en}, with its own rhythm, neighbourhoods and memorable local experiences.`,
       introAr: detail?.introAr ?? `تمنحك ${city.ar} مدخلًا مختلفًا إلى ${country.ar} بإيقاعها وأحيائها وتجاربها المحلية المميزة.`,
       placesEn: detail?.placesEn ?? fallback.en,

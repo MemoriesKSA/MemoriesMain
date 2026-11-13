@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
+import { cityHeroImage } from "../city-hero-image";
 import Link from "next/link";
 import { ArrowRight, BedDouble, Camera, HelpCircle, Lightbulb, Lock, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
 import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data";
@@ -203,7 +204,7 @@ export async function FlagshipCityGuidePage({
 
       <section className="flagshipHero">
         {hasPublicImage(city.image) ? (
-          <Image src={city.image} alt={cityName} fill priority sizes="100vw" />
+          <Image src={cityHeroImage(city.image)} alt={cityName} fill priority sizes="100vw" />
         ) : (
           <div className="flagshipHeroImageSlot" role="img" aria-label={cityName}><Camera aria-hidden="true" /></div>
         )}

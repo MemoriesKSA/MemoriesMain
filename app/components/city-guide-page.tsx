@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cityHeroImage } from "../city-hero-image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Clock3, MapPin, Sparkles, UtensilsCrossed } from "lucide-react";
 import type { CityGuide, CountryGuide, Locale } from "../destination-guide-data";
@@ -15,7 +16,7 @@ export function CityGuidePage({ country, city, locale = "en" }: { country: Count
   const plannable = isPlannableCountry(country.slug);
   return <main className="innerPage cityGuidePage">
     <section className="cityGuideHero">
-      <Image src={city.image} alt={ar ? city.nameAr : city.nameEn} fill priority sizes="100vw" />
+      <Image src={cityHeroImage(city.image)} alt={ar ? city.nameAr : city.nameEn} fill priority sizes="100vw" />
       <div className="cityGuideHeroShade" />
       <div className="container cityGuideHeroCopy">
         <Link className="countryBack" href={`${prefix}/destinations/${country.slug}`}><ArrowLeft className="directionArrow" size={16} /> {ar ? `مدن ${country.nameAr}` : `${country.nameEn} cities`}</Link>
