@@ -955,3 +955,12 @@ html[data-theme="dark"] .seasonMark.inline .ksLogo{filter:none;opacity:.92}
 .winterNote a{color:var(--ink);font-weight:800;border-bottom:1px solid var(--gold)}
 @media(max-width:1000px){.winterGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.winterBand{padding-top:48px}.winterBandHeading{display:block}.winterBandHeading>p{margin-top:12px}.winterGrid{grid-template-columns:1fr}.winterCardImage{flex-basis:84px;min-height:84px}}
+/* Ad form (short planner) in dark mode: its chips, switch, counter and boxes were white with pale
+   text (Habib 13 Nov: "i cant even read the options"). Dark fills, light text, gold for the pick. */
+html[data-theme="dark"] .shortChip,html[data-theme="dark"] .shortSegment,html[data-theme="dark"] .shortStepper,html[data-theme="dark"] .shortStepper button,html[data-theme="dark"] .shortDates input,html[data-theme="dark"] .shortContact>input{border-color:var(--line);background:#17332d;color:#eaf3ef}
+html[data-theme="dark"] .shortChip.ghost{color:#c0cec9}
+html[data-theme="dark"] .shortChip.on,html[data-theme="dark"] .shortChip.ghost.on{border-color:var(--gold-light);background:#3a3b27;color:#fff;box-shadow:inset 0 0 0 1px var(--gold-light)}
+html[data-theme="dark"] .shortSegment button{color:#c0cec9}
+html[data-theme="dark"] .shortSegment button.on{background:var(--gold-light);color:#102d29}
+html[data-theme="dark"] .shortQuestion legend span{background:var(--gold-light);color:#102d29}
+html[data-theme="dark"] .shortContact>input::placeholder,html[data-theme="dark"] .shortDates input::placeholder{color:#8fa39c}
