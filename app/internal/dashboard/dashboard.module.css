@@ -627,3 +627,93 @@
     font-size: 1.8rem;
   }
 }
+
+/* ---------- Colour options (13 Nov): topic accents + three looks ---------- */
+/* Topic colours: requests teal, money gold, growth blue, posting violet, tests orange,
+   team slate, attention red, all clear green. */
+.acTeal { --acc: #0f8b7d; --acc-soft: #e1f4f1; }
+.acGold { --acc: #b7790b; --acc-soft: #fbf0d9; }
+.acBlue { --acc: #2f6fd6; --acc-soft: #e6eefc; }
+.acViolet { --acc: #7a4fd0; --acc-soft: #efe8fb; }
+.acOrange { --acc: #d9581f; --acc-soft: #fcebe1; }
+.acSlate { --acc: #4b5a6b; --acc-soft: #e9edf2; }
+.acRed { --acc: #d23c3c; --acc-soft: #fde8e6; }
+.acGreen { --acc: #1f9d55; --acc-soft: #e3f5ea; }
+.cardTitle::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+  border-radius: 3px;
+  background: var(--acc, var(--gold));
+  vertical-align: 3px;
+}
+.kpiValue { color: var(--acc, inherit); }
+.step { background: var(--acc-soft, var(--d-tint)); }
+.stepValue { color: var(--acc, inherit); }
+.stepLeak { background: #d23c3c; color: #fff; }
+.chipDone { background: #1f9d55; color: #fff; }
+.chipTodo { border: 1.5px dashed #d98a12; color: #9a5b00; background: #fff8ea; }
+.fill { background: var(--acc, var(--gold)); }
+.needNum { background: var(--acc); color: #fff; }
+.meetingName { color: var(--acc); font-weight: 800; }
+
+/* The dashboard look (Habib 13 Nov picked "B night"): deep navy page, lighter navy cards,
+   bright topic colours, a glowing red Needs-you. */
+.lookB {
+  --ink: #e9eef7;
+  --paper: #131d2f;
+  --ivory: #0a111e;
+  --line: #24324b;
+  --muted: #95a4bb;
+  --d-row-line: #1f2b41;
+  --d-grid: #24324b;
+  --d-axis: #95a4bb;
+  --d-zero: #44536d;
+  --d-track: #24324b;
+  --d-bar: #3fd1bd;
+  --d-bar-hover: #7ee6d6;
+  --d-bar-partial: #2a8d80;
+  --d-bar-partial-hover: #3fb3a3;
+  --d-target: #f2b84b;
+  --d-target-text: #f2b84b;
+  --d-good-bg: rgba(74, 222, 128, 0.16);
+  --d-good-fg: #6ee7a0;
+  --d-warn-bg: rgba(242, 184, 75, 0.16);
+  --d-warn-fg: #f6c86a;
+  --d-bad-bg: rgba(255, 107, 107, 0.18);
+  --d-bad-fg: #ff8f8f;
+  --d-info-bg: rgba(255, 255, 255, 0.08);
+  --d-info-fg: #cbd6e6;
+  background: #0a111e;
+  color: var(--ink);
+}
+.lookB .acTeal { --acc: #3fd1bd; --acc-soft: rgba(63, 209, 189, 0.12); }
+.lookB .acGold { --acc: #f2b84b; --acc-soft: rgba(242, 184, 75, 0.12); }
+.lookB .acBlue { --acc: #6aa6ff; --acc-soft: rgba(106, 166, 255, 0.12); }
+.lookB .acViolet { --acc: #b18cff; --acc-soft: rgba(177, 140, 255, 0.12); }
+.lookB .acOrange { --acc: #ff9a5c; --acc-soft: rgba(255, 154, 92, 0.12); }
+.lookB .acSlate { --acc: #a9b8cc; --acc-soft: rgba(169, 184, 204, 0.1); }
+.lookB .acRed { --acc: #ff6b6b; --acc-soft: rgba(255, 107, 107, 0.12); }
+.lookB .acGreen { --acc: #4ade80; --acc-soft: rgba(74, 222, 128, 0.12); }
+.lookB .top { background: radial-gradient(circle at 88% -10%, #1d3557 0, transparent 45%), linear-gradient(135deg, #0f1a2e, #070c16); }
+.lookB .card,
+.lookB .kpi {
+  background: linear-gradient(var(--acc, #24324b), var(--acc, #24324b)) top / 100% 3px no-repeat, #131d2f;
+  border-color: #24324b;
+  box-shadow: none;
+}
+.lookB .needs {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.16), rgba(255, 107, 107, 0.04)), #131d2f;
+  border: 1px solid rgba(255, 107, 107, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.08), 0 12px 40px rgba(255, 80, 80, 0.12);
+}
+.lookB .needItem { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 107, 107, 0.28); }
+.lookB .needNum { color: #0a111e; }
+.lookB .member { background: rgba(255, 255, 255, 0.03); border-color: #24324b; }
+.lookB .chipTodo { background: transparent; color: #f6c86a; border-color: #f2b84b; }
+.lookB .chipDone { background: #22a861; }
+.lookB .stepRate { background: rgba(255, 255, 255, 0.1); color: var(--ink); }
+.lookB .stepLeak { background: #ff6b6b; color: #0a111e; }
+.lookB .inlineLink, .lookB .cardNote a { color: #fff; }

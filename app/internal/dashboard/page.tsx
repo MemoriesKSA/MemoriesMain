@@ -134,7 +134,7 @@ export default async function DashboardPage() {
   const stale = snapAgeHours !== null && snapAgeHours > 30;
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.lookB}`}>
       <header className={styles.top}>
         <div className={styles.wrap}>
           <nav className={styles.nav}>
@@ -165,43 +165,7 @@ export default async function DashboardPage() {
       </header>
 
       <main className={`${styles.wrap} ${styles.main}`}>
-        <section className={styles.kpis} aria-label="Key numbers">
-          <div className={styles.kpi}>
-            <p className={styles.kpiLabel}>Requests this week</p>
-            <p className={styles.kpiValue}>{weekNow}</p>
-            <p className={styles.kpiSub}>Since Mon {short(thisWeek)}, real customers only</p>
-          </div>
-          <div className={styles.kpi}>
-            <p className={styles.kpiLabel}>Average a week</p>
-            <p className={styles.kpiValue}>{avg.toFixed(1)}</p>
-            <p className={styles.kpiSub}>Last {lastSix.length} full weeks. Price test needs {PRICE_TEST_LEVEL}</p>
-          </div>
-          <div className={`${styles.kpi} ${flagged.length ? styles.kpiAlert : ""}`}>
-            <p className={styles.kpiLabel}>Plans waiting for you</p>
-            <p className={styles.kpiValue}>{flagged.length}</p>
-            <p className={styles.kpiSub}>
-              {flagged.length ? (
-                <Link href="/internal/journeys" className={styles.inlineLink}>
-                  Flagged by the self-check: open Journeys
-                </Link>
-              ) : (
-                "Nothing flagged. Clean plans send themselves"
-              )}
-            </p>
-          </div>
-          <div className={styles.kpi}>
-            <p className={styles.kpiLabel}>Time to send</p>
-            <p className={styles.kpiValue}>{medianHours === null ? "–" : `${medianHours < 10 ? medianHours.toFixed(1) : Math.round(medianHours)} h`}</p>
-            <p className={styles.kpiSub}>Median, request to plan sent, last 30 days</p>
-          </div>
-          <div className={styles.kpi}>
-            <p className={styles.kpiLabel}>Plans sent</p>
-            <p className={styles.kpiValue}>{totalSent}</p>
-            <p className={styles.kpiSub}>Since launch. AI cost {avgCost === null ? "n/a" : `~$${avgCost.toFixed(2)}`} a plan</p>
-          </div>
-        </section>
-
-        <section className={styles.card}>
+        <section className={`${styles.card} ${styles.needs} ${styles.acRed}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>Needs your yes</h2>
               <span className={styles.cardNote}>{snap?.needsYou.length ?? 0} open</span>
@@ -226,8 +190,45 @@ export default async function DashboardPage() {
             )}
           </section>
 
+        <section className={styles.kpis} aria-label="Key numbers">
+          <div className={`${styles.kpi} ${styles.acTeal}`}>
+            <p className={styles.kpiLabel}>Requests this week</p>
+            <p className={styles.kpiValue}>{weekNow}</p>
+            <p className={styles.kpiSub}>Since Mon {short(thisWeek)}, real customers only</p>
+          </div>
+          <div className={`${styles.kpi} ${styles.acBlue}`}>
+            <p className={styles.kpiLabel}>Average a week</p>
+            <p className={styles.kpiValue}>{avg.toFixed(1)}</p>
+            <p className={styles.kpiSub}>Last {lastSix.length} full weeks. Price test needs {PRICE_TEST_LEVEL}</p>
+          </div>
+          <div className={`${styles.kpi} ${flagged.length ? `${styles.kpiAlert} ${styles.acRed}` : styles.acGreen}`}>
+            <p className={styles.kpiLabel}>Plans waiting for you</p>
+            <p className={styles.kpiValue}>{flagged.length}</p>
+            <p className={styles.kpiSub}>
+              {flagged.length ? (
+                <Link href="/internal/journeys" className={styles.inlineLink}>
+                  Flagged by the self-check: open Journeys
+                </Link>
+              ) : (
+                "Nothing flagged. Clean plans send themselves"
+              )}
+            </p>
+          </div>
+          <div className={`${styles.kpi} ${styles.acViolet}`}>
+            <p className={styles.kpiLabel}>Time to send</p>
+            <p className={styles.kpiValue}>{medianHours === null ? "–" : `${medianHours < 10 ? medianHours.toFixed(1) : Math.round(medianHours)} h`}</p>
+            <p className={styles.kpiSub}>Median, request to plan sent, last 30 days</p>
+          </div>
+          <div className={`${styles.kpi} ${styles.acGold}`}>
+            <p className={styles.kpiLabel}>Plans sent</p>
+            <p className={styles.kpiValue}>{totalSent}</p>
+            <p className={styles.kpiSub}>Since launch. AI cost {avgCost === null ? "n/a" : `~$${avgCost.toFixed(2)}`} a plan</p>
+          </div>
+        </section>
+
+
         <div className={styles.grid}>
-          <section className={`${styles.card} ${styles.span7}`}>
+          <section className={`${styles.card} ${styles.span7} ${styles.acTeal}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>Plan requests per week</h2>
               <span className={styles.cardNote}>Live · real customers · hover a bar</span>
@@ -250,7 +251,7 @@ export default async function DashboardPage() {
           </section>
 
           {snap && (
-            <section className={`${styles.card} ${styles.span5}`}>
+            <section className={`${styles.card} ${styles.span5} ${styles.acGold}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>When to charge</h2>
                 <Pill tone="info">Free for now</Pill>
@@ -278,7 +279,7 @@ export default async function DashboardPage() {
         </div>
 
         {snap && (
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.acBlue}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>This week&apos;s funnel</h2>
               <span className={styles.cardNote}>{snap.funnel.week} · Saudi visitors only · from the Head of Growth</span>
@@ -298,7 +299,7 @@ export default async function DashboardPage() {
 
         {snap && (
           <div className={styles.grid}>
-            <section className={`${styles.card} ${styles.span7}`}>
+            <section className={`${styles.card} ${styles.span7} ${styles.acBlue}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>Projections</h2>
                 <span className={styles.cardNote}>followers · views a week · Saudi visitors a week · requests a week</span>
@@ -330,7 +331,7 @@ export default async function DashboardPage() {
               </p>
             </section>
 
-            <section className={`${styles.card} ${styles.span5}`}>
+            <section className={`${styles.card} ${styles.span5} ${styles.acBlue}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>Week by week</h2>
                 <span className={styles.cardNote}>Views to date by upload week</span>
@@ -364,7 +365,7 @@ export default async function DashboardPage() {
         )}
 
         {snap && (
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.acViolet}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>Posting calendar</h2>
               <span className={styles.cardNote}>Green = scheduled on that platform · dashed = still to load</span>
@@ -411,7 +412,7 @@ export default async function DashboardPage() {
         )}
 
         {snap && (
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.acSlate}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>The team</h2>
               <span className={styles.cardNote}>{snap.team.length} roles · last update = their newest note</span>
@@ -433,7 +434,7 @@ export default async function DashboardPage() {
 
         {snap && (
           <div className={styles.grid}>
-            <section className={`${styles.card} ${styles.span12}`}>
+            <section className={`${styles.card} ${styles.span12} ${styles.acOrange}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>Experiments</h2>
                 <span className={styles.cardNote}>Ranked by the Head of Growth</span>
@@ -464,7 +465,7 @@ export default async function DashboardPage() {
               </div>
             </section>
 
-            <section className={`${styles.card} ${styles.span12}`}>
+            <section className={`${styles.card} ${styles.span12} ${styles.acSlate}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>Meeting decisions</h2>
                 <span className={styles.cardNote}>{snap.decisions.date}</span>
@@ -490,7 +491,7 @@ export default async function DashboardPage() {
         )}
 
         <div>
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.acTeal}`}>
             <div className={styles.cardHead}>
               <h2 className={styles.cardTitle}>Latest requests</h2>
               <span className={styles.cardNote}>Live · refs and cities only</span>
