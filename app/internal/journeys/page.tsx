@@ -67,6 +67,12 @@ export default async function JourneysListPage({ searchParams }: { searchParams:
             )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link
+              href="/internal/dashboard"
+              style={{ padding: "12px 18px", borderRadius: 11, border: "1px solid var(--line)", background: "var(--paper)", color: "var(--ink)", textDecoration: "none", fontWeight: 700, fontSize: 14 }}
+            >
+              Dashboard
+            </Link>
             <LocaleToggle locale={locale} label={t.langToggle} />
             <Link
               href="/internal/journeys/new"
