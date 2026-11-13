@@ -538,6 +538,19 @@
   color: var(--muted);
   font-size: 0.84rem;
 }
+.meetings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 22px 32px;
+}
+.meetingName {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
 
 
 /* The site follows the phone's dark mode (globals swap --ink/--paper/--ivory); these follow too. */

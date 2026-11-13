@@ -63,6 +63,17 @@ const median = (xs: number[]) => {
 };
 const toneIcon: Record<Tone, string> = { good: "▲", warn: "●", bad: "▼", info: "■" };
 
+// The sync tags each decision with its meeting ("Daily meeting: ...", "Friday review: ...").
+function byMeeting(items: string[]) {
+  const groups = new Map<string, string[]>();
+  for (const item of items) {
+    const m = item.match(/^(Daily meeting|Friday review): ([\s\S]*)$/);
+    const name = m ? m[1] : "Decisions";
+    groups.set(name, [...(groups.get(name) ?? []), m ? m[2] : item]);
+  }
+  return [...groups];
+}
+
 function Pill({ tone, children }: { tone: Tone; children: React.ReactNode }) {
   return (
     <span className={`${styles.pill} ${styles[tone]}`}>
@@ -422,7 +433,7 @@ export default async function DashboardPage() {
 
         {snap && (
           <div className={styles.grid}>
-            <section className={`${styles.card} ${styles.span7}`}>
+            <section className={`${styles.card} ${styles.span12}`}>
               <div className={styles.cardHead}>
                 <h2 className={styles.cardTitle}>Experiments</h2>
                 <span className={styles.cardNote}>Ranked by the Head of Growth</span>
@@ -453,17 +464,24 @@ export default async function DashboardPage() {
               </div>
             </section>
 
-            <section className={`${styles.card} ${styles.span5}`}>
+            <section className={`${styles.card} ${styles.span12}`}>
               <div className={styles.cardHead}>
-                <h2 className={styles.cardTitle}>Latest decisions</h2>
+                <h2 className={styles.cardTitle}>Meeting decisions</h2>
                 <span className={styles.cardNote}>{snap.decisions.date}</span>
               </div>
               {snap.decisions.items.length ? (
-                <ul className={styles.decisions}>
-                  {snap.decisions.items.map((d, i) => (
-                    <li key={i}>{d}</li>
+                <div className={styles.meetings}>
+                  {byMeeting(snap.decisions.items).map(([meeting, items]) => (
+                    <div key={meeting}>
+                      <h3 className={styles.meetingName}>{meeting}</h3>
+                      <ul className={styles.decisions}>
+                        {items.map((d, i) => (
+                          <li key={i}>{d}</li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
                 <p className={styles.empty}>No decisions logged yet today.</p>
               )}
