@@ -10,7 +10,7 @@ import { SeasonLogoOnImage } from "./home-season-notice";
 const featured = ["alula", "riyadh", "jeddah-red-sea", "paris", "london", "japan"];
 const highlights = {
   en: {
-    alula: ["Saudi Arabia", "Walk through 200,000 years of human history", "Sandstone monuments, quiet desert trails and starlit evenings make AlUla feel unlike anywhere else."],
+    alula: ["Saudi Arabia", "Walk through 200,000 years of human history", "Don’t miss the winter events and AlUla Skyrise, among sandstone monuments, quiet desert trails and starlit nights: an experience like nowhere else."],
     riyadh: ["Saudi Arabia", "Feel the energy of a capital shaping the future", "From Diriyah’s heritage to exceptional dining and desert horizons, Riyadh rewards every kind of curiosity."],
     "jeddah-red-sea": ["Saudi Arabia", "Meet the Red Sea through history and colour", "Explore Al-Balad’s coral-stone lanes, then slow down beside clear water and an extraordinary living reef."],
     paris: ["France", "Turn an iconic city into your own private story", "Art, neighbourhood cafés, timeless streets and beautiful tables, paced around the way you want to experience Paris."],
@@ -18,7 +18,7 @@ const highlights = {
     japan: ["Japan", "Where quiet tradition meets thrilling modern life", "Move from Tokyo’s energy to Kyoto’s temples with thoughtful stays, smooth rail and unforgettable seasonal moments."],
   },
   ar: {
-    alula: ["المملكة العربية السعودية", "سر بين مئتي ألف عام من التاريخ الإنساني", "تمنحك المعالم الصخرية ومسارات الصحراء الهادئة وليالي النجوم تجربة لا تشبه أي مكان آخر."],
+    alula: ["المملكة العربية السعودية", "سر بين مئتي ألف عام من التاريخ الإنساني", "لا تفوت فعاليات الشتاء سكاي رايز بين المعالم الصخرية ومسارات الصحراء الهادئة وليالي النجوم تجربة لا تشبه أي مكان آخر."],
     riyadh: ["المملكة العربية السعودية", "عش طاقة عاصمة تصنع المستقبل", "من تراث الدرعية إلى المطاعم الاستثنائية وآفاق الصحراء، تكافئ الرياض كل فضول."],
     "jeddah-red-sea": ["المملكة العربية السعودية", "اكتشف البحر الأحمر عبر التاريخ والألوان", "تجوّل في مباني البلد المرجانية ثم استرخِ بجوار المياه الصافية والشعاب الحية المدهشة."],
     paris: ["فرنسا", "حوّل المدينة الأيقونية إلى حكايتك الخاصة", "الفن ومقاهي الأحياء والشوارع الخالدة والموائد الجميلة، كلها بتجربة مصممة لك."],
