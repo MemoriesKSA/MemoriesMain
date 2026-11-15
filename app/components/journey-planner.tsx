@@ -9,6 +9,7 @@ import { multiStopAvailableFor, pathOptions, plannableCountries, saudiArabia, st
 import type { CountryOption, LocalizedOption, PlannerPath } from "./planner-data";
 import { planFee, NIGHT_RATE, EXTRA_STOP_FEE, PLANS_FREE } from "../journey/pricing";
 import { PRIORITY_PRICE_SAR } from "../follow/release";
+import { firstVisitFields } from "./first-visit";
 
 const pathIcons = { journey: Sparkles, saudi: Map, study: GraduationCap } as const;
 type LocalChoice = { value: string; en: string; ar: string; detailEn?: string; detailAr?: string };
@@ -389,7 +390,7 @@ export function JourneyPlanner({ compact = false, locale = "en", initialPath = "
       const response = await fetch("/api/journeys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, submissionId: submissionId.current, locale }),
+        body: JSON.stringify({ ...payload, submissionId: submissionId.current, locale, ...firstVisitFields() }),
       });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Request failed");

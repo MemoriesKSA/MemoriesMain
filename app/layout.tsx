@@ -11,6 +11,7 @@ import { SupportChat } from "./components/support-chat";
 // visitor had ever been counted, which makes every marketing decision after
 // this a guess. Wrapped so plan pages are counted without their private link.
 import { SiteAnalytics } from "./components/site-analytics";
+import { FirstVisitMemory } from "./components/first-visit";
 // Google Analytics, for live visitors and cities. Unlike the counter above it
 // sets cookies, so it loads only after the visitor accepts it.
 import { AnalyticsConsent } from "./components/analytics-consent";
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body><Script id="memories-theme" strategy="beforeInteractive">{`try{var t=localStorage.getItem('memories-theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}`}</Script><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /><SupportChat /><SiteAnalytics /><AnalyticsConsent /></body>
+      <body><Script id="memories-theme" strategy="beforeInteractive">{`try{var t=localStorage.getItem('memories-theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}`}</Script><LocaleDocument /><Header /><MotionEnhancer />{children}<Footer /><SupportChat /><SiteAnalytics /><FirstVisitMemory /><AnalyticsConsent /></body>
     </html>
   );
 }

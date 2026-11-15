@@ -8,6 +8,7 @@ import { JourneyPlanner } from "./journey-planner";
 import { plannableCountries } from "./planner-data";
 import { NIGHT_RATE, PLANS_FREE } from "../journey/pricing";
 import { STANDARD_WINDOW_HOURS } from "../follow/release";
+import { firstVisitFields } from "./first-visit";
 
 // The request form for people who arrive from an ad, and only for them.
 //
@@ -254,7 +255,7 @@ export function ShortPlanner({ locale = "en", source = "", today, initialCountry
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          submissionId: submissionId.current, locale, website: honeypot, source,
+          submissionId: submissionId.current, locale, website: honeypot, source, ...firstVisitFields(),
           journeyType: country === "saudi-arabia" ? "saudi" : "journey", country, city,
           // "family" means a family holiday on the journey path but "visiting
           // family" on the Saudi one, so the Saudi path stays on leisure.
