@@ -20,7 +20,9 @@ export function Header() {
   const isArabic = pathname === "/ar" || pathname.startsWith("/ar/");
   const prefix = isArabic ? "/ar" : "";
   const links = labels[isArabic ? "ar" : "en"].map(([label, path]) => [label, `${prefix}${path}`] as const);
-  const languageHref = isArabic ? (pathname.replace(/^\/ar/, "") || "/") : `/ar${pathname === "/" ? "" : pathname}`;
+  // Arabic-only pages (no English twin) switch to the English home rather than a 404.
+  const arabicOnly = pathname === "/ar/winter";
+  const languageHref = arabicOnly ? "/" : isArabic ? (pathname.replace(/^\/ar/, "") || "/") : `/ar${pathname === "/" ? "" : pathname}`;
   const activeHref = links.find(([, href]) => pathname === href || pathname.startsWith(`${href}/`))?.[1];
 
   function movePill(element: HTMLElement) {
