@@ -16,6 +16,16 @@
 // them, and they are deliberately absent from sitemap.ts. They are also
 // absent from robots.ts: a Disallow line there would publish the address to
 // anyone who reads the file, and stop a crawler from ever seeing the noindex.
+//
+// 13 Nov 2026 that changed for five of them. Search was sending us nobody,
+// and these are the only real day-by-day plans on the site, which is what
+// people searching "برنامج سياحي" want to read. The SEO Lead proposed indexing
+// them, Habib's answer was "do what is best", and the PM opened the five below
+// on 18 Nov after checking every page carries no contact detail
+// (pm-tools/examples-private-check.ts) and no fee. They are in the sitemap and
+// linked from /ar/winter. Riyadh and Jeddah stay link-only: their dates
+// (29 Oct, 20 Nov) are past or nearly past, which reads stale to a stranger.
+// The examples list page itself stays link-only.
 
 export type ExamplePlan = {
   slug: string;
@@ -29,6 +39,9 @@ export type ExamplePlan = {
   ar: { city: string; forWhom: string; card: string };
   en: { city: string; forWhom: string; card: string };
 };
+
+/** The examples search engines may index and the sitemap lists (see above). */
+export const INDEXED_EXAMPLES: ReadonlySet<string> = new Set(["alula", "istanbul", "tbilisi", "bangkok", "kuala-lumpur"]);
 
 /** The name every team plan was requested under; a page refuses any plan without it. */
 export const TEAM_PLAN_NAME = "فريق ميموريز";

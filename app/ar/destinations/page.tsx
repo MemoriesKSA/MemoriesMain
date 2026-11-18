@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageAlternates } from "../../page-alternates";
 import { CountryCatalogue } from "../../components/country-catalogue";
 import { countryGuides } from "../../destination-guide-data";
@@ -7,7 +8,7 @@ export const metadata: Metadata = { alternates: pageAlternates("/destinations", 
 
 export default function DestinationsPageAr() {
   return <main className="innerPage destinationsPage">
-    <section className="pageHero destinationChoiceHero container"><p className="kicker">سؤال واحد قبل أن تبدأ الرحلة</p><h1>وين ودك<br /><em>تروح؟</em></h1><p>اختر الدولة التي تدور في بالك. سنعرّفك على مدنها وروحها والاحتمالات التي تنتظرك داخلها.</p></section>
+    <section className="pageHero destinationChoiceHero container"><p className="kicker">سؤال واحد قبل أن تبدأ الرحلة</p><h1>وين ودك<br /><em>تروح؟</em></h1><p>اختر الدولة التي تدور في بالك. سنعرّفك على مدنها وروحها والاحتمالات التي تنتظرك داخلها.<br /><Link className="textLink winterHeroLink" href="/ar/winter">محتار وين تروح في الشتاء؟ عشر وجهات من السعودية</Link></p></section>
     <section className="container destinationCatalogue"><CountryCatalogue locale="ar" countries={countryGuides} /></section>
   </main>;
 }

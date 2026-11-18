@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { countryGuides } from "./destination-guide-data";
+import { INDEXED_EXAMPLES } from "./examples/example-plans";
 
 // The map Google needs, because until this existed there wasn't one.
 //
@@ -79,5 +80,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     country.cities.flatMap((city) =>
       bilingual(`/destinations/${country.slug}/${city.slug}`, 0.7, "monthly", now)));
 
-  return [...statics, ...countries, ...cities];
+  // Five example plans are open to search (see example-plans.ts); the rest stay link-only.
+  const examples = [...INDEXED_EXAMPLES].flatMap((slug) => bilingual(`/examples/${slug}`, 0.6, "monthly", now));
+
+  // Arabic only, so no language twin: the winter hub for searches from Saudi Arabia.
+  const arabicOnly: MetadataRoute.Sitemap = [{ url: `${BASE}/ar/winter`, lastModified: now, changeFrequency: "weekly", priority: 0.8 }];
+
+  return [...statics, ...countries, ...cities, ...examples, ...arabicOnly];
 }
