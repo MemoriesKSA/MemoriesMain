@@ -18,8 +18,13 @@ const nextConfig: NextConfig = {
   // form tagged ?source=v94, so a request can be traced to the video it came
   // from (Habib, 13 Nov 2026: yes to short tagged links per video). Not
   // permanent, so a number can be pointed somewhere else later.
+  // Exceptions come first: 111 is the winter countdown video, whose end card
+  // sends people to the winter hub instead of the form (PM, 18 Nov 2026).
   async redirects() {
-    return [{ source: "/:post(\\d{2,4})", destination: "/ar/design-your-journey?source=v:post", permanent: false }];
+    return [
+      { source: "/111", destination: "/ar/winter?source=v111", permanent: false },
+      { source: "/:post(\\d{2,4})", destination: "/ar/design-your-journey?source=v:post", permanent: false },
+    ];
   },
 };
 
