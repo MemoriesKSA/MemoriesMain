@@ -19,10 +19,15 @@ const nextConfig: NextConfig = {
   // from (Habib, 13 Nov 2026: yes to short tagged links per video). Not
   // permanent, so a number can be pointed somewhere else later.
   // Exceptions come first: 111 is the winter countdown video, whose end card
-  // sends people to the winter hub instead of the form (PM, 18 Nov 2026).
+  // sends people to the winter hub instead of the form; 112-114 are the
+  // "what does it cost" videos, which open the example plan their figures
+  // come from (the example page passes the tag on to the form). PM, 18 Nov 2026.
   async redirects() {
     return [
       { source: "/111", destination: "/ar/winter?source=v111", permanent: false },
+      { source: "/112", destination: "/ar/examples/jeddah?source=v112", permanent: false },
+      { source: "/113", destination: "/ar/examples/kuala-lumpur?source=v113", permanent: false },
+      { source: "/114", destination: "/ar/examples/bangkok?source=v114", permanent: false },
       { source: "/:post(\\d{2,4})", destination: "/ar/design-your-journey?source=v:post", permanent: false },
     ];
   },
